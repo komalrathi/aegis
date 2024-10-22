@@ -1,0 +1,10 @@
+(library
+ ; (public_name lex_and_parse)
+ (name lex_and_parse)
+ (libraries ast_types)
+ )
+
+  (ocamllex lexer)
+
+(menhir
+ (modules parser))

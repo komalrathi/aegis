@@ -1,0 +1,14 @@
+(executable
+ (name main)
+ (modules main)
+ (libraries compile)
+)
+
+(library
+ (name compile)
+ (modules compile)
+ (libraries ast_types lex_and_parse)
+)
+
+
+
