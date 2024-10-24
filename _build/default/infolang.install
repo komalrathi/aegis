@@ -3,3 +3,6 @@ lib: [
   "_build/install/default/lib/infolang/dune-package"
   "_build/install/default/lib/infolang/opam"
 ]
+doc: [
+  "_build/install/default/doc/infolang/README.md"
+]

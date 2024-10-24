@@ -1,14 +1,13 @@
 (executable
  (name main)
  (modules main)
- (libraries compile)
+ (libraries run_interpreter core core_unix.command_unix)
 )
 
 (library
- (name compile)
- (modules compile)
- (libraries ast_types lex_and_parse)
+ (name run_interpreter)
+ (modules run_interpreter)
+ (libraries ast_types parser_frontend typing interpreter core)
 )
-
 
 
