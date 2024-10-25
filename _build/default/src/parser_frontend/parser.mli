@@ -2,10 +2,12 @@
 (* The type of tokens. *)
 
 type token = 
+  | TRUE
   | PLUS
   | MULTIPLY
   | MINUS
   | INT of (int)
+  | FALSE
   | EOF
   | DIVIDE
 

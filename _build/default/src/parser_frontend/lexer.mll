@@ -28,6 +28,8 @@ rule read_token = parse
     | "-" { MINUS }
     | "*" { MULTIPLY }
     | "/" { DIVIDE }
+    | "True" { TRUE }
+    | "False" { FALSE }
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int { INT (int_of_string (lexeme lexbuf)) }

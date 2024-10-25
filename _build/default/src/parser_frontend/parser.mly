@@ -8,6 +8,9 @@
 %token MINUS
 %token MULTIPLY
 %token DIVIDE
+%token TRUE
+%token FALSE
+
 %token EOF
 
 
@@ -38,4 +41,6 @@ program:
 expr:
 | i=INT {Integer($startpos, i)}
 | e1=expr op=bin_op e2=expr {BinOp($startpos, op, e1, e2)}
+| TRUE {Boolean($startpos, true)}
+| FALSE {Boolean($startpos, false)}
 

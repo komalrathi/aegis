@@ -5,7 +5,9 @@ open Interpreter.Interpret_program
 open Ast_types
 
 let string_of_val = function 
-| VInt(i) -> string_of_int i 
+  | VInt(i) -> string_of_int i 
+  | VBool(b) -> string_of_bool b
+
 
 let run_interpreter lexbuf =
   let (>>=) = Result.(>>=) in 

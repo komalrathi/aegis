@@ -1,4 +1,12 @@
-type token = PLUS | MULTIPLY | MINUS | INT of int | EOF | DIVIDE
+type token =
+    TRUE
+  | PLUS
+  | MULTIPLY
+  | MINUS
+  | INT of int
+  | FALSE
+  | EOF
+  | DIVIDE
 val menhir_begin_marker : int
 val xv_program : Parsed_ast.expr
 val xv_expr : Parsed_ast.expr
