@@ -6,6 +6,12 @@ type bin_op =
   | MULTIPLY
   | DIVIDE
 
+type comp_op = 
+  | LT
+  | GT
+  | LTE
+  | GTE
+
 type type_expr = 
   | TEInt
   | TEBool

@@ -9,12 +9,24 @@ let apply_int_bin_op bin_op i1 i2 = match bin_op with
   | DIVIDE -> if i2 = 0 then Error (Error.of_string "Division by zero")
   else Ok (VInt(i1 / i2))
 
+let apply_comp_op comp_op i1 i2 = match comp_op with 
+  | LT -> Ok (VBool(i1 < i2))
+  | GT -> Ok (VBool(i1 > i2))
+  | LTE -> Ok (VBool(i1 <= i2))
+  | GTE -> Ok (VBool(i1 >= i2))
+
 let interpret_bin_op bin_op i1 i2 =
   match (i1, i2) with 
   | (VInt(i1), VInt(i2)) -> apply_int_bin_op bin_op i1 i2
   | (VInt(_), VBool(_)) | (VBool(_), VInt(_)) | (VBool(_), VBool(_)) ->
     Error (Error.of_string "Type error: cannot apply binary operation to boolean values")
-  
+
+let interpret_comp_op comp_op i1 i2 =
+  match (i1, i2) with 
+  | (VInt(i1), VInt(i2)) -> apply_comp_op comp_op i1 i2
+  | (VInt(_), VBool(_)) | (VBool(_), VInt(_)) | (VBool(_), VBool(_)) ->
+    Error (Error.of_string "Type error: cannot apply comparison operation to boolean values")
+
       
 let rec interpret_expr expr = 
   let (>>=) = Result.(>>=) in 
@@ -28,6 +40,13 @@ let rec interpret_expr expr =
     (* match (val1, val2) with 
     | (VInt(i1), VInt(i2)) ->  *)
       interpret_bin_op bin_op val1 val2
+      )
+  | CompOp(_, _, comp_op, e1, e2) -> (
+    interpret_expr e1 
+    >>= fun val1 ->
+    interpret_expr e2
+    >>= fun val2 ->
+      interpret_comp_op comp_op val1 val2
       )
   | Boolean(_, b) -> Ok(VBool(b))
 

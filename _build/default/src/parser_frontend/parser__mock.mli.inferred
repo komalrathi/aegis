@@ -3,12 +3,17 @@ type token =
   | PLUS
   | MULTIPLY
   | MINUS
+  | LTE
+  | LT
   | INT of int
+  | GTE
+  | GT
   | FALSE
   | EOF
   | DIVIDE
 val menhir_begin_marker : int
 val xv_program : Parsed_ast.expr
 val xv_expr : Parsed_ast.expr
+val xv_comp_op : Ast_types.comp_op
 val xv_bin_op : Ast_types.bin_op
 val menhir_end_marker : int

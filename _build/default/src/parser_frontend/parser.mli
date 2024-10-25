@@ -6,7 +6,11 @@ type token =
   | PLUS
   | MULTIPLY
   | MINUS
+  | LTE
+  | LT
   | INT of (int)
+  | GTE
+  | GT
   | FALSE
   | EOF
   | DIVIDE

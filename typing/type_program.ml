@@ -18,6 +18,18 @@ match expr with
           else Error (Error.of_string "binary operands type error")
         )
   )
+  | Parsed_ast.CompOp (loc, comp_op, e1, e2) -> (
+    type_expr e1
+    >>= fun (e1_type, typed_e1) -> 
+      type_expr e2
+      >>= fun (e2_type, typed_e2) ->
+        (
+          if (phys_equal e1_type e2_type) && (phys_equal e1_type TEInt) then
+              Ok (TEBool, 
+            Typed_ast.CompOp(loc, TEInt, comp_op, typed_e1, typed_e2))
+          else Error (Error.of_string "comparison operands type error")
+        )
+  )
   | Parsed_ast.Boolean (loc, b) -> Ok (TEBool, Typed_ast.Boolean (loc, b))
 
 let type_program (Parsed_ast.Prog(expr)) = 

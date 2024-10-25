@@ -8,6 +8,14 @@
 %token MINUS
 %token MULTIPLY
 %token DIVIDE
+
+// %token EQ
+// %token NEQ
+%token LT
+%token GT
+%token LTE
+%token GTE
+
 %token TRUE
 %token FALSE
 
@@ -17,6 +25,7 @@
 // Need to specify the associativity and precedence of the operators
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
+%left LT GT LTE GTE
 
 // Start symbol
 %start program
@@ -25,6 +34,7 @@
 %type <expr> expr
 %type <Parsed_ast.expr> program
 %type <bin_op> bin_op
+%type <comp_op> comp_op
 
 %%
 // Grammar Productions
@@ -35,12 +45,19 @@
 | MULTIPLY { MULTIPLY }
 | DIVIDE { DIVIDE } 
 
+%inline comp_op:
+| LT { LT }
+| GT { GT }
+| LTE { LTE }
+| GTE { GTE }
+
 program:
 | e=expr; EOF {e}
 
 expr:
 | i=INT {Integer($startpos, i)}
 | e1=expr op=bin_op e2=expr {BinOp($startpos, op, e1, e2)}
+| e1=expr op=comp_op e2=expr {CompOp($startpos, op, e1, e2)}
 | TRUE {Boolean($startpos, true)}
 | FALSE {Boolean($startpos, false)}
 

@@ -30,6 +30,10 @@ rule read_token = parse
     | "/" { DIVIDE }
     | "True" { TRUE }
     | "False" { FALSE }
+    | "<" { LT }
+    | ">" { GT }
+    | "<=" { LTE }
+    | ">=" { GTE }
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int { INT (int_of_string (lexeme lexbuf)) }
