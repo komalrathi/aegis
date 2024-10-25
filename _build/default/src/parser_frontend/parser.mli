@@ -4,6 +4,7 @@
 type token = 
   | TRUE
   | PLUS
+  | OR
   | MULTIPLY
   | MINUS
   | LTE
@@ -14,6 +15,7 @@ type token =
   | FALSE
   | EOF
   | DIVIDE
+  | AND
 
 (* This exception is raised by the monolithic API functions. *)
 

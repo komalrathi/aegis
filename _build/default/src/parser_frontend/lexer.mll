@@ -34,6 +34,8 @@ rule read_token = parse
     | ">" { GT }
     | "<=" { LTE }
     | ">=" { GTE }
+    | "&&" { AND }
+    | "||" { OR }
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int { INT (int_of_string (lexeme lexbuf)) }

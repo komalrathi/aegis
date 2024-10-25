@@ -49,6 +49,20 @@ let rec interpret_expr expr =
       interpret_comp_op comp_op val1 val2
       )
   | Boolean(_, b) -> Ok(VBool(b))
+  | BoolCompOp(_, _, bool_comp_op, e1, e2) -> (
+    interpret_expr e1 
+    >>= fun val1 ->
+    interpret_expr e2
+    >>= fun val2 ->
+      match (val1, val2) with 
+      | (VBool(b1), VBool(b2)) -> (
+        match bool_comp_op with 
+        | AND -> Ok(VBool(b1 && b2))
+        | OR -> Ok(VBool(b1 || b2))
+      )
+      | (VInt(_), VBool(_)) | (VBool(_), VInt(_)) | (VInt(_), VInt(_)) ->
+        Error (Error.of_string "Type error: cannot apply boolean operation to integer values")
+    ) 
 
 let interpret_program (Prog(expr)) = 
   interpret_expr expr

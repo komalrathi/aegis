@@ -12,6 +12,10 @@ type comp_op =
   | LTE
   | GTE
 
+type bool_comp_op = 
+  | AND
+  | OR
+
 type type_expr = 
   | TEInt
   | TEBool

@@ -18,6 +18,8 @@
 
 %token TRUE
 %token FALSE
+%token AND
+%token OR
 
 %token EOF
 
@@ -26,6 +28,7 @@
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 %left LT GT LTE GTE
+%left AND OR
 
 // Start symbol
 %start program
@@ -35,6 +38,7 @@
 %type <Parsed_ast.expr> program
 %type <bin_op> bin_op
 %type <comp_op> comp_op
+%type <bool_comp_op> bool_comp_op
 
 %%
 // Grammar Productions
@@ -51,6 +55,11 @@
 | LTE { LTE }
 | GTE { GTE }
 
+%inline bool_comp_op:
+| AND { AND }
+| OR { OR }
+
+
 program:
 | e=expr; EOF {e}
 
@@ -60,4 +69,5 @@ expr:
 | e1=expr op=comp_op e2=expr {CompOp($startpos, op, e1, e2)}
 | TRUE {Boolean($startpos, true)}
 | FALSE {Boolean($startpos, false)}
+| e1=expr op=bool_comp_op e2=expr {BoolCompOp($startpos, op, e1, e2)}
 
