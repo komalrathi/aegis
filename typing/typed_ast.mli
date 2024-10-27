@@ -1,4 +1,6 @@
-open Ast_types
+open Compiler_types.Ast_types
+open Compiler_types.Language_types
+
 
 type expr =
   | Integer     of loc * int

@@ -1,6 +1,6 @@
 (library
  (name parser_frontend)
- (libraries ast_types core fmt)
+ (libraries compiler_types core fmt)
  )
 
   (ocamllex lexer)

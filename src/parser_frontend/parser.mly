@@ -1,5 +1,5 @@
 %{
-    open Ast_types 
+    open Compiler_types.Ast_types 
     open Parsed_ast
 %}
 

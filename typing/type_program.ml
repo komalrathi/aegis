@@ -1,6 +1,7 @@
 open Core
 open Parser_frontend
-open Ast_types
+open Compiler_types.Language_types
+
 
 let rec type_expr expr =   
 let (>>=) = Result.(>>=) in 

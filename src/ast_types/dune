@@ -1,6 +1,0 @@
-(library
- ; (public_name ast_types)
- (name ast_types)
- (modules ast_types)
- ; (libraries core fmt)
- )

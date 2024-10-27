@@ -1,4 +1,4 @@
 (library
  (name interpreter)
- (libraries ast_types typing core)
+ (libraries compiler_types typing core)
 )

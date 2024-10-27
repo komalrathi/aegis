@@ -1,6 +1,8 @@
 open Core
 open Typing.Typed_ast
-open Ast_types
+open Compiler_types.Ast_types
+open Compiler_types.Language_types
+
 
 let apply_int_bin_op bin_op i1 i2 = match bin_op with 
   | PLUS -> Ok (VInt(i1 + i2))

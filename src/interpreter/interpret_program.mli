@@ -1,5 +1,5 @@
 open Core
-open Ast_types
+open Compiler_types.Language_types
 open Typing
 
 

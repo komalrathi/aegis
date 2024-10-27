@@ -2,7 +2,8 @@ open Parser_frontend.Parse_program
 open Core
 open Typing.Type_program
 open Interpreter.Interpret_program
-open Ast_types
+open Compiler_types.Language_types
+
 
 let string_of_val = function 
   | VInt(i) -> string_of_int i 

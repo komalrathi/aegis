@@ -6,7 +6,7 @@ type bin_op =
   | MULTIPLY
   | DIVIDE
 
-type comp_op =
+type comp_op = 
   | LT
   | GT
   | LTE
@@ -16,10 +16,4 @@ type bool_comp_op =
   | AND
   | OR
 
-type type_expr = 
-  | TEInt
-  | TEBool
-
-type interpreter_val = 
-  | VInt of int
-  | VBool of bool
+type identifier = string

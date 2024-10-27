@@ -1,4 +1,4 @@
 (library
  (name typing)
- (libraries core fmt parser_frontend ast_types)
+ (libraries core fmt parser_frontend compiler_types)
 )

@@ -1,3 +1,5 @@
+(* Types used by complier when evaluating a program, used e.g. to pattern match cases from parser to AST *)
+
 type loc = Lexing.position
 
 type bin_op = 
@@ -6,7 +8,7 @@ type bin_op =
   | MULTIPLY
   | DIVIDE
 
-type comp_op = 
+type comp_op =
   | LT
   | GT
   | LTE
@@ -16,10 +18,4 @@ type bool_comp_op =
   | AND
   | OR
 
-type type_expr = 
-  | TEInt
-  | TEBool
-
-type interpreter_val = 
-  | VInt of int
-  | VBool of bool
+type identifier = string
