@@ -1,16 +1,17 @@
 open Core
 open Parser_frontend
 open Compiler_types.Language_types
+open Type_environment
 
 
-let rec type_expr expr =   
+let rec type_expr expr type_environment=   
 let (>>=) = Result.(>>=) in 
 match expr with  
 | Parsed_ast.Integer (loc, i) -> Ok (TEInt, Typed_ast.Integer (loc, i))
 | Parsed_ast.BinOp (loc, bin_op, e1, e2) -> (
-    type_expr e1
+    type_expr e1 type_environment
     >>= fun (e1_type, typed_e1) -> 
-      type_expr e2
+      type_expr e2 type_environment
       >>= fun (e2_type, typed_e2) ->
         (
           if (phys_equal e1_type e2_type) && (phys_equal e1_type TEInt) then
@@ -20,9 +21,9 @@ match expr with
         )
   )
   | Parsed_ast.CompOp (loc, comp_op, e1, e2) -> (
-    type_expr e1
+    type_expr e1 type_environment
     >>= fun (e1_type, typed_e1) -> 
-      type_expr e2
+      type_expr e2 type_environment
       >>= fun (e2_type, typed_e2) ->
         (
           if (phys_equal e1_type e2_type) && (phys_equal e1_type TEInt) then
@@ -33,9 +34,9 @@ match expr with
   )
   | Parsed_ast.Boolean (loc, b) -> Ok (TEBool, Typed_ast.Boolean (loc, b))
   | Parsed_ast.BoolCompOp (loc, bool_comp_op, e1, e2) -> (
-    type_expr e1
+    type_expr e1 type_environment
     >>= fun (e1_type, typed_e1) -> 
-      type_expr e2
+      type_expr e2 type_environment
       >>= fun (e2_type, typed_e2) ->
         (
           if (phys_equal e1_type e2_type) && (phys_equal e1_type TEBool) then
@@ -44,9 +45,12 @@ match expr with
           else Error (Error.of_string "boolean comparison operands type error")
         )
   )
+  | Parsed_ast.Identifier(loc, id) -> lookup_var_type type_environment id 
+                                      |> function | None -> Error(Error.of_string "Variable does not exist") 
+                                      | Some var_type -> Ok(var_type, Typed_ast.Identifier(loc, var_type, id))
 
 let type_program (Parsed_ast.Prog(expr)) = 
   let open Result in 
-  type_expr expr  
+  type_expr expr [] 
   >>= fun (_, typed_expr) -> 
   Ok(Typed_ast.Prog(typed_expr))

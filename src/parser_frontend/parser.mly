@@ -4,6 +4,8 @@
 %}
 
 %token <int> INT
+%token <string> IDENTIFIER
+
 %token PLUS
 %token MINUS
 %token MULTIPLY
@@ -21,10 +23,13 @@
 %token AND
 %token OR
 
+%token ASSIGN
+
 %token EOF
 
 
 // Need to specify the associativity and precedence of the operators
+%left ASSIGN
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 %left LT GT LTE GTE
@@ -70,4 +75,5 @@ expr:
 | TRUE {Boolean($startpos, true)}
 | FALSE {Boolean($startpos, false)}
 | e1=expr op=bool_comp_op e2=expr {BoolCompOp($startpos, op, e1, e2)}
+| id=IDENTIFIER {Identifier($startpos, id)}
 

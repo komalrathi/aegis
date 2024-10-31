@@ -64,7 +64,7 @@ let rec interpret_expr expr =
       )
       | (VInt(_), VBool(_)) | (VBool(_), VInt(_)) | (VInt(_), VInt(_)) ->
         Error (Error.of_string "Type error: cannot apply boolean operation to integer values")
-    ) 
+    )
 
 let interpret_program (Prog(expr)) = 
   interpret_expr expr

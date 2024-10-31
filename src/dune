@@ -1,13 +1,9 @@
 (executable
  (name main)
  (modules main)
- (libraries run_interpreter core core_unix.command_unix)
-)
+ (libraries run_interpreter core core_unix.command_unix))
 
 (library
  (name run_interpreter)
  (modules run_interpreter)
- (libraries compiler_types parser_frontend typing interpreter core)
-)
-
-
+ (libraries compiler_types parser_frontend typing interpreter core))

@@ -23,5 +23,5 @@ type bool_comp_op =
   | AND
   | OR
 
-(* We use type identifier to represent a variable name, and differentiate it from normal strings. *)
+(*  *)
 type identifier = string

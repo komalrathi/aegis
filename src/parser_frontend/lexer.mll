@@ -20,8 +20,8 @@ let alpha = ['a'-'z' 'A'-'Z']
 let whitespace = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 
-let int = '-'? digit+
-let id = (alpha) (alpha|digit|'_')*
+let int_regex = '-'? digit+
+let id_regex = (alpha) (alpha|digit|'_')*
 
 rule read_token = parse 
     | "+" { PLUS }
@@ -36,8 +36,10 @@ rule read_token = parse
     | ">=" { GTE }
     | "&&" { AND }
     | "||" { OR }
+    | ":=" { ASSIGN }
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
-    | int { INT (int_of_string (lexeme lexbuf)) }
+    | int_regex { INT (int_of_string (lexeme lexbuf)) }
+    | id_regex {IDENTIFIER (lexeme lexbuf)}
     | eof { EOF }
     | _ { raise (SyntaxError ("Invalid character " ^ Lexing.lexeme lexbuf)) }

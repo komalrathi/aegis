@@ -1,9 +1,8 @@
 (library
  (name parser_frontend)
- (libraries compiler_types core fmt)
- )
+ (libraries compiler_types core fmt))
 
-  (ocamllex lexer)
+(ocamllex lexer)
 
 (menhir
  (modules parser))
