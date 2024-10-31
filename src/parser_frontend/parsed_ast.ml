@@ -8,7 +8,7 @@ type expr =
   | Boolean of loc * bool
   | BoolCompOp of loc * bool_comp_op * expr * expr
   | Identifier of loc * identifier
-  (* | Assign of loc * identifier * expr *)
+  | Assign of loc * identifier * expr
   | Let of loc * identifier * type_expr * expr * expr
 
 type program = Prog of expr

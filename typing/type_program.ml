@@ -69,6 +69,17 @@ let rec type_expr expr type_environment =
         ( e2_type
         , Typed_ast.Let (loc, var_name, var_type, typed_e1, typed_e2, e2_type)
         )
+  | Parsed_ast.Assign (loc, var_name, e1) -> (
+      lookup_var_type type_environment var_name
+      |> function
+      | None -> Error (Error.of_string "Variable does not exist")
+      | Some var_type ->
+          type_expr e1 type_environment
+          >>= fun (e1_type, typed_e1) ->
+          check_expr_var_types_match var_type e1_type
+          >>= fun () ->
+          Ok (var_type, Typed_ast.Assign (loc, var_type, var_name, typed_e1))
+      )
 
 let type_program (Parsed_ast.Prog expr) =
   let open Result in

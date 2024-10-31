@@ -12,8 +12,6 @@
 %token MULTIPLY
 %token DIVIDE
 
-// %token EQ
-// %token NEQ
 %token LT
 %token GT
 %token LTE
@@ -36,9 +34,8 @@
 
 
 // Need to specify the associativity and precedence of the operators
-%right EQUAL COLON
+%right EQUAL COLON ASSIGN IN
 
-// %left ASSIGN
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 %left LT GT LTE GTE
@@ -90,3 +87,4 @@ expr:
 | e1=expr op=bool_comp_op e2=expr {BoolCompOp($startpos, op, e1, e2)}
 | id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
+| x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
