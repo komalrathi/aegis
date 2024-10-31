@@ -1,7 +1,3 @@
-type type_expr = 
-  | TEInt
-  | TEBool
+type type_expr = TEInt | TEBool
 
-type interpreter_val = 
-  | VInt of int
-  | VBool of bool
+type interpreter_val = VInt of int | VBool of bool

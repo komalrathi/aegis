@@ -37,6 +37,12 @@ rule read_token = parse
     | "&&" { AND }
     | "||" { OR }
     | ":=" { ASSIGN }
+    | "let" {LET}
+    | ":" {COLON}
+    | "int" {TYPE_INT}
+    | "bool" {TYPE_BOOL}
+    | "=" {EQUAL}
+    | "in" {IN}
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int_regex { INT (int_of_string (lexeme lexbuf)) }

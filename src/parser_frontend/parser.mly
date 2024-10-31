@@ -1,6 +1,7 @@
 %{
     open Compiler_types.Ast_types 
     open Parsed_ast
+    open Compiler_types.Language_types
 %}
 
 %token <int> INT
@@ -24,12 +25,20 @@
 %token OR
 
 %token ASSIGN
+%token LET
+%token IN
+%token COLON
+%token TYPE_INT
+%token TYPE_BOOL
+%token EQUAL
 
 %token EOF
 
 
 // Need to specify the associativity and precedence of the operators
-%left ASSIGN
+%right EQUAL COLON
+
+// %left ASSIGN
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 %left LT GT LTE GTE
@@ -44,6 +53,7 @@
 %type <bin_op> bin_op
 %type <comp_op> comp_op
 %type <bool_comp_op> bool_comp_op
+%type <type_expr> type_expression
 
 %%
 // Grammar Productions
@@ -64,6 +74,9 @@
 | AND { AND }
 | OR { OR }
 
+type_expression:
+| TYPE_INT {TEInt}
+| TYPE_BOOL {TEBool}
 
 program:
 | e=expr; EOF {e}
@@ -76,4 +89,4 @@ expr:
 | FALSE {Boolean($startpos, false)}
 | e1=expr op=bool_comp_op e2=expr {BoolCompOp($startpos, op, e1, e2)}
 | id=IDENTIFIER {Identifier($startpos, id)}
-
+| LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
