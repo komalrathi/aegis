@@ -3,7 +3,7 @@ open Parser_frontend
 open Compiler_types.Language_types
 open Type_environment
 
-let check_var_shadowing type_environment var_name =
+let check_var_not_shadowed type_environment var_name =
   let ast_var_type = lookup_var_type type_environment var_name in
   match ast_var_type with
   (* If this is none, it means the variable has not been declared yet *)
@@ -12,6 +12,10 @@ let check_var_shadowing type_environment var_name =
       Error
         (Error.of_string
            "Variable has already been assigned and has another type" )
+
+let check_expr_var_types_match var_type e1_type =
+  if phys_equal var_type e1_type then Ok ()
+  else Error (Error.of_string "Types of the let and expression do not match")
 
 let rec type_expr expr type_environment =
   let ( >>= ) = Result.( >>= ) in
@@ -53,20 +57,18 @@ let rec type_expr expr type_environment =
       | Some var_type ->
           Ok (var_type, Typed_ast.Identifier (loc, var_type, id)) )
   | Parsed_ast.Let (loc, var_name, var_type, e1, e2) ->
-      check_var_shadowing type_environment var_name
+      check_var_not_shadowed type_environment var_name
       >>= fun () ->
       type_expr e1 type_environment
       >>= fun (e1_type, typed_e1) ->
-      if not (phys_equal var_type e1_type) then
-        Error
-          (Error.of_string "Types of the let and expression do not match")
-      else
-        type_expr e2 ((var_name, var_type) :: type_environment)
-        >>= fun (e2_type, typed_e2) ->
-        Ok
-          ( e2_type
-          , Typed_ast.Let
-              (loc, var_name, var_type, typed_e1, typed_e2, e2_type) )
+      check_expr_var_types_match var_type e1_type
+      >>= fun () ->
+      type_expr e2 ((var_name, var_type) :: type_environment)
+      >>= fun (e2_type, typed_e2) ->
+      Ok
+        ( e2_type
+        , Typed_ast.Let (loc, var_name, var_type, typed_e1, typed_e2, e2_type)
+        )
 
 let type_program (Parsed_ast.Prog expr) =
   let open Result in
