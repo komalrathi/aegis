@@ -22,6 +22,9 @@
 %token AND
 %token OR
 
+%token IF
+%token THEN
+%token ELSE
 %token ASSIGN
 %token LET
 %token IN
@@ -88,3 +91,4 @@ expr:
 | id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
+| IF e1=expr THEN e2=expr ELSE e3=expr {If($startpos, e1, e2, e3)}

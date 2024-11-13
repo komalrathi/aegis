@@ -80,6 +80,16 @@ let rec type_expr expr type_environment =
           >>= fun () ->
           Ok (var_type, Typed_ast.Assign (loc, var_type, var_name, typed_e1))
       )
+  | Parsed_ast.If(loc, e1, e2, e3) -> 
+      type_expr e1 type_environment
+      >>= fun (e1_type, typed_e1) ->
+      type_expr e2 type_environment
+      >>= fun (e2_type, typed_e2) ->
+      type_expr e3 type_environment
+      >>= fun (e3_type, typed_e3) ->
+      if phys_equal e1_type TEBool && phys_equal e2_type e3_type then
+        Ok (e2_type, Typed_ast.If(loc, typed_e1, typed_e2, typed_e3, e2_type))
+      else Error (Error.of_string "Expression types in the if statement are not correct")
 
 let type_program (Parsed_ast.Prog expr) =
   let open Result in

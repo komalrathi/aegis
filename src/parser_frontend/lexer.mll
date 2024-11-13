@@ -37,6 +37,9 @@ rule read_token = parse
     | "&&" { AND }
     | "||" { OR }
     | ":=" { ASSIGN }
+    | "if" {IF}
+    | "then" {THEN}
+    | "else" {ELSE}
     | "let" {LET}
     | ":" {COLON}
     | "int" {TYPE_INT}

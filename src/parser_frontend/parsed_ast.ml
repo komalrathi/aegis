@@ -10,5 +10,6 @@ type expr =
   | Identifier of loc * identifier
   | Assign of loc * identifier * expr
   | Let of loc * identifier * type_expr * expr * expr
+  | If of loc * expr * expr * expr
 
 type program = Prog of expr

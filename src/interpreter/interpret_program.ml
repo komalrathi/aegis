@@ -95,6 +95,16 @@ let rec interpret_expr expr value_environment =
           Error
             (Error.of_string
                "Type error: variable type does not match value type" ) )
+  | If (_, e1, e2, e3, _) ->
+      interpret_expr e1 value_environment
+      >>= fun val1 ->
+      match val1 with
+      | VBool true -> interpret_expr e2 value_environment
+      | VBool false -> interpret_expr e3 value_environment
+      | VInt _ ->
+          Error
+            (Error.of_string
+               "Type error: Cannot have int type in the if condition" )
 
 (* let interpret_program (Prog expr) = interpret_expr expr *)
 let interpret_program (Prog expr) =
