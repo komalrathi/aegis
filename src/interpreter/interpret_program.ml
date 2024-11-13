@@ -2,6 +2,7 @@ open Core
 open Typing.Typed_ast
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
+open Value_environment
 
 let apply_int_bin_op bin_op i1 i2 =
   match bin_op with
@@ -35,26 +36,25 @@ let interpret_comp_op comp_op i1 i2 =
         (Error.of_string
            "Type error: cannot apply comparison operation to boolean values" )
 
-let rec interpret_expr expr =
+let rec interpret_expr expr value_environment =
   let ( >>= ) = Result.( >>= ) in
   match expr with
   | Integer (_, i) -> Ok (VInt i)
   | BinOp (_, _, bin_op, e1, e2) ->
-      interpret_expr e1
+      interpret_expr e1 value_environment
       >>= fun val1 ->
-      interpret_expr e2
-      >>= fun val2 ->
-      (* match (val1, val2) with | (VInt(i1), VInt(i2)) -> *)
-      interpret_bin_op bin_op val1 val2
+      interpret_expr e2 value_environment
+      >>= fun val2 -> interpret_bin_op bin_op val1 val2
   | CompOp (_, _, comp_op, e1, e2) ->
-      interpret_expr e1
+      interpret_expr e1 value_environment
       >>= fun val1 ->
-      interpret_expr e2 >>= fun val2 -> interpret_comp_op comp_op val1 val2
+      interpret_expr e2 value_environment
+      >>= fun val2 -> interpret_comp_op comp_op val1 val2
   | Boolean (_, b) -> Ok (VBool b)
   | BoolCompOp (_, _, bool_comp_op, e1, e2) -> (
-      interpret_expr e1
+      interpret_expr e1 value_environment
       >>= fun val1 ->
-      interpret_expr e2
+      interpret_expr e2 value_environment
       >>= fun val2 ->
       match (val1, val2) with
       | VBool b1, VBool b2 -> (
@@ -66,5 +66,37 @@ let rec interpret_expr expr =
             (Error.of_string
                "Type error: cannot apply boolean operation to integer values" )
       )
+  (* need to store the value of the identifier in the environment *)
+  | Identifier (_, var_type, identifier) -> (
+      lookup_var_value value_environment identifier
+      |> function
+      | None -> Error (Error.of_string "Variable does not have a value")
+      | Some var_value -> (
+        match (var_type, var_value) with
+        | TEInt, VInt i -> Ok (VInt i)
+        | TEBool, VBool b -> Ok (VBool b)
+        | _ ->
+            Error
+              (Error.of_string
+                 "Type error: variable type does not match value type" ) ) )
+  | Let (_, var_name, _, e1, e2, _) ->
+      interpret_expr e1 value_environment
+      >>= fun val1 ->
+      let new_env = (var_name, val1) :: value_environment in
+      interpret_expr e2 new_env
+  | Assign (_, var_type, var_name, e1) -> (
+      interpret_expr e1 value_environment
+      >>= fun val1 ->
+      match (var_type, val1) with
+      | TEInt, VInt _ | TEBool, VBool _ ->
+          let _ = (var_name, val1) :: value_environment in
+          Ok val1
+      | _ ->
+          Error
+            (Error.of_string
+               "Type error: variable type does not match value type" ) )
 
-let interpret_program (Prog expr) = interpret_expr expr
+(* let interpret_program (Prog expr) = interpret_expr expr *)
+let interpret_program (Prog expr) =
+  let initial_environment = [] in
+  interpret_expr expr initial_environment
