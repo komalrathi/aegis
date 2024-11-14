@@ -39,7 +39,7 @@ let interpret_comp_op comp_op i1 i2 =
 let rec interpret_expr expr value_environment =
   let ( >>= ) = Result.( >>= ) in
   match expr with
-  | Integer (_, i) -> Ok (VInt i)
+  | Integer (_, i, _) -> Ok (VInt i)
   | BinOp (_, _, bin_op, e1, e2) ->
       interpret_expr e1 value_environment
       >>= fun val1 ->
@@ -50,7 +50,7 @@ let rec interpret_expr expr value_environment =
       >>= fun val1 ->
       interpret_expr e2 value_environment
       >>= fun val2 -> interpret_comp_op comp_op val1 val2
-  | Boolean (_, b) -> Ok (VBool b)
+  | Boolean (_, b, _) -> Ok (VBool b)
   | BoolCompOp (_, _, bool_comp_op, e1, e2) -> (
       interpret_expr e1 value_environment
       >>= fun val1 ->
@@ -73,8 +73,8 @@ let rec interpret_expr expr value_environment =
       | None -> Error (Error.of_string "Variable does not have a value")
       | Some var_value -> (
         match (var_type, var_value) with
-        | TEInt, VInt i -> Ok (VInt i)
-        | TEBool, VBool b -> Ok (VBool b)
+        | (TEInt, _), VInt i -> Ok (VInt i)
+        | (TEBool, _), VBool b -> Ok (VBool b)
         | _ ->
             Error
               (Error.of_string
@@ -88,7 +88,7 @@ let rec interpret_expr expr value_environment =
       interpret_expr e1 value_environment
       >>= fun val1 ->
       match (var_type, val1) with
-      | TEInt, VInt _ | TEBool, VBool _ ->
+      | (TEInt, _), VInt _ | (TEBool, _), VBool _ ->
           let _ = (var_name, val1) :: value_environment in
           Ok val1
       | _ ->
