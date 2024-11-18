@@ -11,5 +11,7 @@ type expr =
   | Assign of loc * type_expr * identifier * expr
   | Let of loc * identifier * type_expr * expr * expr * type_expr
   | If of loc * expr * expr * expr * type_expr
+  | Classify of loc * expr * type_expr
+  | Declassify of loc * expr * type_expr
 
 type program = Prog of expr

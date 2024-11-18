@@ -12,6 +12,12 @@
 %token MULTIPLY
 %token DIVIDE
 
+%token CLASSIFY
+%token DECLASSIFY
+
+%token FUNCTION
+%token ARROW
+
 %token LEFT_PAREN
 %token RIGHT_PAREN
 %token COMMA
@@ -104,3 +110,6 @@ expr:
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
 | IF e1=expr THEN e2=expr ELSE e3=expr {If($startpos, e1, e2, e3)}
+| CLASSIFY e=expr {Classify($startpos, e)}
+| DECLASSIFY e=expr {Declassify($startpos, e)}
+| LEFT_PAREN e=expr RIGHT_PAREN {e}

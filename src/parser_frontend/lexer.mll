@@ -42,6 +42,8 @@ rule read_token = parse
     | "&&" { AND }
     | "||" { OR }
     | ":=" { ASSIGN }
+    | "classify" { CLASSIFY }
+    | "declassify" { DECLASSIFY }
     | "if" {IF}
     | "then" {THEN}
     | "else" {ELSE}
@@ -53,6 +55,8 @@ rule read_token = parse
     | "in" {IN}
     | "High" {HIGH_SEC_LEVEL}
     | "Low" {LOW_SEC_LEVEL}
+    (* | "fn" {FUNCTION}
+    | "->" {ARROW} *)
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int_regex { INT (int_of_string (lexeme lexbuf)) }

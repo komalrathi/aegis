@@ -148,6 +148,27 @@ let rec type_expr :
         Error
           (Error.of_string
              "Expression types in the if statement are not correct" )
+  | Parsed_ast.Classify (loc, e1) ->
+      type_expr e1 type_environment
+      >>= fun ((e1_core_type, e1_sec_level), typed_e1) ->
+      if phys_equal e1_sec_level TSHigh then
+        Error
+          (Error.of_string "Cannot classify a high security level expression")
+      else
+        Ok
+          ( (e1_core_type, TSHigh)
+          , Typed_ast.Classify (loc, typed_e1, (e1_core_type, TSHigh)) )
+  | Parsed_ast.Declassify (loc, e1) ->
+      type_expr e1 type_environment
+      >>= fun ((e1_core_type, e1_sec_level), typed_e1) ->
+      if phys_equal e1_sec_level TSLow then
+        Error
+          (Error.of_string
+             "Cannot declassify a low security level expression" )
+      else
+        Ok
+          ( (e1_core_type, TSLow)
+          , Typed_ast.Declassify (loc, typed_e1, (e1_core_type, TSLow)) )
 
 let type_program (Parsed_ast.Prog expr) =
   let open Result in

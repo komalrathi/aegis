@@ -95,7 +95,7 @@ let rec interpret_expr expr value_environment =
           Error
             (Error.of_string
                "Type error: variable type does not match value type" ) )
-  | If (_, e1, e2, e3, _) ->
+  | If (_, e1, e2, e3, _) -> (
       interpret_expr e1 value_environment
       >>= fun val1 ->
       match val1 with
@@ -104,9 +104,28 @@ let rec interpret_expr expr value_environment =
       | VInt _ ->
           Error
             (Error.of_string
-               "Type error: Cannot have int type in the if condition" )
+               "Type error: Cannot have int type in the if condition" ) )
+  | Classify (_, e1, e1_type_expr) -> (
+      interpret_expr e1 value_environment
+      >>= fun val1 ->
+      match (val1, e1_type_expr) with
+      | VInt i, (TEInt, TSHigh) -> Ok (VInt i)
+      | VBool b, (TEBool, TSHigh) -> Ok (VBool b)
+      | _ ->
+          Error
+            (Error.of_string
+               "Type error: cannot classify value with different type" ) )
+  | Declassify (_, e1, e1_type_expr) -> (
+      interpret_expr e1 value_environment
+      >>= fun val1 ->
+      match (val1, e1_type_expr) with
+      | VInt i, (TEInt, TSLow) -> Ok (VInt i)
+      | VBool b, (TEBool, TSLow) -> Ok (VBool b)
+      | _ ->
+          Error
+            (Error.of_string
+               "Type error: cannot classify value with different type" ) )
 
-(* let interpret_program (Prog expr) = interpret_expr expr *)
 let interpret_program (Prog expr) =
   let initial_environment = [] in
   interpret_expr expr initial_environment
