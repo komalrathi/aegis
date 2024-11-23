@@ -1,0 +1,10 @@
+(test
+ (name test_interpret_program)
+ (libraries
+  alcotest
+  compiler_types
+  interpreter
+  typing
+  qcheck
+  qcheck-core
+  qcheck-alcotest))

@@ -1,0 +1,9 @@
+(test
+ (name test_type_program)
+ (libraries
+  alcotest
+  compiler_types
+  typing
+  qcheck
+  qcheck-core
+  qcheck-alcotest))
