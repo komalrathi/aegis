@@ -6,19 +6,19 @@ open Value_environment
 
 let apply_int_bin_op bin_op i1 i2 =
   match bin_op with
-  | PLUS -> Ok (VInt (i1 + i2))
-  | MINUS -> Ok (VInt (i1 - i2))
-  | MULTIPLY -> Ok (VInt (i1 * i2))
-  | DIVIDE ->
+  | BinOpPlus -> Ok (VInt (i1 + i2))
+  | BinOpMinus -> Ok (VInt (i1 - i2))
+  | BinOpMultiply -> Ok (VInt (i1 * i2))
+  | BinOpDivide ->
       if phys_equal i2 0 then Error (Error.of_string "Division by zero")
       else Ok (VInt (i1 / i2))
 
 let apply_comp_op comp_op i1 i2 =
   match comp_op with
-  | LT -> Ok (VBool (i1 < i2))
-  | GT -> Ok (VBool (i1 > i2))
-  | LTE -> Ok (VBool (i1 <= i2))
-  | GTE -> Ok (VBool (i1 >= i2))
+  | CompOpLessThan -> Ok (VBool (i1 < i2))
+  | CompOpGreaterThan -> Ok (VBool (i1 > i2))
+  | CompOpLessThanEqual -> Ok (VBool (i1 <= i2))
+  | CompOpGreaterThanEqual -> Ok (VBool (i1 >= i2))
 
 let interpret_bin_op bin_op i1 i2 =
   match (i1, i2) with
@@ -51,7 +51,7 @@ let rec interpret_expr expr value_environment =
       >>= fun val1 ->
       interpret_expr e2 value_environment
       >>= fun val2 -> interpret_comp_op comp_op val1 val2
-  | BoolCompOp (_, _, bool_comp_op, e1, e2) -> (
+  | BoolOp (_, _, bool_comp_op, e1, e2) -> (
       interpret_expr e1 value_environment
       >>= fun val1 ->
       interpret_expr e2 value_environment
@@ -59,8 +59,8 @@ let rec interpret_expr expr value_environment =
       match (val1, val2) with
       | VBool b1, VBool b2 -> (
         match bool_comp_op with
-        | AND -> Ok (VBool (b1 && b2))
-        | OR -> Ok (VBool (b1 || b2)) )
+        | BoolOpAnd -> Ok (VBool (b1 && b2))
+        | BoolOpOr -> Ok (VBool (b1 || b2)) )
       | VInt _, VBool _ | VBool _, VInt _ | VInt _, VInt _ ->
           Error
             (Error.of_string

@@ -7,7 +7,7 @@ let test_apply_int_plus_bin_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_int_plus_bin_op"
     QCheck.(
       triple
-        (QCheck.make (Gen.return PLUS))
+        (QCheck.make (Gen.return BinOpPlus))
         small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_int_bin_op op i1 i2 with
@@ -18,7 +18,7 @@ let test_apply_int_minus_bin_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_int_minus_bin_op"
     QCheck.(
       triple
-        (QCheck.make (Gen.return MINUS))
+        (QCheck.make (Gen.return BinOpMinus))
         small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_int_bin_op op i1 i2 with
@@ -29,7 +29,7 @@ let test_apply_int_multiply_bin_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_int_multiply_bin_op"
     QCheck.(
       triple
-        (QCheck.make (Gen.return MULTIPLY))
+        (QCheck.make (Gen.return BinOpMultiply))
         small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_int_bin_op op i1 i2 with
@@ -40,7 +40,7 @@ let test_apply_int_divide_bin_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_int_divide_bin_op"
     QCheck.(
       triple
-        (QCheck.make (Gen.return DIVIDE))
+        (QCheck.make (Gen.return BinOpDivide))
         small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_int_bin_op op i1 i2 with
@@ -50,7 +50,7 @@ let test_apply_int_divide_bin_op () =
 let test_apply_lt_comp_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_lt_comp_op"
     QCheck.(
-      triple (QCheck.make (Gen.return LT)) small_signed_int small_signed_int )
+      triple (QCheck.make (Gen.return CompOpLessThan)) small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_comp_op op i1 i2 with
       | Ok (VBool b) -> b = (i1 < i2)
@@ -59,7 +59,7 @@ let test_apply_lt_comp_op () =
 let test_apply_gt_comp_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_gt_comp_op"
     QCheck.(
-      triple (QCheck.make (Gen.return GT)) small_signed_int small_signed_int )
+      triple (QCheck.make (Gen.return CompOpGreaterThan)) small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_comp_op op i1 i2 with
       | Ok (VBool b) -> b = (i1 > i2)
@@ -68,7 +68,7 @@ let test_apply_gt_comp_op () =
 let test_apply_lte_comp_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_lte_comp_op"
     QCheck.(
-      triple (QCheck.make (Gen.return LTE)) small_signed_int small_signed_int )
+      triple (QCheck.make (Gen.return CompOpLessThanEqual)) small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_comp_op op i1 i2 with
       | Ok (VBool b) -> b = (i1 <= i2)
@@ -77,7 +77,7 @@ let test_apply_lte_comp_op () =
 let test_apply_gte_comp_op () =
   QCheck.Test.make ~count:1000 ~name:"apply_gte_comp_op"
     QCheck.(
-      triple (QCheck.make (Gen.return GTE)) small_signed_int small_signed_int )
+      triple (QCheck.make (Gen.return CompOpGreaterThanEqual)) small_signed_int small_signed_int )
     (fun (op, i1, i2) ->
       match apply_comp_op op i1 i2 with
       | Ok (VBool b) -> b = (i1 >= i2)
@@ -122,7 +122,7 @@ let test_binop_interpret_expr () =
   QCheck.Test.make ~count:1000 ~name:"binop_intepret_expr"
     QCheck.(
       quad
-        (QCheck.make (Gen.return PLUS))
+        (QCheck.make (Gen.return BinOpPlus))
         small_signed_int small_signed_int
         (QCheck.make (Gen.return TSLow)) )
     (fun (op, i1, i2, sl) ->
@@ -143,7 +143,7 @@ let test_comp_op_interpret_expr () =
   QCheck.Test.make ~count:1000 ~name:"compop_intepret_expr"
     QCheck.(
       quad
-        (QCheck.make (Gen.return LT))
+        (QCheck.make (Gen.return CompOpLessThan))
         small_signed_int small_signed_int
         (QCheck.make (Gen.return TSLow)) )
     (fun (op, i1, i2, sl) ->
@@ -164,13 +164,13 @@ let test_boolean_compop_interpret_expr () =
   QCheck.Test.make ~count:1000 ~name:"compop_intepret_expr"
     QCheck.(
       quad
-        (QCheck.make (Gen.return AND))
+        (QCheck.make (Gen.return BoolOpAnd))
         bool bool
         (QCheck.make (Gen.return TSLow)) )
     (fun (op, b1, b2, sl) ->
       match
         interpret_expr
-          (BoolCompOp
+          (BoolOp
              ( Lexing.dummy_pos
              , (TEBool, TSLow)
              , op

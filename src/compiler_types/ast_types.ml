@@ -2,11 +2,11 @@ open Language_types
 
 type loc = Lexing.position
 
-type bin_op = PLUS | MINUS | MULTIPLY | DIVIDE
+type bin_op = BinOpPlus | BinOpMinus | BinOpMultiply | BinOpDivide
 
-type comp_op = LT | GT | LTE | GTE
+type comp_op = CompOpLessThan | CompOpGreaterThan | CompOpLessThanEqual | CompOpGreaterThanEqual
 
-type bool_comp_op = AND | OR
+type bool_op = BoolOpAnd | BoolOpOr
 
 type identifier = string
 

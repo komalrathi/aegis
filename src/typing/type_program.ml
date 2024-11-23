@@ -68,7 +68,7 @@ let rec type_expr :
               , typed_e1
               , typed_e2 ) )
       else Error (Error.of_string "comparison operands type error")
-  | Parsed_ast.BoolCompOp (loc, bool_comp_op, e1, e2) ->
+  | Parsed_ast.BoolOp (loc, bool_comp_op, e1, e2) ->
       type_expr e1 type_environment
       >>= fun ((e1_core_type, e1_sec_level), typed_e1) ->
       type_expr e2 type_environment
@@ -79,7 +79,7 @@ let rec type_expr :
       then
         Ok
           ( (TEBool, max_security_level e1_sec_level e1_sec_level)
-          , Typed_ast.BoolCompOp
+          , Typed_ast.BoolOp
               ( loc
               , (TEBool, max_security_level e1_sec_level e2_sec_level)
               , bool_comp_op

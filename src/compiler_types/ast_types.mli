@@ -8,15 +8,15 @@ type loc = Lexing.position
 
 (* We support 4 types of binary operations: +, -, *, /. We use type bin_op to
    enforce that, *)
-type bin_op = PLUS | MINUS | MULTIPLY | DIVIDE
+type bin_op = BinOpPlus | BinOpMinus | BinOpMultiply | BinOpDivide
 
 (* We support 4 types of comparison operations: <, >, <=, >=. We use type
    comp_op to enforce that, *)
-type comp_op = LT | GT | LTE | GTE
+   type comp_op = CompOpLessThan | CompOpGreaterThan | CompOpLessThanEqual | CompOpGreaterThanEqual
 
 (* We support 2 types of boolean comparison operations: &&, || . We use type
    bool_comp_op to enforce that, *)
-type bool_comp_op = AND | OR
+   type bool_op = BoolOpAnd | BoolOpOr
 
 type identifier = string
 

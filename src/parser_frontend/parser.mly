@@ -68,7 +68,7 @@
 %type <Parsed_ast.program> program
 %type <bin_op> bin_op
 %type <comp_op> comp_op
-%type <bool_comp_op> bool_comp_op
+%type <bool_op> bool_comp_op
 %type <type_expr> type_expression
 %type <argument> arg
 %type <argument list> args
@@ -78,20 +78,20 @@
 // Grammar Productions
 
 %inline bin_op:
-| PLUS { PLUS }
-| MINUS { MINUS }
-| MULTIPLY { MULTIPLY }
-| DIVIDE { DIVIDE } 
+| PLUS { BinOpPlus }
+| MINUS { BinOpMinus }
+| MULTIPLY { BinOpMultiply }
+| DIVIDE { BinOpDivide } 
 
 %inline comp_op:
-| LT { LT }
-| GT { GT }
-| LTE { LTE }
-| GTE { GTE }
+| LT { CompOpLessThan }
+| GT { CompOpGreaterThan }
+| LTE { CompOpLessThanEqual }
+| GTE { CompOpGreaterThanEqual}
 
 %inline bool_comp_op:
-| AND { AND }
-| OR { OR }
+| AND { BoolOpAnd }
+| OR { BoolOpOr }
 
 type_expression:
 | LEFT_PAREN TYPE_INT COMMA HIGH_SEC_LEVEL RIGHT_PAREN {(TEInt, TSHigh)}
@@ -116,7 +116,7 @@ expr:
 | FALSE {Boolean($startpos, false, TSLow)}
 | e1=expr op=bin_op e2=expr {BinOp($startpos, op, e1, e2)}
 | e1=expr op=comp_op e2=expr {CompOp($startpos, op, e1, e2)}
-| e1=expr op=bool_comp_op e2=expr {BoolCompOp($startpos, op, e1, e2)}
+| e1=expr op=bool_comp_op e2=expr {BoolOp($startpos, op, e1, e2)}
 | id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
