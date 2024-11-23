@@ -11,5 +11,5 @@
 
 (maintainers "Komal Rathi")
 
-(using menhir 2.1)
+(using menhir 3.0)
 

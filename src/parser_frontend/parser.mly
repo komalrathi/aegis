@@ -17,6 +17,8 @@
 
 %token LEFT_PAREN
 %token RIGHT_PAREN
+%token LEFT_BRACE
+%token RIGHT_BRACE
 %token COMMA
 
 %token FN
@@ -53,12 +55,18 @@
 
 
 // Need to specify the associativity and precedence of the operators
-%right ASSIGN IN ELSE
+// In is used in the Let expression Let x : type_expr = e1 in e2 -> we need to evaluate e2 first before reducing e1
+%nonassoc IN
 
+// Assign x:= expr -> We want to make sure that expression is evaluated first i.e. shifted onto the stack
+%right ASSIGN
+
+// BIDMAS -> reduce Plus/Minus first and then Multiply/Divide
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 %left LT GT LTE GTE
 %left AND OR
+
 
 // Start symbol
 %start program
@@ -120,7 +128,7 @@ expr:
 | id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
-| IF e1=expr THEN e2=expr ELSE e3=expr {If($startpos, e1, e2, e3)}
+| IF LEFT_PAREN e1=expr RIGHT_PAREN THEN LEFT_BRACE e2=expr RIGHT_BRACE ELSE LEFT_BRACE e3=expr RIGHT_BRACE {If($startpos, e1, e2, e3)}
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}

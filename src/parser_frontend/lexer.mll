@@ -27,6 +27,8 @@ let id_regex = (alpha) (alpha|digit|'_')*
 rule read_token = parse 
     | "(" { LEFT_PAREN }
     | ")" { RIGHT_PAREN }
+    | "{" { LEFT_BRACE }
+    | "}" { RIGHT_BRACE }
     | "," { COMMA }
     | "+" { PLUS }
     | "-" { MINUS }
