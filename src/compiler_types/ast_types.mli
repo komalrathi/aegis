@@ -2,6 +2,7 @@
    pattern match cases from parser to AST *)
 (* Using OCaml type system to e.g. make sure we have a fixed set of binary
    operations, and use pattern matching to guaranteee we handle all cases *)
+open Language_types
 
 type loc = Lexing.position
 
@@ -17,5 +18,8 @@ type comp_op = LT | GT | LTE | GTE
    bool_comp_op to enforce that, *)
 type bool_comp_op = AND | OR
 
-(* *)
 type identifier = string
+
+(* This allows us to have arguments paired with their type expressions (e.g.
+   for functions) *)
+type argument = TArg of identifier * type_expr

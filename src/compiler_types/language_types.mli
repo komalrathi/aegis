@@ -11,6 +11,4 @@ type type_expr = core_type * security_level_type
 
 (* Aegis only has 2 kinds of values that the program is evaluated to, int and
    bool *)
-type interpreter_val =
-| VInt of int
-| VBool of bool
+type interpreter_val = VInt of int | VBool of bool
