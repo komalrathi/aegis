@@ -31,6 +31,9 @@ let rec type_expr :
   match expr with
   | Parsed_ast.Integer (loc, i, security_level) ->
       Ok ((TEInt, security_level), Typed_ast.Integer (loc, i, security_level))
+  | Parsed_ast.Boolean (loc, b, security_level) ->
+      Ok
+        ((TEBool, security_level), Typed_ast.Boolean (loc, b, security_level))
   | Parsed_ast.BinOp (loc, bin_op, e1, e2) ->
       type_expr e1 type_environment
       >>= fun ((e1_core_type, e1_sec_level), typed_e1) ->
@@ -65,9 +68,6 @@ let rec type_expr :
               , typed_e1
               , typed_e2 ) )
       else Error (Error.of_string "comparison operands type error")
-  | Parsed_ast.Boolean (loc, b, security_level) ->
-      Ok
-        ((TEBool, security_level), Typed_ast.Boolean (loc, b, security_level))
   | Parsed_ast.BoolCompOp (loc, bool_comp_op, e1, e2) ->
       type_expr e1 type_environment
       >>= fun ((e1_core_type, e1_sec_level), typed_e1) ->
@@ -170,6 +170,8 @@ let rec type_expr :
           ( (e1_core_type, TSLow)
           , Typed_ast.Declassify (loc, typed_e1, (e1_core_type, TSLow)) )
 
-let type_program (Parsed_ast.Prog expr) =
+let type_program (Parsed_ast.Prog (_, expr)) =
   let open Result in
-  type_expr expr [] >>= fun (_, typed_expr) -> Ok (Typed_ast.Prog typed_expr)
+  type_expr expr []
+  >>= fun (_, typed_expr) ->
+  Ok (Typed_ast.Prog typed_expr)
