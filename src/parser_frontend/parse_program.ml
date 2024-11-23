@@ -8,9 +8,8 @@ let print_parser_error_position lexbuf =
 
 let parse_program lexbuf =
   try
-    let expr = Parser.program Lexer.read_token lexbuf in
-    Ok (Parsed_ast.Prog expr)
-    (* Wrap the parsed expression in the Prog constructor *)
+    let program = Parser.program Lexer.read_token lexbuf in
+    Ok program
   with
   | SyntaxError syntax_error_msg ->
       let error_msg =

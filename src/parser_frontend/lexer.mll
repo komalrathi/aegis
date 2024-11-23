@@ -23,7 +23,6 @@ let newline = '\r' | '\n' | "\r\n"
 let int_regex = '-'? digit+
 let id_regex = (alpha) (alpha|digit|'_')*
 
-(* let type_sec_level_regex =   *)
 
 rule read_token = parse 
     | "(" { LEFT_PAREN }
@@ -55,8 +54,10 @@ rule read_token = parse
     | "in" {IN}
     | "High" {HIGH_SEC_LEVEL}
     | "Low" {LOW_SEC_LEVEL}
-    (* | "fn" {FUNCTION}
-    | "->" {ARROW} *)
+    | "fn" {FN}
+    | "->" {ARROW}
+    | "," {COMMA}
+    | ";" {SEMICOLON}
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int_regex { INT (int_of_string (lexeme lexbuf)) }

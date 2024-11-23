@@ -10,8 +10,15 @@ type expr =
   | Identifier of loc * identifier
   | Assign of loc * identifier * expr
   | Let of loc * identifier * type_expr * expr * expr
-  | If of loc * expr * expr  * expr 
+  | If of loc * expr * expr * expr
   | Classify of loc * expr
   | Declassify of loc * expr
 
-type program = Prog of expr
+(* A function definition is a function name, a list of arguments, the return
+   type of the function, and the expression that is the body of the
+   function. *)
+type function_defn =
+  | TFunction of identifier * argument list * type_expr * expr
+
+(* A program now defines all the functions, and then the main expression. *)
+type program = Prog of function_defn list * expr
