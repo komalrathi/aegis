@@ -60,9 +60,6 @@
 %left LT GT LTE GTE
 %left AND OR
 
-// %nonassoc CLASSIFY DECLASSIFY
-// %nonassoc IF THEN ELSE
-
 // Start symbol
 %start program
 
@@ -123,7 +120,7 @@ expr:
 | id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
-| IF LEFT_PAREN e1=expr RIGHT_PAREN THEN e2=expr ELSE e3=expr {If($startpos, e1, e2, e3)}
+| IF e1=expr THEN e2=expr ELSE e3=expr {If($startpos, e1, e2, e3)}
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
