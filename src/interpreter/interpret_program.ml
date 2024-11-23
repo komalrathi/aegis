@@ -10,7 +10,7 @@ let apply_int_bin_op bin_op i1 i2 =
   | MINUS -> Ok (VInt (i1 - i2))
   | MULTIPLY -> Ok (VInt (i1 * i2))
   | DIVIDE ->
-      if i2 = 0 then Error (Error.of_string "Division by zero")
+      if phys_equal i2 0 then Error (Error.of_string "Division by zero")
       else Ok (VInt (i1 / i2))
 
 let apply_comp_op comp_op i1 i2 =
@@ -40,6 +40,7 @@ let rec interpret_expr expr value_environment =
   let ( >>= ) = Result.( >>= ) in
   match expr with
   | Integer (_, i, _) -> Ok (VInt i)
+  | Boolean (_, b, _) -> Ok (VBool b)
   | BinOp (_, _, bin_op, e1, e2) ->
       interpret_expr e1 value_environment
       >>= fun val1 ->
@@ -50,7 +51,6 @@ let rec interpret_expr expr value_environment =
       >>= fun val1 ->
       interpret_expr e2 value_environment
       >>= fun val2 -> interpret_comp_op comp_op val1 val2
-  | Boolean (_, b, _) -> Ok (VBool b)
   | BoolCompOp (_, _, bool_comp_op, e1, e2) -> (
       interpret_expr e1 value_environment
       >>= fun val1 ->
