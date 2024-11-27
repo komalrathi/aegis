@@ -1,0 +1,2 @@
+fn test (x:(int, Low), y:(int, Low)) : (int, Low)-> x + y;
+2 + 3
