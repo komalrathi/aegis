@@ -15,6 +15,6 @@ type expr =
   | Declassify of loc * expr
 
 type function_defn =
-  | TFunction of identifier * argument list * type_expr * expr
+  | FunctionDefn of identifier * argument list * type_expr * expr
 
 type program = Prog of function_defn list * expr

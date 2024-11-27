@@ -18,7 +18,7 @@ type expr =
    type of the function, and the expression that is the body of the
    function. *)
 type function_defn =
-  | TFunction of identifier * argument list * type_expr * expr
+  | FunctionDefn of identifier * argument list * type_expr * expr
 
 (* A program now defines all the functions, and then the main expression. *)
 type program = Prog of function_defn list * expr

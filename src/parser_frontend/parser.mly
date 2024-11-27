@@ -116,7 +116,7 @@ args:
 
 // fn example(x: (int, sec_level), y:(int,sec_level)) : (int, sec_level) -> e ;
 function_defn:
-| FN f=IDENTIFIER args=args COLON t=type_expression ARROW e=expr SEMICOLON {TFunction(f, args, t, e)}
+| FN f=IDENTIFIER args=args COLON t=type_expression ARROW e=expr SEMICOLON {FunctionDefn(f, args, t, e)}
 
 expr:
 | i=INT {Integer($startpos, i, TSLow)}
