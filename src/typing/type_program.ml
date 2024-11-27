@@ -24,9 +24,7 @@ let check_expr_var_types_match var_type e1_type =
   if phys_equal var_type e1_type then Ok ()
   else Error (Error.of_string "Types of the let and expression do not match")
 
-let rec type_expr :
-    Parsed_ast.expr -> ('a * 'b) list -> (type_expr * 'c, Error.t) result =
- fun expr type_environment ->
+let rec type_expr expr type_environment =
   let ( >>= ) = Result.( >>= ) in
   match expr with
   | Parsed_ast.Integer (loc, i, security_level) ->
