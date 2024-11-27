@@ -12,11 +12,15 @@ type bin_op = BinOpPlus | BinOpMinus | BinOpMultiply | BinOpDivide
 
 (* We support 4 types of comparison operations: <, >, <=, >=. We use type
    comp_op to enforce that, *)
-   type comp_op = CompOpLessThan | CompOpGreaterThan | CompOpLessThanEqual | CompOpGreaterThanEqual
+type comp_op =
+  | CompOpLessThan
+  | CompOpGreaterThan
+  | CompOpLessThanEqual
+  | CompOpGreaterThanEqual
 
 (* We support 2 types of boolean comparison operations: &&, || . We use type
    bool_comp_op to enforce that, *)
-   type bool_op = BoolOpAnd | BoolOpOr
+type bool_op = BoolOpAnd | BoolOpOr
 
 type identifier = string
 
