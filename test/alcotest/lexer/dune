@@ -1,6 +1,6 @@
 (test
  (name test_lexer)
- (libraries alcotest core qcheck qcheck-alcotest parser_frontend)
+ (libraries alcotest core qcheck qcheck-alcotest parser_frontend pprint)
  (lint
   (pps
    ppx_js_style

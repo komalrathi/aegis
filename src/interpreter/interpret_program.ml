@@ -126,6 +126,6 @@ let rec interpret_expr expr value_environment =
             (Error.of_string
                "Type error: cannot classify value with different type" ) )
 
-let interpret_program (Prog expr) =
+let interpret_program (Prog (_, expr)) =
   let initial_environment = [] in
   interpret_expr expr initial_environment

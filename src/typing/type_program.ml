@@ -170,8 +170,31 @@ let rec type_expr :
           ( (e1_core_type, TSLow)
           , Typed_ast.Declassify (loc, typed_e1, (e1_core_type, TSLow)) )
 
-let type_program (Parsed_ast.Prog (_, expr)) =
-  let open Result in
-  type_expr expr []
-  >>= fun (_, typed_expr) ->
-  Ok (Typed_ast.Prog typed_expr)
+(* let type_program (Parsed_ast.Prog (_, expr)) = let open Result in
+   type_expr expr [] >>= fun (_, typed_expr) -> Ok (Typed_ast.Prog
+   typed_expr) *)
+
+(* let rec type_program (Parsed_ast.Prog (fn_defns, expr)) = match fn_defns
+   with | [] -> type_expr expr [] | Parsed_ast.TFunction (func_name,
+   arguments, return_type, expr_body) :: fns -> let expr_body_env =
+   (func_name, return_type) :: (arguments @ type_environment) in type_expr
+   expr_body expr_body_env >>= fun (_, expr_body_type) -> if phys_equal
+   expr_body_type return_type then type_program (Parsed_ast.Prog (fns, expr))
+   else Error (Error.of_string "Function return type does not match body
+   type") *)
+let rec type_program fn_defns expr type_env =
+  match fn_defns with
+  | [] -> type_expr expr type_env
+  | Parsed_ast.TFunction (func_name, arguments, return_type, expr_body)
+    :: fns ->
+      let expr_body_env =
+        (* (func_name, return_type) :: (List.map (fun _ -> (arg.name, arg.type_expr)) arguments) @ type_env
+      in *)
+      (func_name, return_type) :: (arguments @ type_env) in
+      type_expr expr_body expr_body_env
+      >>= fun (_, expr_body_type) ->
+      if phys_equal expr_body_type return_type then
+        type_program fns expr ((func_name, return_type) :: type_env)
+      else
+        Error
+          (Error.of_string "Function return type does not match body type")
