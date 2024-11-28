@@ -12,14 +12,12 @@ let type_function_defn
   let ( >>= ) = Result.( >>= ) in
   let fn_return_type = (fn_core_type, fn_security_level_type) in
   let arg_types_env =
-    Stdlib.List.map
-      (fun (TArg (arg_name, arg_type)) -> (arg_name, arg_type))
+    List.map
+      ~f:(fun (TArg (arg_name, arg_type)) -> (arg_name, arg_type))
       args
   in
   let arg_core_types =
-    Stdlib.List.map
-      (fun (TArg (_, (arg_core_type, _))) -> arg_core_type)
-      args
+    List.map ~f:(fun (TArg (_, (arg_core_type, _))) -> arg_core_type) args
   in
   let fn_type = TFunction (arg_core_types, fn_core_type) in
   type_expr expr_body
