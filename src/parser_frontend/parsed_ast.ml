@@ -13,6 +13,7 @@ type expr =
   | If of loc * expr * expr * expr
   | Classify of loc * expr
   | Declassify of loc * expr
+  | FunctionApp of loc * identifier * expr list
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
