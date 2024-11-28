@@ -1,3 +1,4 @@
+open Core
 open Compiler_types.Language_types
 open Compiler_types.Ast_types
 
@@ -7,3 +8,6 @@ type type_environment = type_binding list
 
 (* Type_Expr can be None or Some of type_expr so it has option type *)
 val lookup_var_type : type_environment -> identifier -> type_expr option
+
+val get_function_types :
+  type_environment -> identifier -> type_expr list Or_error.t
