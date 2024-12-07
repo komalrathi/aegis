@@ -127,6 +127,7 @@ expr:
 | e1=expr op=bool_comp_op e2=expr {BoolOp($startpos, op, e1, e2)}
 | id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
+// should assign have type_expr instead of expr? cannot see where the expr is annotated with the security level
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
 | IF LEFT_PAREN e1=expr RIGHT_PAREN THEN LEFT_BRACE e2=expr RIGHT_BRACE ELSE LEFT_BRACE e3=expr RIGHT_BRACE {If($startpos, e1, e2, e3)}
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}

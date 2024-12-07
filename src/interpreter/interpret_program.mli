@@ -13,4 +13,7 @@ val apply_comp_op :
   comp_op -> int -> int -> (interpreter_val, Error.t) result
 
 val interpret_expr :
-  Typed_ast.expr -> value_environment -> interpreter_val Or_error.t
+     Typed_ast.expr
+  -> value_environment
+  -> (identifier * interpreter_val list) list
+  -> interpreter_val Or_error.t

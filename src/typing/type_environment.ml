@@ -19,7 +19,7 @@ let get_function_types type_environment fn_name =
     match type_environment with
     | [] -> Error (Error.of_string "Function does not exist")
     | (var_name, var_type) :: t ->
-        if phys_equal fn_name var_name then 
+        if phys_equal fn_name var_name then
           get_function_types_helper t fn_name
           >>= fun types -> Ok (var_type :: types)
         else get_function_types_helper t fn_name

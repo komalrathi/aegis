@@ -24,7 +24,9 @@ let type_function_defn
     ( (fn_name, (fn_type, fn_security_level_type))
     :: (arg_types_env @ type_env) )
   >>= fun (expr_body_type, typed_expr_body) ->
+    (* needs to be structural equality - look for function in Core *)
   if phys_equal fn_return_type expr_body_type then
+  (* if fn_return_type = expr_body_type then *)
     Ok
       ( fn_name
       , fn_return_type

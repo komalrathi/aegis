@@ -1,3 +1,4 @@
+open Core
 open Compiler_types.Language_types
 open Compiler_types.Ast_types
 
@@ -6,3 +7,5 @@ type value_environment = (identifier * interpreter_val) list
 
 val lookup_var_value :
   value_environment -> identifier -> interpreter_val option
+
+val get_function_value : value_environment -> identifier -> interpreter_val Or_error.t

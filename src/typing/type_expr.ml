@@ -167,3 +167,32 @@ let rec type_expr expr type_environment =
         Ok
           ( (e1_core_type, TSLow)
           , Typed_ast.Declassify (loc, typed_e1, (e1_core_type, TSLow)) )
+  | Parsed_ast.FunctionApp (loc, fn_name, args) -> (
+      (* get the argument types of the function from the type environment,
+         which are the typed arguments defined in the function definition *)
+      get_function_types type_environment fn_name
+      |> function
+      | Error _ -> Error (Error.of_string "Function does not exist")
+      | Ok arg_types ->
+          let arg_types_env = List.zip_exn arg_types args in
+          let arg_types_env_result =
+            List.map arg_types_env ~f:(fun (arg_type, arg_expr) ->
+                type_expr arg_expr type_environment
+                >>= fun (arg_expr_type, typed_arg_expr) ->
+                  (* needs to be structural equality - look for function in Core *)
+                if phys_equal arg_type arg_expr_type then
+                  Ok (arg_expr_type, typed_arg_expr)
+                else
+                  Error
+                    (Error.of_string
+                       "Function argument type does not match the function \
+                        type" ) )
+          in
+          Result.all arg_types_env_result
+          >>= fun typed_args ->
+          let typed_args_exprs = List.map typed_args ~f:snd in
+          let return_type = List.hd_exn arg_types in
+          Ok
+            (return_type
+            , Typed_ast.FunctionApp
+                (loc, return_type, fn_name, typed_args_exprs) ) )
