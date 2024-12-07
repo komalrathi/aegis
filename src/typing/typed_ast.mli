@@ -19,5 +19,4 @@ type expr =
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
 
-(* type program = Prog of function_defn list * expr *)
-type program = Prog of expr
+type program = Prog of function_defn list * expr
