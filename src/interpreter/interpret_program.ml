@@ -128,7 +128,7 @@ let rec interpret_expr expr value_environment function_environment =
             (Error.of_string
                "Type error: cannot classify value with different type" ) )
   (* expr_list is the list of function arguments *)
-  | FunctionApp (_, fn_name, _, argument_list) ->
+  | FunctionApp (_, _, fn_name, argument_list) ->
       (* type mismatching here - need to append {fn_name : identifier,
          fn_value : interpreter_val} rather than the arguments *)
       get_function_value value_environment fn_name

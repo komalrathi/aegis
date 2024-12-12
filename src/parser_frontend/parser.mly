@@ -134,7 +134,7 @@ expr:
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
 // function application
-| FN id=IDENTIFIER args=separated_list(COMMA, expr) {FunctionApp($startpos, id, args)}
+| FN id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 
 program:
 f = function_defn* e=expr; EOF {Prog(f,e)}
