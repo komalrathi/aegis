@@ -132,6 +132,9 @@ expr:
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
+// function application
+| FN id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
+
 
 
 program:
