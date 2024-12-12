@@ -1,7 +1,8 @@
 (* Types defined in the Aegis language specification *)
 
-(* Aegis only has 2 types of expressions in the type system, int and bool *)
-type core_type = TEInt | TEBool
+(* Aegis has 3 types of expressions in the type system: int, bool, and
+   function *)
+type core_type = TEInt | TEBool | TFunction of core_type list * core_type
 
 (* For now, Aegis only supports 2 security levels *)
 type security_level_type = TSLow | TSHigh
