@@ -133,6 +133,8 @@ expr:
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
+// function application
+| FN id=IDENTIFIER args=args return_type_expr=type_expression {FunctionApp($startpos, return_type_expr, id, args)}
 
 program:
 f = function_defn* e=expr; EOF {Prog(f,e)}
