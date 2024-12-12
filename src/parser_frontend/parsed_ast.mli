@@ -15,7 +15,6 @@ type expr =
   | Declassify of loc * expr
   | FunctionApp of loc * identifier * expr list
 
-
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the
    function. *)
