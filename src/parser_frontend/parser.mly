@@ -43,6 +43,9 @@
 %token COLON
 %token SEMICOLON
 
+%token WHILE
+%token DO
+
 %token TYPE_INT
 %token TYPE_BOOL
 
@@ -132,6 +135,7 @@ expr:
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
+| WHILE LEFT_PAREN e1=expr RIGHT_PAREN DO LEFT_BRACE e2=expr RIGHT_BRACE {While($startpos, e1, e2)}
 // function application
 | FN id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 
