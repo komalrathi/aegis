@@ -50,6 +50,7 @@ rule read_token = parse
     | "else" {ELSE}
     | "let" {LET}
     | "while" {WHILE}
+    | "do" {DO}
     | ":" {COLON}
     | "int" {TYPE_INT}
     | "bool" {TYPE_BOOL}
