@@ -143,7 +143,7 @@ expr:
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
 | WHILE LEFT_PAREN e1=expr RIGHT_PAREN DO LEFT_BRACE e2=expr RIGHT_BRACE {While($startpos, e1, e2)}
-| FOR e1=expr IN RANGE LEFT_PAREN args=for_loop_args RIGHT_PAREN DO LEFT_BRACE e2=expr RIGHT_BRACE {For($startpos, args, e2)}
+| FOR e1=expr IN RANGE LEFT_PAREN args=for_loop_args RIGHT_PAREN DO LEFT_BRACE e2=expr RIGHT_BRACE {For($startpos, e1, args, e2)}
 // function application
 | FN id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 
