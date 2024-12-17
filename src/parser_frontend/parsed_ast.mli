@@ -15,6 +15,8 @@ type expr =
   | Declassify of loc * expr
   | FunctionApp of loc * identifier * expr list
   | While of loc * expr * expr
+  | For of loc * expr * expr list * expr
+
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the
