@@ -159,33 +159,84 @@ let rec interpret_expr expr value_environment function_environment =
           in
           interpret_expr body new_env function_environment
     | None -> Error (Error.of_string "Function not found") )
-  | While (_, e1, e2, _) -> 
-    let rec loop () =
-      interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      match val1 with
-      | VBool true -> 
-          (* if condition is true, execute the body e2 and repeat the loop *)
-          interpret_expr e2 value_environment function_environment
-          >>= fun _ -> loop ()  (* Recursively call loop to repeat the evaluation *)
-      | VBool false -> 
-          (* if condition is false, the loop terminates and returns false *)
-          Ok (VBool false)
-      | _ -> 
-          Error (Error.of_string "Type error: Condition in while loop must be a boolean")
-    in
-    loop ()
-    
+  | While (_, e1, e2, _) ->
+      let rec loop () =
+        interpret_expr e1 value_environment function_environment
+        >>= fun val1 ->
+        match val1 with
+        | VBool true ->
+            (* if condition is true, execute the body e2 and repeat the
+               loop *)
+            interpret_expr e2 value_environment function_environment
+            >>= fun _ ->
+            loop () (* Recursively call loop to repeat the evaluation *)
+        | VBool false ->
+            (* if condition is false, the loop terminates and returns
+               false *)
+            Ok (VBool false)
+        | _ ->
+            Error
+              (Error.of_string
+                 "Type error: Condition in while loop must be a boolean" )
+      in
+      loop ()
+  | For (_, _, range_expr, body_expr, _) -> (
+      (* range_expr is a list of exprs, so we need to evaluate it to get the
+         range *)
+      let rec eval_range_expr range_expr acc =
+        match range_expr with
+        | [] -> Ok (List.rev acc)
+        | expr :: rest ->
+            interpret_expr expr value_environment function_environment
+            >>= fun v -> eval_range_expr rest (v :: acc)
+      in
+      eval_range_expr range_expr []
+      >>= fun range_values ->
+      match range_values with
+      (* one integer value in the range *)
+      | [VInt range] ->
+          let new_env = ("e1", VInt 0) :: value_environment in
+          let rec loop i =
+            if i > range then Ok (VInt i)
+            else
+              interpret_expr body_expr new_env function_environment
+              >>= fun _ -> loop (i + 1)
+          in
+          loop 0 (* two integer values in the range, start and end *)
+      | [VInt start_val; VInt end_val] ->
+          let new_env = ("e1", VInt start_val) :: value_environment in
+          let rec loop i =
+            if i > end_val then Ok (VInt i)
+            else
+              interpret_expr body_expr new_env function_environment
+              >>= fun _ -> loop (i + 1)
+          in
+          loop start_val
+      (* three integer values in the range, start, end, and step *)
+      | [VInt start_val; VInt end_val; VInt step] ->
+          let new_env = ("e1", VInt start_val) :: value_environment in
+          let rec loop i =
+            if i > end_val then Ok (VInt i)
+            else
+              interpret_expr body_expr new_env function_environment
+              >>= fun _ -> loop (i + step)
+          in
+          loop start_val
+      | _ ->
+          Error
+            (Error.of_string
+               "Type error: Range must be have a maximum of 3 integer\n\
+               \     values" ) )
 
 let rec interpret_fn_defns fn_defns function_environment =
   match fn_defns with
   | [] -> Ok function_environment
   | FunctionDefn (fn_name, param_list, (_, _), fn_body) :: fn_defns ->
-      (* Extract the list of parameter names from the argument list *)
+      (* get the list of parameter names from the argument list *)
       let param_names =
         Stdlib.List.map (fun (TArg (id, _)) -> id) param_list
       in
-      (* Add the function to the function environment *)
+      (* add function to the function_environment *)
       let new_env =
         (fn_name, (param_names, fn_body)) :: function_environment
       in
