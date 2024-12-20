@@ -180,6 +180,27 @@ let rec interpret_expr expr value_environment function_environment =
                  "Type error: Condition in while loop must be a boolean" )
       in
       loop ()
+  (* | For (_, _, range_expr, body_expr, _) -> ( (* range_expr is a list of
+     exprs, so we need to evaluate it to get the range *) let rec
+     eval_range_expr range_expr acc = match range_expr with | [] -> Ok
+     (List.rev acc) | expr :: rest -> interpret_expr expr value_environment
+     function_environment >>= fun v -> eval_range_expr rest (v :: acc) in
+     eval_range_expr range_expr [] >>= fun range_values -> match range_values
+     with (* one integer value in the range *) | [VInt range] -> let new_env
+     = ("e1", VInt 0) :: value_environment in let rec loop i = if i > range
+     then Ok (VInt i) else interpret_expr body_expr new_env
+     function_environment >>= fun _ -> loop (i + 1) in loop 0 (* two integer
+     values in the range, start and end *) | [VInt start_val; VInt end_val]
+     -> let new_env = ("e1", VInt start_val) :: value_environment in let rec
+     loop i = if i > end_val then Ok (VInt i) else interpret_expr body_expr
+     new_env function_environment >>= fun _ -> loop (i + 1) in loop start_val
+     (* three integer values in the range, start, end, and step *) | [VInt
+     start_val; VInt end_val; VInt step] -> let new_env = ("e1", VInt
+     start_val) :: value_environment in let rec loop i = if i > end_val then
+     Ok (VInt i) else interpret_expr body_expr new_env function_environment
+     >>= fun _ -> loop (i + step) in loop start_val | _ -> Error
+     (Error.of_string "Type error: Range must be have a maximum of 3
+     integer\n\ \ values" ) ) *)
   | For (_, _, range_expr, body_expr, _) -> (
       (* range_expr is a list of exprs, so we need to evaluate it to get the
          range *)
@@ -192,41 +213,25 @@ let rec interpret_expr expr value_environment function_environment =
       in
       eval_range_expr range_expr []
       >>= fun range_values ->
+      let rec loop i stop step =
+        if (step > 0 && i > stop) || (step < 0 && i < stop) then Ok (VInt i)
+        else
+          interpret_expr body_expr
+            (("e1", VInt i) :: value_environment)
+            function_environment
+          >>= fun _ -> loop (i + step) stop step
+      in
       match range_values with
-      (* one integer value in the range *)
-      | [VInt range] ->
-          let new_env = ("e1", VInt 0) :: value_environment in
-          let rec loop i =
-            if i > range then Ok (VInt i)
-            else
-              interpret_expr body_expr new_env function_environment
-              >>= fun _ -> loop (i + 1)
-          in
-          loop 0 (* two integer values in the range, start and end *)
-      | [VInt start_val; VInt end_val] ->
-          let new_env = ("e1", VInt start_val) :: value_environment in
-          let rec loop i =
-            if i > end_val then Ok (VInt i)
-            else
-              interpret_expr body_expr new_env function_environment
-              >>= fun _ -> loop (i + 1)
-          in
-          loop start_val
-      (* three integer values in the range, start, end, and step *)
+      | [VInt range] -> loop 0 range 1
+      | [VInt start_val; VInt end_val] -> loop start_val end_val 1
       | [VInt start_val; VInt end_val; VInt step] ->
-          let new_env = ("e1", VInt start_val) :: value_environment in
-          let rec loop i =
-            if i > end_val then Ok (VInt i)
-            else
-              interpret_expr body_expr new_env function_environment
-              >>= fun _ -> loop (i + step)
-          in
-          loop start_val
+          if step = 0 then
+            Error (Error.of_string "Step value cannot be zero")
+          else loop start_val end_val step
       | _ ->
           Error
             (Error.of_string
-               "Type error: Range must be have a maximum of 3 integer\n\
-               \     values" ) )
+               "Type error: Range must have 1 to 3 integer values" ) )
 
 let rec interpret_fn_defns fn_defns function_environment =
   match fn_defns with
