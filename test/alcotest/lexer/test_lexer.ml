@@ -1,46 +1,131 @@
-(* open Parsing open Parser_frontend.Lexer open Parser_frontend.Parser open
-   Pprint_parser_tokens open Core
+open Parser_frontend.Lexer
+open Parser_frontend.Parser
+open Core
 
-   let parser_token_testable = Alcotest.testable (fun token1 token2 -> token1
-   = token2)
+let pp_print_token fmt token =
+  Format.fprintf fmt "%s"
+    ( match token with
+    | LEFT_PAREN -> "LEFT_PAREN"
+    | RIGHT_PAREN -> "RIGHT_PAREN"
+    | LEFT_BRACE -> "LEFT_BRACE"
+    | RIGHT_BRACE -> "RIGHT_BRACE"
+    | COMMA -> "COMMA"
+    | PLUS -> "PLUS"
+    | MINUS -> "MINUS"
+    | MULTIPLY -> "MULTIPLY"
+    | DIVIDE -> "DIVIDE"
+    | TRUE -> "TRUE"
+    | FALSE -> "FALSE"
+    | LT -> "LT"
+    | GT -> "GT"
+    | LTE -> "LTE"
+    | GTE -> "GTE"
+    | AND -> "AND"
+    | OR -> "OR"
+    | ASSIGN -> "ASSIGN"
+    | CLASSIFY -> "CLASSIFY"
+    | DECLASSIFY -> "DECLASSIFY"
+    | IF -> "IF"
+    | THEN -> "THEN"
+    | ELSE -> "ELSE"
+    | LET -> "LET"
+    | WHILE -> "WHILE"
+    | RANGE -> "RANGE"
+    | DO -> "DO"
+    | FOR -> "FOR"
+    | COLON -> "COLON"
+    | TYPE_INT -> "TYPE_INT"
+    | TYPE_BOOL -> "TYPE_BOOL"
+    | EQUAL -> "EQUAL"
+    | IN -> "IN"
+    | HIGH_SEC_LEVEL -> "HIGH_SEC_LEVEL"
+    | LOW_SEC_LEVEL -> "LOW_SEC_LEVEL"
+    | FN -> "FN"
+    | ARROW -> "ARROW"
+    | SEMICOLON -> "SEMICOLON"
+    | INT i -> Printf.sprintf "INT(%d)" i
+    | IDENTIFIER id -> Printf.sprintf "IDENTIFIER(%s)" id
+    | EOF -> "EOF" )
 
-   let test_illegal_character () = Alcotest.check_raises "Syntax Error"
-   (SyntaxError "Lexer - Illegal character: ?") (fun () -> ignore (read_token
-   (Lexing.from_string "?") : token) )
+let parser_token_testable = Alcotest.testable pp_print_token Stdlib.( = )
 
-   let test_lex_token (input_str, token) = Alcotest.(check
-   parser_token_testable) "same token" token (read_token (Lexing.from_string
-   input_str))
+let test_illegal_character () =
+  Alcotest.check_raises "Syntax Error" (SyntaxError "Invalid character ?")
+    (fun () -> ignore (read_token (Lexing.from_string "?") : token) )
 
-   let lex_token_test_cases = let open Alcotest in List.map ~f:(fun
-   (input_str, expected_token) -> test_case ("Lex token " ^ input_str) `Quick
-   (fun () -> test_lex_token (input_str, expected_token) ) ) [ ("(",
-   LEFT_PAREN) ; (")", RIGHT_PAREN) ; ("{", LEFT_BRACE) ; ("}", RIGHT_BRACE)
-   ; (",", COMMA) ; ("+", PLUS) ; ("-", MINUS) ; ("*", MULTIPLY) ; ("/",
-   DIVIDE) ; ("True", TRUE) ; ("False", FALSE) ; ("<", LT) ; (">", GT) ;
-   ("<=", LTE) ; (">=", GTE) ; ("&&", AND) ; ("||", OR) ; (":=", ASSIGN) ;
-   ("classify", CLASSIFY) ; ("declassify", DECLASSIFY) ; ("if", IF) ;
-   ("then", THEN) ; ("else", ELSE) ; ("let", LET) ; (":", COLON) ; ("int",
-   TYPE_INT) ; ("bool", TYPE_BOOL) ; ("=", EQUAL) ; ("in", IN) ; ("High",
-   HIGH_SEC_LEVEL) ; ("Low", LOW_SEC_LEVEL) ; ("fn", FN) ; ("->", ARROW) ;
-   (",", COMMA) ; (";", SEMICOLON) ]
+let test_lex_token (input_str, expected_token) =
+  Alcotest.(check parser_token_testable)
+    ("Token for input: " ^ input_str)
+    expected_token
+    (read_token (Lexing.from_string input_str))
 
-   let test_lex_int = QCheck.Test.make ~count:100 ~name:"Lex integers"
-   QCheck.(int) (fun i -> INT i = read_token (Lexing.from_string
-   (Int.to_string i)))
+(* Define specific test cases *)
+let lex_token_test_cases =
+  [ ("(", LEFT_PAREN)
+  ; (")", RIGHT_PAREN)
+  ; ("{", LEFT_BRACE)
+  ; ("}", RIGHT_BRACE)
+  ; (",", COMMA)
+  ; ("+", PLUS)
+  ; ("-", MINUS)
+  ; ("*", MULTIPLY)
+  ; ("/", DIVIDE)
+  ; ("True", TRUE)
+  ; ("False", FALSE)
+  ; ("<", LT)
+  ; (">", GT)
+  ; ("<=", LTE)
+  ; (">=", GTE)
+  ; ("&&", AND)
+  ; ("||", OR)
+  ; (":=", ASSIGN)
+  ; ("classify", CLASSIFY)
+  ; ("declassify", DECLASSIFY)
+  ; ("if", IF)
+  ; ("then", THEN)
+  ; ("else", ELSE)
+  ; ("let", LET)
+  ; ("while", WHILE)
+  ; ("range", RANGE)
+  ; ("do", DO)
+  ; ("for", FOR)
+  ; (":", COLON)
+  ; ("int", TYPE_INT)
+  ; ("bool", TYPE_BOOL)
+  ; ("=", EQUAL)
+  ; ("in", IN)
+  ; ("High", HIGH_SEC_LEVEL)
+  ; ("Low", LOW_SEC_LEVEL)
+  ; ("fn", FN)
+  ; ("->", ARROW)
+  ; (";", SEMICOLON) ]
 
-   let test_lex_string_newline () = test_lex_token ("\"\n\"", STRING "\n")
+let test_lex_int =
+  QCheck.Test.make ~count:100 ~name:"Lex integers" QCheck.int (fun i ->
+      match read_token (Lexing.from_string (Int.to_string i)) with
+      | INT j -> j = i
+      | _ -> false )
 
-   let test_lex_whitespace () = test_lex_token ("\" \"", STRING " ")
+let test_lex_whitespace () = test_lex_token (" ", EOF)
 
-   let test_lex_eof () = test_lex_token ("", EOF)
+let test_lex_eof () = test_lex_token ("", EOF)
 
-   let test_lex_newline () = test_lex_token ("\n", EOF)
+let test_lex_newline () = test_lex_token ("\n", EOF)
 
-   let () = let qcheck_lex = List.map ~f:QCheck_alcotest.to_alcotest
-   [test_lex_int] in let open Alcotest in run "Lexer" [ ( "Syntax Errors" ,
-   [test_case "Illegal characters" `Quick test_illegal_character] ) ; (
-   "Accepted\n Tokens" , List.concat [ lex_token_test_cases ; [ test_case
-   "Lex\n whitespace" `Quick test_lex_whitespace ; test_case "Lex eof" `Quick
-   test_lex_eof ; test_case "Lex new line" `Quick test_lex_newline ] ;
-   qcheck_lex ] ) ] *)
+let () =
+  let qcheck_lex = List.map ~f:QCheck_alcotest.to_alcotest [test_lex_int] in
+  Alcotest.run "Lexer Tests"
+    [ ( "Syntax Errors"
+      , [ Alcotest.test_case "Illegal characters" `Quick
+            test_illegal_character ] )
+    ; ( "Lexing Tokens"
+      , List.map
+          ~f:(fun (input, token) ->
+            Alcotest.test_case ("Lexing " ^ input) `Quick (fun () ->
+                test_lex_token (input, token) ) )
+          lex_token_test_cases )
+    ; ("Lexer Tests with Randomised Inputs", qcheck_lex)
+    ; ( "Whitespace and EOF Tests"
+      , [ Alcotest.test_case "Lex whitespace" `Quick test_lex_whitespace
+        ; Alcotest.test_case "Lex EOF" `Quick test_lex_eof
+        ; Alcotest.test_case "Lex newline" `Quick test_lex_newline ] ) ]
