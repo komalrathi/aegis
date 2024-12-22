@@ -20,7 +20,7 @@ let parse_program lexbuf =
       Error (Error.of_string error_msg)
   | Parser.Error ->
       let error_msg =
-        Fmt.str "%s: Lexer error @." (print_parser_error_position lexbuf)
+        Fmt.str "%s: Parser error @." (print_parser_error_position lexbuf)
       in
       Error (Error.of_string error_msg)
   | _ ->
