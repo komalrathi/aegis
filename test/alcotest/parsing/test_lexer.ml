@@ -125,7 +125,7 @@ let () =
                 test_lex_token (input, token) ) )
           lex_token_test_cases )
     ; ("Lexer Tests with Randomised Inputs", qcheck_lex)
-    ; ( "Whitespace and EOF Tests"
+    ; ( "Whitespace, EOF and New Line Tests"
       , [ Alcotest.test_case "Lex whitespace" `Quick test_lex_whitespace
         ; Alcotest.test_case "Lex EOF" `Quick test_lex_eof
         ; Alcotest.test_case "Lex newline" `Quick test_lex_newline ] ) ]
