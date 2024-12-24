@@ -66,6 +66,7 @@ and comp_op_to_string = function
   | CompOpGreaterThan -> "GreaterThan"
   | CompOpLessThanEqual -> "LessThanEqual"
   | CompOpGreaterThanEqual -> "GreaterThanEqual"
+  | CompOpEqual -> "Equality"
 
 and bool_op_to_string = function BoolOpAnd -> "And" | BoolOpOr -> "Or"
 
