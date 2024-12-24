@@ -40,6 +40,7 @@ rule read_token = parse
     | ">" { GT }
     | "<=" { LTE }
     | ">=" { GTE }
+    | "==" { EQUALITY }
     | "&&" { AND }
     | "||" { OR }
     | ":=" { ASSIGN }

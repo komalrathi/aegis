@@ -17,6 +17,7 @@ type comp_op =
   | CompOpGreaterThan
   | CompOpLessThanEqual
   | CompOpGreaterThanEqual
+   | CompOpEqual
 
 (* We support 2 types of boolean comparison operations: &&, || . We use type
    bool_comp_op to enforce that, *)

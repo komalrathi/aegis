@@ -28,6 +28,7 @@
 %token GT
 %token LTE
 %token GTE
+%token EQUALITY
 
 %token TRUE
 %token FALSE
@@ -69,7 +70,7 @@
 // BIDMAS -> reduce Plus/Minus first and then Multiply/Divide
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
-%left LT GT LTE GTE
+%left LT GT LTE GTE EQUALITY
 %left AND OR
 
 
@@ -101,6 +102,7 @@
 | GT { CompOpGreaterThan }
 | LTE { CompOpLessThanEqual }
 | GTE { CompOpGreaterThanEqual}
+| EQUALITY { CompOpEqual }
 
 %inline bool_comp_op:
 | AND { BoolOpAnd }

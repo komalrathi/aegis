@@ -21,6 +21,7 @@ let apply_comp_op comp_op i1 i2 =
   | CompOpGreaterThan -> Ok (VBool (i1 > i2))
   | CompOpLessThanEqual -> Ok (VBool (i1 <= i2))
   | CompOpGreaterThanEqual -> Ok (VBool (i1 >= i2))
+  | CompOpEqual -> Ok (VBool (phys_equal i1 i2))
 
 let interpret_bin_op bin_op i1 i2 =
   match (i1, i2) with

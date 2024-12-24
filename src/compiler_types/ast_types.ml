@@ -9,6 +9,7 @@ type comp_op =
   | CompOpGreaterThan
   | CompOpLessThanEqual
   | CompOpGreaterThanEqual
+  | CompOpEqual
 
 type bool_op = BoolOpAnd | BoolOpOr
 
