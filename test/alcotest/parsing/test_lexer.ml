@@ -20,8 +20,10 @@ let pp_print_token fmt token =
     | GT -> "GT"
     | LTE -> "LTE"
     | GTE -> "GTE"
+    | EQUALITY -> "EQUALITY"
     | AND -> "AND"
     | OR -> "OR"
+    | NOT -> "NOT"
     | ASSIGN -> "ASSIGN"
     | CLASSIFY -> "CLASSIFY"
     | DECLASSIFY -> "DECLASSIFY"
@@ -78,6 +80,7 @@ let lex_token_test_cases =
   ; (">=", GTE)
   ; ("&&", AND)
   ; ("||", OR)
+  ; ("!", NOT)
   ; (":=", ASSIGN)
   ; ("classify", CLASSIFY)
   ; ("declassify", DECLASSIFY)
