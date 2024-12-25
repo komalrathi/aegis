@@ -46,7 +46,6 @@
 %token SEMICOLON
 
 %token FOR
-%token RANGE
 %token WHILE
 %token DO
 
@@ -127,10 +126,6 @@ args:
 function_defn:
 | FN f=IDENTIFIER args=args COLON t=type_expression ARROW e=expr SEMICOLON {FunctionDefn(f, args, t, e)}
 
-for_loop_args:
-  | e = expr { [e] }  // Single argument for range, e.g., range(6)
-  | e1 = expr COMMA e2 = expr { [e1; e2] }  // two arguments for range(1, 6)
-  | e1 = expr COMMA e2 = expr COMMA e3 = expr { [e1; e2; e3] }  // three arguments for range(1, 6, 2), where 2 is the step size
 
 expr:
 | i=INT {Integer($startpos, i, TSLow)}
@@ -148,7 +143,9 @@ expr:
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
 | WHILE LEFT_PAREN e1=expr RIGHT_PAREN DO LEFT_BRACE e2=expr RIGHT_BRACE {While($startpos, e1, e2)}
-| FOR e1=expr IN RANGE LEFT_PAREN args=for_loop_args RIGHT_PAREN DO LEFT_BRACE e2=expr RIGHT_BRACE {For($startpos, e1, args, e2)}
+| FOR LEFT_PAREN LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr SEMICOLON e2=expr SEMICOLON _e3=expr RIGHT_PAREN LEFT_BRACE e4=expr RIGHT_BRACE {
+    Let($startpos, x, t, e1, (While($startpos, e2, e4))) (*need to change to Seq(e3, e4) *)
+}
 // function application
 | FN id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 

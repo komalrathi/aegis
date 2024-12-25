@@ -32,7 +32,6 @@ let pp_print_token fmt token =
     | ELSE -> "ELSE"
     | LET -> "LET"
     | WHILE -> "WHILE"
-    | RANGE -> "RANGE"
     | DO -> "DO"
     | FOR -> "FOR"
     | COLON -> "COLON"
@@ -89,7 +88,6 @@ let lex_token_test_cases =
   ; ("else", ELSE)
   ; ("let", LET)
   ; ("while", WHILE)
-  ; ("range", RANGE)
   ; ("do", DO)
   ; ("for", FOR)
   ; (":", COLON)

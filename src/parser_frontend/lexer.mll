@@ -54,7 +54,6 @@ rule read_token = parse
     | "while" {WHILE}
     | "do" {DO}
     | "for" {FOR}
-    | "range" {RANGE}
     | ":" {COLON}
     | "int" {TYPE_INT}
     | "bool" {TYPE_BOOL}
