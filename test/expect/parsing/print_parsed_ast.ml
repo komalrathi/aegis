@@ -68,7 +68,10 @@ and comp_op_to_string = function
   | CompOpGreaterThanEqual -> "GreaterThanEqual"
   | CompOpEqual -> "Equality"
 
-and bool_op_to_string = function BoolOpAnd -> "And" | BoolOpOr -> "Or"
+and bool_op_to_string = function
+  | BoolOpAnd -> "And"
+  | BoolOpOr -> "Or"
+  | BoolOpNot -> "Not"
 
 and arg_to_string (TArg (var, arg_type)) =
   Printf.sprintf "%s: %s" var (type_expr_to_string arg_type)
