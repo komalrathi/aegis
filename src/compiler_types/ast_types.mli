@@ -19,8 +19,8 @@ type comp_op =
   | CompOpGreaterThanEqual
   | CompOpEqual
 
-(* We support 3 types of boolean comparison operations: &&, || and ! . We use type
-   bool_comp_op to enforce that, *)
+(* We support 3 types of boolean comparison operations: &&, || and ! . We use
+   type bool_comp_op to enforce that, *)
 type bool_op = BoolOpAnd | BoolOpOr | BoolOpNot
 
 type identifier = string

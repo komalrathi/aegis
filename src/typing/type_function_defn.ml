@@ -8,7 +8,7 @@ open Type_expr
 (* Converts a Parsed_ast.function_defn to a Typed_ast.function_defn *)
 let type_function_defn
     (Parsed_ast.FunctionDefn
-      (fn_name, args, (fn_core_type, fn_security_level_type), expr_body) )
+       (fn_name, args, (fn_core_type, fn_security_level_type), expr_body) )
     type_env =
   let ( >>= ) = Result.( >>= ) in
   let fn_return_type = (fn_core_type, fn_security_level_type) in
