@@ -130,21 +130,24 @@ expr:
 | i=INT {Integer($startpos, i, TSLow)}
 | TRUE {Boolean($startpos, true, TSLow)}
 | FALSE {Boolean($startpos, false, TSLow)}
+| id=IDENTIFIER {Identifier($startpos, id)}
+(* binary ops *)
 | e1=expr op=bin_op e2=expr {BinOp($startpos, op, e1, e2)}
 | e1=expr op=comp_op e2=expr {CompOp($startpos, op, e1, e2)}
 | e1=expr op=bool_comp_op e2=expr {BoolOp($startpos, op, e1, e2)}
+(*  unary op *)
 | NOT e=expr {BoolOp($startpos, BoolOpNot, e, e)}
-| id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
-| IF LEFT_PAREN e1=expr RIGHT_PAREN THEN LEFT_BRACE e2=expr RIGHT_BRACE ELSE LEFT_BRACE e3=expr RIGHT_BRACE {If($startpos, e1, e2, e3)}
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
+| IF LEFT_PAREN e1=expr RIGHT_PAREN THEN LEFT_BRACE e2=expr RIGHT_BRACE ELSE LEFT_BRACE e3=expr RIGHT_BRACE {If($startpos, e1, e2, e3)}
 | WHILE LEFT_PAREN e1=expr RIGHT_PAREN LEFT_BRACE e2=expr RIGHT_BRACE {While($startpos, e1, e2)}
 | FOR LEFT_PAREN LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr SEMICOLON e2=expr SEMICOLON _e3=expr RIGHT_PAREN LEFT_BRACE e4=expr RIGHT_BRACE {
     Let($startpos, x, t, e1, (While($startpos, e2, e4))) (*need to change to Seq(e3, e4) *)
 }
+// TODO  seq e1; e2
 // function application
 | id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 
