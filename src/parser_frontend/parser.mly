@@ -84,7 +84,6 @@
 %type <bool_op> bool_comp_op
 %type <type_expr> type_expression
 %type <argument> arg
-%type <argument list> args
 %type <function_defn> function_defn
 
 %%
@@ -117,13 +116,10 @@ type_expression:
 // x: int, sec_level
 arg:
 | var=IDENTIFIER COLON t = type_expression {TArg(var, t)}
-// (x: (int, sec_level), y:(int,sec_level))
-args:
-| LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN {args}
 
 // fn example(x: (int, sec_level), y:(int,sec_level)) : (int, sec_level) -> e ;
 function_defn:
-| FN f=IDENTIFIER args=args COLON t=type_expression ARROW e=expr SEMICOLON {FunctionDefn(f, args, t, e)}
+| FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression ARROW e=expr SEMICOLON {FunctionDefn(f, args, t, e)}
 
 
 expr:
