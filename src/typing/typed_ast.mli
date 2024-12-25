@@ -16,6 +16,7 @@ type expr =
   | Declassify of loc * expr * type_expr
   | FunctionApp of loc * type_expr * identifier * expr list
   | While of loc * expr * expr * type_expr
+  | Seq of loc * expr * expr * type_expr
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr

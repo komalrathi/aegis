@@ -17,7 +17,7 @@ val interpret_expr :
      Typed_ast.expr
   -> value_environment
   -> function_environment
-  -> interpreter_val Or_error.t
+  -> (interpreter_val * value_environment) Or_error.t
 
 val interpret_fn_defns :
      Typed_ast.function_defn list

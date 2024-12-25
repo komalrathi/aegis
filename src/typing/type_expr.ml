@@ -231,3 +231,16 @@ let rec type_expr :
         Error
           (Error.of_string
              "Expression types in the while statement are not correct" )
+  | Parsed_ast.Seq (loc, e1, e2) ->
+      type_expr e1 type_environment
+      >>= fun ((_, e1_sec_level), typed_e1) ->
+      type_expr e2 type_environment
+      >>= fun ((e2_core_type, e2_sec_level), typed_e2) ->
+      Ok
+        ( (e2_core_type, max_security_level e1_sec_level e2_sec_level)
+        , Typed_ast.Seq
+            ( loc
+            , typed_e1
+            , typed_e2
+            , (e2_core_type, max_security_level e1_sec_level e2_sec_level) )
+        )

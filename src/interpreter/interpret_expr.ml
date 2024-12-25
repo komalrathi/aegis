@@ -39,120 +39,121 @@ let interpret_comp_op comp_op i1 i2 =
         (Error.of_string
            "Type error: cannot apply comparison operation to boolean values" )
 
+let interpret_bool_comp_op bool_comp_op b1 b2 =
+  match (b1, b2) with
+  | VBool b1, VBool b2 -> (
+    match bool_comp_op with
+    | BoolOpAnd -> Ok (VBool (b1 && b2))
+    | BoolOpOr -> Ok (VBool (b1 || b2)) )
+  | VInt _, VBool _ | VBool _, VInt _ | VInt _, VInt _ ->
+      Error
+        (Error.of_string
+           "Type error: cannot apply boolean operation to integer values" )
+
+let interpret_unary_op unary_op b =
+  match b with
+  | VBool b -> ( match unary_op with UnaryOpNot -> Ok (VBool (not b)) )
+  | _ ->
+      Error
+        (Error.of_string
+           "Type error: cannot apply unary operation to integer values" )
+
+let rec remove_var_from_env var_name env =
+  match env with
+  | [] -> []
+  | (name, value) :: t ->
+      if phys_equal var_name name then t
+      else (name, value) :: remove_var_from_env var_name t
+
+let rec update_var_in_env var_name var_value env =
+  match env with
+  | [] -> []
+  | (name, value) :: t ->
+      if phys_equal var_name name then (var_name, var_value) :: t
+      else (name, value) :: update_var_in_env var_name var_value t
+
+(* return value, value_environment *)
 let rec interpret_expr expr value_environment function_environment =
   let ( >>= ) = Result.( >>= ) in
   match expr with
-  | Integer (_, i, _) -> Ok (VInt i)
-  | Boolean (_, b, _) -> Ok (VBool b)
+  | Integer (_, i, _) -> Ok (VInt i, value_environment)
+  | Boolean (_, b, _) -> Ok (VBool b, value_environment)
   | BinOp (_, _, bin_op, e1, e2) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      interpret_expr e2 value_environment function_environment
-      >>= fun val2 -> interpret_bin_op bin_op val1 val2
+      >>= fun (val1, val_env_1) ->
+      interpret_expr e2 val_env_1 function_environment
+      >>= fun (val2, val_env_2) ->
+      interpret_bin_op bin_op val1 val2
+      >>= fun output_val -> Ok (output_val, val_env_2)
   | CompOp (_, _, comp_op, e1, e2) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      interpret_expr e2 value_environment function_environment
-      >>= fun val2 -> interpret_comp_op comp_op val1 val2
-  | BoolOp (_, _, bool_comp_op, e1, e2) -> (
+      >>= fun (val1, val_env_1) ->
+      interpret_expr e2 val_env_1 function_environment
+      >>= fun (val2, val_env_2) ->
+      interpret_comp_op comp_op val1 val2
+      >>= fun output_val -> Ok (output_val, val_env_2)
+  | BoolOp (_, _, bool_comp_op, e1, e2) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      interpret_expr e2 value_environment function_environment
-      >>= fun val2 ->
-      match (val1, val2) with
-      | VBool b1, VBool b2 -> (
-        match bool_comp_op with
-        | BoolOpAnd -> Ok (VBool (b1 && b2))
-        | BoolOpOr -> Ok (VBool (b1 || b2)) )
-      | VInt _, VBool _ | VBool _, VInt _ | VInt _, VInt _ ->
-          Error
-            (Error.of_string
-               "Type error: cannot apply boolean operation to integer values" )
-      )
-  | UnaryOp (_, _, unary_op, e1) -> (
+      >>= fun (val1, val_env_1) ->
+      interpret_expr e2 val_env_1 function_environment
+      >>= fun (val2, val_env_2) ->
+      interpret_bool_comp_op bool_comp_op val1 val2
+      >>= fun output_val -> Ok (output_val, val_env_2)
+  | UnaryOp (_, _, unary_op, e1) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      match val1 with
-      | VBool b1 -> (
-        match unary_op with UnaryOpNot -> Ok (VBool (not b1)) )
-      | _ ->
-          Error
-            (Error.of_string
-               "Type error: cannot apply unary operation to integer values" )
-      )
-  (* need to store the value of the identifier in the environment *)
+      >>= fun (val1, val_env_1) ->
+      interpret_unary_op unary_op val1
+      >>= fun output_val -> Ok (output_val, val_env_1)
   | Identifier (_, var_type, identifier) -> (
       lookup_var_value value_environment identifier
       |> function
       | None -> Error (Error.of_string "Variable does not have a value")
       | Some var_value -> (
         match (var_type, var_value) with
-        | (TEInt, _), VInt i -> Ok (VInt i)
-        | (TEBool, _), VBool b -> Ok (VBool b)
+        | (TEInt, _), VInt i -> Ok (VInt i, value_environment)
+        | (TEBool, _), VBool b -> Ok (VBool b, value_environment)
         | _ ->
             Error
               (Error.of_string
                  "Type error: variable type does not match value type" ) ) )
   | Let (_, var_name, _, e1, e2, _) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      let new_env = (var_name, val1) :: value_environment in
+      >>= fun (val1, val_env_1) ->
+      let new_env = (var_name, val1) :: val_env_1 in
       interpret_expr e2 new_env function_environment
-  | Assign (_, var_type, var_name, e1) -> (
+      >>= fun (val2, val_env_2) ->
+      Ok (val2, remove_var_from_env var_name val_env_2)
+  | Assign (_, _, var_name, e1) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      match (var_type, val1) with
-      | (TEInt, _), VInt _ | (TEBool, _), VBool _ ->
-          let _ = (var_name, val1) :: value_environment in
-          Ok val1
-      | _ ->
-          Error
-            (Error.of_string
-               "Type error: variable type does not match value type" ) )
+      >>= fun (val1, val_env_1) ->
+      Ok (val1, update_var_in_env var_name val1 val_env_1)
   | If (_, e1, e2, e3, _) -> (
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
+      >>= fun (val1, val_env_1) ->
       match val1 with
-      | VBool true ->
-          interpret_expr e2 value_environment function_environment
-      | VBool false ->
-          interpret_expr e3 value_environment function_environment
+      | VBool true -> interpret_expr e2 val_env_1 function_environment
+      | VBool false -> interpret_expr e3 val_env_1 function_environment
       | VInt _ ->
           Error
             (Error.of_string
                "Type error: Cannot have int type in the if condition" ) )
-  | Classify (_, e1, e1_type_expr) -> (
+  | Classify (_, e1, _) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      match (val1, e1_type_expr) with
-      | VInt i, (TEInt, TSHigh) -> Ok (VInt i)
-      | VBool b, (TEBool, TSHigh) -> Ok (VBool b)
-      | _ ->
-          Error
-            (Error.of_string
-               "Type error: cannot classify value with different type" ) )
-  | Declassify (_, e1, e1_type_expr) -> (
+  | Declassify (_, e1, _) ->
       interpret_expr e1 value_environment function_environment
-      >>= fun val1 ->
-      match (val1, e1_type_expr) with
-      | VInt i, (TEInt, TSLow) -> Ok (VInt i)
-      | VBool b, (TEBool, TSLow) -> Ok (VBool b)
-      | _ ->
-          Error
-            (Error.of_string
-               "Type error: cannot classify value with different type" ) )
   | FunctionApp (_, _, f_name, args) -> (
     match Stdlib.List.assoc_opt f_name function_environment with
     | Some (param_names, body) ->
-        let rec eval_args args acc =
+        let rec eval_args val_env args acc =
           match args with
-          | [] -> Ok (List.rev acc)
+          | [] -> Ok (List.rev acc, val_env)
           | arg :: rest ->
-              interpret_expr arg value_environment function_environment
-              >>= fun v -> eval_args rest (v :: acc)
+              interpret_expr arg val_env function_environment
+              >>= fun (val1, val_env_1) ->
+              eval_args val_env_1 rest (val1 :: acc)
         in
-        eval_args args []
-        >>= fun arg_values ->
+        eval_args value_environment args []
+        >>= fun (arg_values, args_updated_value_env) ->
         if List.length param_names <> List.length arg_values then
           Error
             (Error.of_string
@@ -163,7 +164,7 @@ let rec interpret_expr expr value_environment function_environment =
         else
           let new_env =
             match List.zip param_names arg_values with
-            | Ok pairs -> pairs @ value_environment
+            | Ok pairs -> pairs @ args_updated_value_env
             | Unequal_lengths ->
                 failwith
                   "Arity mismatch: number of arguments provided does not \
@@ -174,24 +175,28 @@ let rec interpret_expr expr value_environment function_environment =
   | While (_, e1, e2, _) ->
       let rec loop () =
         interpret_expr e1 value_environment function_environment
-        >>= fun val1 ->
+        >>= fun (val1, val_env_1) ->
         match val1 with
         | VBool true ->
             (* if condition is true, execute the body e2 and repeat the
                loop *)
-            interpret_expr e2 value_environment function_environment
+            interpret_expr e2 val_env_1 function_environment
             >>= fun _ ->
             loop () (* Recursively call loop to repeat the evaluation *)
         | VBool false ->
             (* if condition is false, the loop terminates and returns
                false *)
-            Ok (VBool false)
+            Ok (VBool false, val_env_1)
         | _ ->
             Error
               (Error.of_string
                  "Type error: Condition in while loop must be a boolean" )
       in
       loop ()
+  | Seq (_, e1, e2, _) ->
+      interpret_expr e1 value_environment function_environment
+      >>= fun (_, val_env_1) ->
+      interpret_expr e2 val_env_1 function_environment
 
 let rec interpret_fn_defns fn_defns function_environment =
   match fn_defns with

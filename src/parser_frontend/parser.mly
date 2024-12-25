@@ -146,6 +146,7 @@ expr:
     Let($startpos, x, t, e1, (While($startpos, e2, e4))) (*need to change to Seq(e3, e4) *)
 }
 // TODO  seq e1; e2
+| e1=expr SEMICOLON e2=expr {Seq($startpos, e1, e2)}
 // function application
 | id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 
