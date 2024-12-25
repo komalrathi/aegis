@@ -52,7 +52,6 @@ rule read_token = parse
     | "else" {ELSE}
     | "let" {LET}
     | "while" {WHILE}
-    | "do" {DO}
     | "for" {FOR}
     | ":" {COLON}
     | "int" {TYPE_INT}

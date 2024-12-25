@@ -47,7 +47,6 @@
 
 %token FOR
 %token WHILE
-%token DO
 
 %token TYPE_INT
 %token TYPE_BOOL
@@ -142,12 +141,12 @@ expr:
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
-| WHILE LEFT_PAREN e1=expr RIGHT_PAREN DO LEFT_BRACE e2=expr RIGHT_BRACE {While($startpos, e1, e2)}
+| WHILE LEFT_PAREN e1=expr RIGHT_PAREN LEFT_BRACE e2=expr RIGHT_BRACE {While($startpos, e1, e2)}
 | FOR LEFT_PAREN LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr SEMICOLON e2=expr SEMICOLON _e3=expr RIGHT_PAREN LEFT_BRACE e4=expr RIGHT_BRACE {
     Let($startpos, x, t, e1, (While($startpos, e2, e4))) (*need to change to Seq(e3, e4) *)
 }
 // function application
-| FN id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
+| id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 
 
 
