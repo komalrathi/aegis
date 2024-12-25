@@ -53,6 +53,8 @@ let rec expr_to_string = function
   | FunctionApp (_, id, args) ->
       Printf.sprintf "FunctionApp(%s, [%s])" id
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
+  | Seq (_, e1, e2) ->
+      Printf.sprintf "Seq(%s, %s)" (expr_to_string e1) (expr_to_string e2)
 
 and bin_op_to_string = function
   | BinOpPlus -> "Plus"
