@@ -22,7 +22,6 @@
 %token COMMA
 
 %token FN
-%token ARROW
 
 %token LT
 %token GT
@@ -122,7 +121,7 @@ arg:
 
 // fn example(x: (int, sec_level), y:(int,sec_level)) : (int, sec_level) {e} ;
 function_defn:
-| FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression ARROW e=expr SEMICOLON {FunctionDefn(f, args, t, e)}
+| FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression LEFT_BRACE e=expr RIGHT_BRACE SEMICOLON {FunctionDefn(f, args, t, e)}
 
 
 expr:

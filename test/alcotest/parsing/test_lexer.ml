@@ -41,7 +41,6 @@ let pp_print_token fmt token =
     | HIGH_SEC_LEVEL -> "HIGH_SEC_LEVEL"
     | LOW_SEC_LEVEL -> "LOW_SEC_LEVEL"
     | FN -> "FN"
-    | ARROW -> "ARROW"
     | SEMICOLON -> "SEMICOLON"
     | INT i -> Printf.sprintf "INT(%d)" i
     | IDENTIFIER id -> Printf.sprintf "IDENTIFIER(%s)" id
@@ -96,7 +95,6 @@ let lex_token_test_cases =
   ; ("High", HIGH_SEC_LEVEL)
   ; ("Low", LOW_SEC_LEVEL)
   ; ("fn", FN)
-  ; ("->", ARROW)
   ; (";", SEMICOLON) ]
 
 let test_lex_int =

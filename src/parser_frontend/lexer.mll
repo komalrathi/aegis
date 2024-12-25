@@ -61,7 +61,6 @@ rule read_token = parse
     | "High" {HIGH_SEC_LEVEL}
     | "Low" {LOW_SEC_LEVEL}
     | "fn" {FN}
-    | "->" {ARROW}
     | "," {COMMA}
     | ";" {SEMICOLON}
     | whitespace { read_token lexbuf }
