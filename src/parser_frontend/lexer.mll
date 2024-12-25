@@ -43,6 +43,7 @@ rule read_token = parse
     | "==" { EQUALITY }
     | "&&" { AND }
     | "||" { OR }
+    | "!" { NOT }
     | ":=" { ASSIGN }
     | "classify" { CLASSIFY }
     | "declassify" { DECLASSIFY }

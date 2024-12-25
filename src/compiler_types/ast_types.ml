@@ -11,7 +11,7 @@ type comp_op =
   | CompOpGreaterThanEqual
   | CompOpEqual
 
-type bool_op = BoolOpAnd | BoolOpOr
+type bool_op = BoolOpAnd | BoolOpOr | BoolOpNot
 
 type identifier = string
 

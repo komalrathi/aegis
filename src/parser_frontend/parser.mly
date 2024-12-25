@@ -34,6 +34,7 @@
 %token FALSE
 %token AND
 %token OR
+%token NOT
 
 %token IF
 %token THEN
@@ -71,7 +72,7 @@
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 %left LT GT LTE GTE EQUALITY
-%left AND OR
+%left AND OR NOT
 
 
 // Start symbol
@@ -108,6 +109,7 @@
 | AND { BoolOpAnd }
 | OR { BoolOpOr }
 
+
 type_expression:
 | LEFT_PAREN TYPE_INT COMMA HIGH_SEC_LEVEL RIGHT_PAREN {(TEInt, TSHigh)}
 | LEFT_PAREN TYPE_INT COMMA LOW_SEC_LEVEL RIGHT_PAREN {(TEInt, TSLow)}
@@ -137,6 +139,7 @@ expr:
 | e1=expr op=bin_op e2=expr {BinOp($startpos, op, e1, e2)}
 | e1=expr op=comp_op e2=expr {CompOp($startpos, op, e1, e2)}
 | e1=expr op=bool_comp_op e2=expr {BoolOp($startpos, op, e1, e2)}
+| NOT e=expr {BoolOp($startpos, BoolOpNot, e, e)}
 | id=IDENTIFIER {Identifier($startpos, id)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}

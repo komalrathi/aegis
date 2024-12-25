@@ -17,11 +17,11 @@ type comp_op =
   | CompOpGreaterThan
   | CompOpLessThanEqual
   | CompOpGreaterThanEqual
-   | CompOpEqual
+  | CompOpEqual
 
-(* We support 2 types of boolean comparison operations: &&, || . We use type
+(* We support 3 types of boolean comparison operations: &&, || and ! . We use type
    bool_comp_op to enforce that, *)
-type bool_op = BoolOpAnd | BoolOpOr
+type bool_op = BoolOpAnd | BoolOpOr | BoolOpNot
 
 type identifier = string
 
