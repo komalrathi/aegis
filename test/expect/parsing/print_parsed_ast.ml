@@ -45,10 +45,6 @@ let rec expr_to_string = function
         (expr_to_string e1) (expr_to_string e2)
   | Classify (_, e) -> Printf.sprintf "Classify(%s)" (expr_to_string e)
   | Declassify (_, e) -> Printf.sprintf "Declassify(%s)" (expr_to_string e)
-  | For (_, var, e1, e2) ->
-      Printf.sprintf "For(%s, [%s], %s)" (expr_to_string var)
-        (String.concat ~sep:"; " (Stdlib.List.map expr_to_string e1))
-        (expr_to_string e2)
   | While (_, e1, e2) ->
       Printf.sprintf "While(%s, %s)" (expr_to_string e1) (expr_to_string e2)
   | FunctionApp (_, id, args) ->
