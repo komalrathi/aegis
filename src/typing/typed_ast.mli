@@ -7,7 +7,7 @@ type expr =
   | CompOp of loc * type_expr * comp_op * expr * expr
   | Boolean of loc * bool * security_level_type
   | BoolOp of loc * type_expr * bool_op * expr * expr
-  | UnaryOp of loc * type_expr * unary_op * expr 
+  | UnaryOp of loc * type_expr * unary_op * expr
   | Identifier of loc * type_expr * identifier
   | Assign of loc * type_expr * identifier * expr
   | Let of loc * identifier * type_expr * expr * expr * type_expr
