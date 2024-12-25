@@ -57,28 +57,29 @@ let rec interpret_expr expr value_environment function_environment =
   | BoolOp (_, _, bool_comp_op, e1, e2) -> (
       interpret_expr e1 value_environment function_environment
       >>= fun val1 ->
-      match val1 with
-      | VInt _ ->
+      interpret_expr e2 value_environment function_environment
+      >>= fun val2 ->
+      match (val1, val2) with
+      | VBool b1, VBool b2 -> (
+        match bool_comp_op with
+        | BoolOpAnd -> Ok (VBool (b1 && b2))
+        | BoolOpOr -> Ok (VBool (b1 || b2)) )
+      | VInt _, VBool _ | VBool _, VInt _ | VInt _, VInt _ ->
           Error
             (Error.of_string
                "Type error: cannot apply boolean operation to integer values" )
+      )
+  | UnaryOp (_, _, unary_op, e1) -> (
+      interpret_expr e1 value_environment function_environment
+      >>= fun val1 ->
+      match val1 with
       | VBool b1 -> (
-        match bool_comp_op with
-        | BoolOpNot -> Ok (VBool (not b1))
-        | _ -> (
-            interpret_expr e2 value_environment function_environment
-            >>= fun val2 ->
-            match (val1, val2) with
-            | VBool b1, VBool b2 -> (
-              match bool_comp_op with
-              | BoolOpAnd -> Ok (VBool (b1 && b2))
-              | BoolOpOr -> Ok (VBool (b1 || b2))
-              | _ -> Error (Error.of_string "Invalid boolean operation") )
-            | _ ->
-                Error
-                  (Error.of_string
-                     "Type error: cannot apply boolean operation to integer \
-                      values" ) ) ) )
+        match unary_op with UnaryOpNot -> Ok (VBool (not b1)) )
+      | _ ->
+          Error
+            (Error.of_string
+               "Type error: cannot apply unary operation to integer values" )
+      )
   (* need to store the value of the identifier in the environment *)
   | Identifier (_, var_type, identifier) -> (
       lookup_var_value value_environment identifier

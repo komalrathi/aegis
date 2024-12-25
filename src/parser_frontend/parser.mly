@@ -82,6 +82,7 @@
 %type <bin_op> bin_op
 %type <comp_op> comp_op
 %type <bool_op> bool_comp_op
+%type <unary_op> unary_op
 %type <type_expr> type_expression
 %type <argument> arg
 %type <function_defn> function_defn
@@ -106,6 +107,8 @@
 | AND { BoolOpAnd }
 | OR { BoolOpOr }
 
+%inline unary_op:
+| NOT { UnaryOpNot }
 
 type_expression:
 | LEFT_PAREN TYPE_INT COMMA HIGH_SEC_LEVEL RIGHT_PAREN {(TEInt, TSHigh)}
@@ -117,7 +120,7 @@ type_expression:
 arg:
 | var=IDENTIFIER COLON t = type_expression {TArg(var, t)}
 
-// fn example(x: (int, sec_level), y:(int,sec_level)) : (int, sec_level) -> e ;
+// fn example(x: (int, sec_level), y:(int,sec_level)) : (int, sec_level) {e} ;
 function_defn:
 | FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression ARROW e=expr SEMICOLON {FunctionDefn(f, args, t, e)}
 
@@ -132,7 +135,7 @@ expr:
 | e1=expr op=comp_op e2=expr {CompOp($startpos, op, e1, e2)}
 | e1=expr op=bool_comp_op e2=expr {BoolOp($startpos, op, e1, e2)}
 (*  unary op *)
-| NOT e=expr {BoolOp($startpos, BoolOpNot, e, e)}
+| NOT e=expr {UnaryOp($startpos, UnaryOpNot, e)}
 | LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
 | CLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Classify($startpos, e)}

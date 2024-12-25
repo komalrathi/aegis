@@ -89,6 +89,15 @@ let rec type_expr :
               , typed_e1
               , typed_e2 ) )
       else Error (Error.of_string "boolean comparison operands type error")
+  | Parsed_ast.UnaryOp (loc, unary_op, e1) ->
+      type_expr e1 type_environment
+      >>= fun ((e1_core_type, e1_sec_level), typed_e1) ->
+      if equal_core_type e1_core_type TEBool then
+        Ok
+          ( (TEBool, e1_sec_level)
+          , Typed_ast.UnaryOp
+              (loc, (TEBool, e1_sec_level), unary_op, typed_e1) )
+      else Error (Error.of_string "unary operand type error")
   | Parsed_ast.Identifier (loc, id) -> (
       lookup_var_type type_environment id
       |> function
