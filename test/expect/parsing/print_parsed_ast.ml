@@ -43,6 +43,9 @@ let rec expr_to_string = function
   | BoolOp (_, op, e1, e2) ->
       Printf.sprintf "BoolOp(%s, %s, %s)" (bool_op_to_string op)
         (expr_to_string e1) (expr_to_string e2)
+  | UnaryOp (_, op, e) ->
+      Printf.sprintf "UnaryOp(%s, %s)" (unary_op_to_string op)
+        (expr_to_string e)
   | Classify (_, e) -> Printf.sprintf "Classify(%s)" (expr_to_string e)
   | Declassify (_, e) -> Printf.sprintf "Declassify(%s)" (expr_to_string e)
   | While (_, e1, e2) ->
@@ -64,10 +67,9 @@ and comp_op_to_string = function
   | CompOpGreaterThanEqual -> "GreaterThanEqual"
   | CompOpEqual -> "Equality"
 
-and bool_op_to_string = function
-  | BoolOpAnd -> "And"
-  | BoolOpOr -> "Or"
-  | BoolOpNot -> "Not"
+and bool_op_to_string = function BoolOpAnd -> "And" | BoolOpOr -> "Or"
+
+and unary_op_to_string = function UnaryOpNot -> "Not"
 
 and arg_to_string (TArg (var, arg_type)) =
   Printf.sprintf "%s: %s" var (type_expr_to_string arg_type)
