@@ -142,7 +142,7 @@ expr:
 | LEFT_PAREN e=expr RIGHT_PAREN {e}
 | IF LEFT_PAREN e1=expr RIGHT_PAREN THEN LEFT_BRACE e2=expr RIGHT_BRACE ELSE LEFT_BRACE e3=expr RIGHT_BRACE {If($startpos, e1, e2, e3)}
 | WHILE LEFT_PAREN e1=expr RIGHT_PAREN LEFT_BRACE e2=expr RIGHT_BRACE {While($startpos, e1, e2)}
-| FOR LEFT_PAREN LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr SEMICOLON e2=expr SEMICOLON _e3=expr RIGHT_PAREN LEFT_BRACE e4=expr RIGHT_BRACE {
+| FOR LEFT_PAREN LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr SEMICOLON e2=expr SEMICOLON e3=expr RIGHT_PAREN LEFT_BRACE e4=expr RIGHT_BRACE {
     Let($startpos, x, t, e1, (While($startpos, e2, Seq($startpos,e4,e3))))
 }
 | e1=expr SEMICOLON e2=expr {Seq($startpos, e1, e2)}
