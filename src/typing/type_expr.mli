@@ -6,4 +6,5 @@ open Type_environment
 val type_expr :
      Parsed_ast.expr
   -> type_environment
-  -> (type_expr * Typed_ast.expr) Or_error.t
+  -> security_level_type
+  -> (type_expr * Typed_ast.expr * security_level_type) Or_error.t
