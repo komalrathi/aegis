@@ -13,7 +13,7 @@ let%expect_test "first for loop" =
 
 let%expect_test "second for loop" =
   print_parsed_ast
-    (Lexing.from_string "for (let x : (int, Low) = 10; (x>1); (x:=(x/2))) {if (x<4) then {y:=(x*4)} else {y:=(x*2)}}"); ;
+    (Lexing.from_string "for (let x : (int, Low) = 10; (x>1); (x:=(x/2))) {if (x<4) then {y:=(x*4)} else {y:=(x*2)}}");
   [%expect {|
     Program([
 
