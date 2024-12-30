@@ -33,8 +33,7 @@ let type_function_defn
       ( fn_name
       , fn_return_type
       , Typed_ast.FunctionDefn
-          (fn_name, args, fn_return_type, typed_expr_body)
-      )
+          (fn_name, args, fn_return_type, typed_expr_body) )
   else
     Error
       (Error.of_string
