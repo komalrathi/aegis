@@ -7,7 +7,7 @@ let%expect_test "Boolean Operation" =
     {|
     Program([
 
-    ], BoolOp(And, BoolOp(Or, BoolOp(And, Boolean(true), Boolean(false)), BoolOp(Not, Boolean(true), Boolean(true))), Boolean(false)))
+    ], BoolOp(And, BoolOp(Or, BoolOp(And, Boolean(true), Boolean(false)), UnaryOp(Not, Boolean(true))), Boolean(false)))
     |}]
 
 let%expect_test "Boolean Operation with Parentheses" =
@@ -16,5 +16,5 @@ let%expect_test "Boolean Operation with Parentheses" =
     {|
     Program([
 
-    ], BoolOp(Or, BoolOp(And, Boolean(true), Boolean(false)), BoolOp(And, BoolOp(Not, Boolean(true), Boolean(true)), Boolean(false))))
+    ], BoolOp(Or, BoolOp(And, Boolean(true), Boolean(false)), BoolOp(And, UnaryOp(Not, Boolean(true)), Boolean(false))))
     |}]
