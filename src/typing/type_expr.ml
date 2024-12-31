@@ -21,10 +21,6 @@ let max_security_level sec1 sec2 =
   | TSLow, TSHigh -> TSHigh
   | TSHigh, TSLow -> TSHigh
 
-let check_expr_var_types_match var_type e1_type =
-  if phys_equal var_type e1_type then Ok ()
-  else Error (Error.of_string "Types of the let and expression do not match")
-
 let rec type_expr expr type_environment pc =
   let ( >>= ) = Result.( >>= ) in
   match expr with
@@ -111,25 +107,33 @@ let rec type_expr expr type_environment pc =
       | None -> Error (Error.of_string "Variable does not exist")
       | Some var_type ->
           Ok (var_type, Typed_ast.Identifier (loc, var_type, id), pc) )
-  | Parsed_ast.Let (loc, var_name, var_type, e1, e2) ->
+  | Parsed_ast.Let (loc, var_name, (var_core_type, var_sec_level), e1, e2) ->
       check_var_not_shadowed type_environment var_name
       >>= fun () ->
       type_expr e1 type_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
-      check_expr_var_types_match var_type (e1_core_type, e1_sec_level)
-      >>= fun () ->
-      type_expr e2 ((var_name, var_type) :: type_environment) pc
-      >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
-      Ok
-        ( (e2_core_type, e2_sec_level)
-        , Typed_ast.Let
-            ( loc
-            , var_name
-            , var_type
-            , typed_e1
-            , typed_e2
-            , (e2_core_type, e2_sec_level) )
-        , pc )
+      if
+        equal_type_expr
+          (var_core_type, var_sec_level)
+          (e1_core_type, e1_sec_level)
+      then
+        type_expr e2
+          ((var_name, (var_core_type, var_sec_level)) :: type_environment)
+          pc
+        >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
+        Ok
+          ( (e2_core_type, e2_sec_level)
+          , Typed_ast.Let
+              ( loc
+              , var_name
+              , (var_core_type, var_sec_level)
+              , typed_e1
+              , typed_e2
+              , (e2_core_type, e2_sec_level) )
+          , pc )
+      else
+        Error
+          (Error.of_string "Types of the Let and expression do not match")
   | Parsed_ast.Assign (loc, var_name, e1) -> (
       lookup_var_type type_environment var_name
       |> function
