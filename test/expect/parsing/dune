@@ -1,5 +1,5 @@
 (library
- (name test_parser)
+ (name parsing_tests)
  (libraries core parser_frontend typing)
  (inline_tests)
  (preprocess
