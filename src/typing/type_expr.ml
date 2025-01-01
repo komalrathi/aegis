@@ -3,6 +3,7 @@ open Parser_frontend
 open Compiler_types.Language_types
 open Equal_type_expr
 open Type_environment
+open Subtyping_security_levels_check
 
 let check_var_not_shadowed type_environment var_name =
   let ast_var_type = lookup_var_type type_environment var_name in
@@ -113,9 +114,8 @@ let rec type_expr expr type_environment pc =
       type_expr e1 type_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
       if
-        equal_type_expr
-          (var_core_type, var_sec_level)
-          (e1_core_type, e1_sec_level)
+        subtyping_check pc e1_sec_level var_sec_level
+        && equal_core_type var_core_type e1_core_type
       then
         type_expr e2
           ((var_name, (var_core_type, var_sec_level)) :: type_environment)
@@ -131,9 +131,15 @@ let rec type_expr expr type_environment pc =
               , typed_e2
               , (e2_core_type, e2_sec_level) )
           , pc )
+      else if equal_core_type var_core_type e1_core_type then
+        Error
+          (Error.of_string
+             "Variable security level type does not match the assigned \
+              security level type" )
       else
         Error
-          (Error.of_string "Types of the Let and expression do not match")
+          (Error.of_string
+             "Variable type does not match the assigned expression type" )
   | Parsed_ast.Assign (loc, var_name, e1) -> (
       lookup_var_type type_environment var_name
       |> function
