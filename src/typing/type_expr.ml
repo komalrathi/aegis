@@ -144,13 +144,17 @@ let rec type_expr expr type_environment pc =
       lookup_var_type type_environment var_name
       |> function
       | None -> Error (Error.of_string "Variable does not exist")
-      | Some var_type ->
+      | Some (var_core_type, var_sec_level) ->
           type_expr e1 type_environment pc
-          >>= fun (e1_type, typed_e1, pc) ->
-          if equal_type_expr var_type e1_type then
+          >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
+          if
+            subtyping_check pc e1_sec_level var_sec_level
+            && equal_core_type var_core_type e1_core_type
+          then
             Ok
-              ( var_type
-              , Typed_ast.Assign (loc, var_type, var_name, typed_e1)
+              ( (var_core_type, var_sec_level)
+              , Typed_ast.Assign
+                  (loc, (var_core_type, var_sec_level), var_name, typed_e1)
               , pc )
           else
             Error
