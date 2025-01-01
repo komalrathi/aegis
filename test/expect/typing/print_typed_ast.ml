@@ -31,20 +31,17 @@ let rec expr_to_string = function
   | Boolean (_, b, _) -> Printf.sprintf "Boolean(%b)" b
   | Integer (_, i, _) -> Printf.sprintf "Integer(%d)" i
   | If (_, e1, e2, e3, type_expr) ->
-      Printf.sprintf "If(%s, %s, %s, %s)"
-        (expr_to_string e1)
-        (expr_to_string e2)
-        (expr_to_string e3)
+      Printf.sprintf "If(%s, %s, %s, %s)" (expr_to_string e1)
+        (expr_to_string e2) (expr_to_string e3)
         (type_expr_to_string type_expr)
   | Let (_, var, var_type_expr, e1, e2, type_expr) ->
-      Printf.sprintf "Let(%s, %s, %s, %s, %s)"
-        var
+      Printf.sprintf "Let(%s, %s, %s, %s, %s)" var
         (type_expr_to_string var_type_expr)
-        (expr_to_string e1)
-        (expr_to_string e2)
+        (expr_to_string e1) (expr_to_string e2)
         (type_expr_to_string type_expr)
   | Assign (_, type_expr, var, e) ->
-      Printf.sprintf "Assign(%s, %s, %s)" (type_expr_to_string type_expr)
+      Printf.sprintf "Assign(%s, %s, %s)"
+        (type_expr_to_string type_expr)
         var (expr_to_string e)
   | CompOp (_, type_expr, op, e1, e2) ->
       Printf.sprintf "CompOp(%s, %s, %s, %s)" (comp_op_to_string op)
@@ -58,25 +55,25 @@ let rec expr_to_string = function
       Printf.sprintf "UnaryOp(%s, %s, %s)" (unary_op_to_string op)
         (type_expr_to_string type_expr)
         (expr_to_string e)
-  | Classify (_, e, type_expr) -> Printf.sprintf "Classify(%s %s)"
-      (expr_to_string e) (type_expr_to_string type_expr)
-  | Declassify (_, e, type_expr) -> Printf.sprintf "Declassify(%s %s)"
-      (expr_to_string e) (type_expr_to_string type_expr)
+  | Classify (_, e, type_expr) ->
+      Printf.sprintf "Classify(%s %s)" (expr_to_string e)
+        (type_expr_to_string type_expr)
+  | Declassify (_, e, type_expr) ->
+      Printf.sprintf "Declassify(%s %s)" (expr_to_string e)
+        (type_expr_to_string type_expr)
   | While (_, e1, e2, type_expr) ->
-      Printf.sprintf "While(%s, %s, %s)"
-        (expr_to_string e1)
+      Printf.sprintf "While(%s, %s, %s)" (expr_to_string e1)
         (expr_to_string e2)
         (type_expr_to_string type_expr)
   | FunctionApp (_, type_expr, id, args) ->
-      Printf.sprintf "FunctionApp(%s, %s, [%s])"
-        id
+      Printf.sprintf "FunctionApp(%s, %s, [%s])" id
         (type_expr_to_string type_expr)
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
   | Seq (_, e1, e2, type_expr) ->
-      Printf.sprintf "Seq(%s, %s, %s)"
-        (expr_to_string e1)
+      Printf.sprintf "Seq(%s, %s, %s)" (expr_to_string e1)
         (expr_to_string e2)
         (type_expr_to_string type_expr)
+
 and bin_op_to_string = function
   | BinOpPlus -> "Plus"
   | BinOpMinus -> "Minus"
