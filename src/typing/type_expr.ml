@@ -172,6 +172,7 @@ let rec type_expr expr type_environment pc =
         equal_core_type e1_core_type TEBool
         && equal_core_type e2_core_type e3_core_type
       then
+        let new_pc = join pc e1_sec_level in
         Ok
           ( ( e2_core_type
             , max_security_level e1_sec_level
@@ -184,7 +185,7 @@ let rec type_expr expr type_environment pc =
               , ( e2_core_type
                 , max_security_level e1_sec_level
                     (max_security_level e2_sec_level e3_sec_level) ) )
-          , pc )
+          , new_pc )
       else
         Error
           (Error.of_string
@@ -247,6 +248,7 @@ let rec type_expr expr type_environment pc =
       type_expr e2 type_environment pc
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
       if equal_core_type e1_core_type TEBool then
+        let new_pc = join pc e1_sec_level in
         Ok
           ( (e2_core_type, max_security_level e1_sec_level e2_sec_level)
           , Typed_ast.While
@@ -255,7 +257,7 @@ let rec type_expr expr type_environment pc =
               , typed_e2
               , (e2_core_type, max_security_level e1_sec_level e2_sec_level)
               )
-          , pc )
+          , new_pc )
       else
         Error
           (Error.of_string
