@@ -214,34 +214,57 @@ let rec type_expr expr type_environment pc =
           , Typed_ast.Declassify (loc, typed_e1, (e1_core_type, TSLow))
           , pc )
   | Parsed_ast.FunctionApp (loc, fn_name, args) -> (
-      (* get the argument types of the function from the type environment,
-         which are the typed arguments defined in the function definition *)
       get_function_types type_environment fn_name
       |> function
-      | Error _ -> Error (Error.of_string "Function does not exist")
-      | Ok arg_types ->
-          let arg_types_env = List.zip_exn arg_types args in
-          let arg_types_env_result =
-            List.map arg_types_env ~f:(fun (arg_type, arg_expr) ->
-                type_expr arg_expr type_environment pc
-                >>= fun (arg_expr_type, typed_arg_expr, _) ->
-                if equal_type_expr arg_type arg_expr_type then
-                  Ok (arg_expr_type, typed_arg_expr)
-                else
-                  Error
-                    (Error.of_string
-                       "Function argument type does not match the function \
-                        type" ) )
-          in
-          Result.all arg_types_env_result
-          >>= fun typed_args ->
-          let typed_args_exprs = List.map typed_args ~f:snd in
-          let return_type = List.hd_exn arg_types in
-          Ok
-            ( return_type
-            , Typed_ast.FunctionApp
-                (loc, return_type, fn_name, typed_args_exprs)
-            , pc ) )
+      | Error _ ->
+          Error
+            (Error.of_string "Function does not exist in type environment")
+      | Ok (TFunction (arg_types, return_type), fn_sec_level) ->
+          (* Check function's arity matches the provided arguments *)
+          let expected_arg_count = List.length arg_types in
+          let provided_arg_count = List.length args in
+          if expected_arg_count <> provided_arg_count then
+            Error
+              (Error.of_string
+                 (Printf.sprintf
+                    "Function %s expects %d arguments, but %d were provided"
+                    fn_name expected_arg_count provided_arg_count ) )
+          else
+            let arg_types_env = List.zip_exn arg_types args in
+            (* Type-check each argument *)
+            let arg_types_env_result =
+              List.map arg_types_env ~f:(fun (arg_type, arg_expr) ->
+                  type_expr arg_expr type_environment pc
+                  >>= fun ( (arg_expr_core_type, arg_expr_sec_level)
+                          , typed_arg_expr
+                          , _ )
+                      ->
+                  if
+                    equal_type_expr (arg_type, fn_sec_level)
+                      (arg_expr_core_type, arg_expr_sec_level)
+                  then
+                    Ok
+                      ( (arg_expr_core_type, arg_expr_sec_level)
+                      , typed_arg_expr )
+                  else
+                    Error
+                      (Error.of_string
+                         "Function argument type does not match the \
+                          function type" ) )
+            in
+            Result.all arg_types_env_result
+            >>= fun typed_args ->
+            let typed_args_exprs = List.map typed_args ~f:snd in
+            Ok
+              ( (return_type, fn_sec_level)
+              , Typed_ast.FunctionApp
+                  ( loc
+                  , (return_type, fn_sec_level)
+                  , fn_name
+                  , typed_args_exprs )
+              , pc )
+      | Ok _ ->
+          Error (Error.of_string "Function type is not a function type") )
   | Parsed_ast.While (loc, e1, e2) ->
       type_expr e1 type_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->

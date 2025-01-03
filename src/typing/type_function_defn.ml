@@ -16,7 +16,8 @@ let type_function_defn
   let fn_return_type = (return_core_type, return_security_level_type) in
   let arg_types_env =
     List.map
-      ~f:(fun (TArg (arg_name, arg_type)) -> (arg_name, arg_type))
+      ~f:(fun (TArg (arg_name, (arg_core_type, arg_security_level))) ->
+        (arg_name, (arg_core_type, arg_security_level)) )
       args
   in
   let arg_core_types =
@@ -31,7 +32,7 @@ let type_function_defn
   if equal_type_expr fn_return_type expr_body_type then
     Ok
       ( fn_name
-      , fn_return_type
+      , (fn_type, return_security_level_type)
       , Typed_ast.FunctionDefn
           (fn_name, args, fn_return_type, typed_expr_body) )
   else

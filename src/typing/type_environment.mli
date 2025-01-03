@@ -10,4 +10,4 @@ type type_environment = type_binding list
 val lookup_var_type : type_environment -> identifier -> type_expr option
 
 val get_function_types :
-  type_environment -> identifier -> type_expr list Or_error.t
+  (string * type_expr) list -> string -> (type_expr, Core.Error.t) Result.t
