@@ -240,12 +240,17 @@ let rec type_expr expr type_environment pc =
                           , _ )
                       ->
                   if
-                    equal_type_expr (arg_type, fn_sec_level)
-                      (arg_expr_core_type, arg_expr_sec_level)
+                    equal_core_type arg_type arg_expr_core_type
+                    && subtyping_check pc arg_expr_sec_level fn_sec_level
                   then
                     Ok
                       ( (arg_expr_core_type, arg_expr_sec_level)
                       , typed_arg_expr )
+                  else if equal_core_type arg_type arg_expr_core_type then
+                    Error
+                      (Error.of_string
+                         "Function argument security level does not match \
+                          the function security level" )
                   else
                     Error
                       (Error.of_string
