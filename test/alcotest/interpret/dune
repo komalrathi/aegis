@@ -1,5 +1,6 @@
 (test
- (name test_interpret_program)
+ (name interpreter_tests) 
+ (modules interpreter_tests )
  (libraries
   alcotest
   compiler_types
@@ -7,4 +8,5 @@
   typing
   qcheck
   qcheck-core
-  qcheck-alcotest))
+  qcheck-alcotest)
+)
