@@ -107,7 +107,10 @@ let rec interpret_expr expr value_environment function_environment =
   | Identifier (_, var_type, identifier) -> (
       lookup_var_value value_environment identifier
       |> function
-      | None -> Error (Error.of_string "Variable does not have a value")
+      | None ->
+          Error
+            (Error.of_string
+               (Printf.sprintf "Variable %s does not have a value" identifier) )
       | Some var_value -> (
         match (var_type, var_value) with
         | (TEInt, _), VInt i -> Ok (VInt i, value_environment)
