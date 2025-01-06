@@ -1,0 +1,14 @@
+(library
+ (name interpreter_tests)
+ (libraries core parser_frontend typing interpreter)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect))
+ (lint
+  (pps
+   ppx_js_style
+   -check-doc-comments
+   -annotated-ignores
+   -styler
+   -pretty
+   -dated-deprecation)))
