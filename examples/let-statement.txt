@@ -1,0 +1,1 @@
+let test_var:(int,Low) = 72 in (test_var - 5)

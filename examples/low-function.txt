@@ -1,0 +1,1 @@
+fn example (x :(int, Low), y:(int, Low)):(int, Low) { (x + y) }; example(5, 6)
