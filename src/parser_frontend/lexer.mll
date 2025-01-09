@@ -63,6 +63,7 @@ rule read_token = parse
     | "fn" {FN}
     | "," {COMMA}
     | ";" {SEMICOLON}
+    | "print" {PRINT}
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int_regex { INT (int_of_string (lexeme lexbuf)) }
