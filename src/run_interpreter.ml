@@ -7,6 +7,7 @@ open Compiler_types.Language_types
 let string_of_val = function
   | VInt i -> string_of_int i
   | VBool b -> string_of_bool b
+  | VUnit _ -> "unit"
 
 let print_result = function
   | Ok v -> printf "Success: %s" (string_of_val v)
