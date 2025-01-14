@@ -196,27 +196,16 @@ let rec interpret_expr expr value_environment function_environment =
           in
           interpret_expr body new_env function_environment
     | None -> Error (Error.of_string "Function not found") )
-  | While (_, e1, e2, _) ->
-      let rec loop () =
-        interpret_expr e1 value_environment function_environment
-        >>= fun (val1, val_env_1) ->
-        match val1 with
-        | VBool true ->
-            (* if condition is true, execute the body e2 and repeat the
-               loop *)
-            interpret_expr e2 val_env_1 function_environment
-            >>= fun _ ->
-            loop () (* Recursively call loop to repeat the evaluation *)
-        | VBool false ->
-            (* if condition is false, the loop terminates and returns
-               false *)
-            Ok (VBool false, val_env_1)
-        | _ ->
-            Error
-              (Error.of_string
-                 "Type error: Condition in while loop must be a boolean" )
+  | While (loc, e1, e2, type_expr) ->
+      let e =
+        If
+          ( loc
+          , e1
+          , Seq (loc, e2, While (loc, e1, e2, type_expr), type_expr)
+          , Skip loc
+          , type_expr )
       in
-      loop ()
+      interpret_expr e value_environment function_environment
   | Seq (_, e1, e2, _) ->
       interpret_expr e1 value_environment function_environment
       >>= fun (_, val_env_1) ->
@@ -243,6 +232,7 @@ let rec interpret_expr expr value_environment function_environment =
             print_args val_env_1 rest
       in
       print_args value_environment args
+  | Skip _ -> Ok (VUnit (), value_environment)
 
 let rec interpret_fn_defns fn_defns function_environment =
   match fn_defns with
