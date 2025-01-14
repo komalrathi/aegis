@@ -55,6 +55,7 @@
 
 %token EQUAL
 %token PRINT
+%token SECUREPRINT
 
 %token EOF
 
@@ -147,11 +148,10 @@ expr:
     Let($startpos, x, t, e1, (While($startpos, e2, Seq($startpos,e4,e3))))
 }
 | e1=expr SEMICOLON e2=expr {Seq($startpos, e1, e2)}
-| PRINT LEFT_PAREN e=expr RIGHT_PAREN {Print($startpos, e)}
 // function application
 | id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
-
-
+| PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
+| SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
 
 program:
 f = function_defn* e=expr; EOF {Prog(f,e)}
