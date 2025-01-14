@@ -7,6 +7,7 @@ open Typing.Typed_ast
 let value_to_string = function
   | VInt i -> Printf.sprintf "VInt(%d)" i
   | VBool b -> Printf.sprintf "VBool(%b)" b
+  | VUnit _ -> "VUnit"
 
 and unary_op_to_string = function UnaryOpNot -> "Not"
 
@@ -40,6 +41,8 @@ let rec type_expr_to_string = function
       Printf.sprintf "(Function (%s) -> %s, %s)" args_str
         (type_expr_to_string (return_type, sec_level))
         (sec_level_to_string sec_level)
+  | TEUnit, TSHigh -> "(Unit, High)"
+  | TEUnit, TSLow -> "(Unit, Low)"
 
 and sec_level_to_string = function TSHigh -> "High" | TSLow -> "Low"
 
@@ -78,6 +81,12 @@ let rec expr_to_string = function
       Printf.sprintf "While(%s, %s)" (expr_to_string e1) (expr_to_string e2)
   | Seq (_, e1, e2, _) ->
       Printf.sprintf "Seq(%s, %s)" (expr_to_string e1) (expr_to_string e2)
+  | Print (_, args) ->
+      Printf.sprintf "Print([%s])"
+        (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
+  | SecurePrint (_, args) ->
+      Printf.sprintf "SecurePrint([\n        %s])"
+        (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
 
 let rec function_environment_to_string env =
   match env with

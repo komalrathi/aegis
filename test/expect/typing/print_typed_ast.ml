@@ -18,6 +18,8 @@ let rec type_expr_to_string = function
       Printf.sprintf "(Function (%s) -> %s, %s)" args_str
         (type_expr_to_string (return_type, sec_level))
         (sec_level_to_string sec_level)
+  | TEUnit, TSLow -> "(Unit, Low)"
+  | TEUnit, TSHigh -> "(Unit, High)"
 
 and sec_level_to_string = function TSHigh -> "High" | TSLow -> "Low"
 
@@ -73,6 +75,12 @@ let rec expr_to_string = function
       Printf.sprintf "Seq(%s, %s, %s)" (expr_to_string e1)
         (expr_to_string e2)
         (type_expr_to_string type_expr)
+  | Print (_, args) ->
+      Printf.sprintf "Print([%s])"
+        (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
+  | SecurePrint (_, args) ->
+      Printf.sprintf "SecurePrint([\n%s])"
+        (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
 
 and bin_op_to_string = function
   | BinOpPlus -> "Plus"
