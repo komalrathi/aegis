@@ -87,6 +87,7 @@ let rec expr_to_string = function
   | SecurePrint (_, args) ->
       Printf.sprintf "SecurePrint([\n        %s])"
         (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
+  | Skip _ -> "Skip"
 
 let rec function_environment_to_string env =
   match env with

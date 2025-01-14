@@ -63,6 +63,7 @@ let rec expr_to_string = function
   | SecurePrint (_, args) ->
       Printf.sprintf "SecurePrint([%s])"
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
+  | Skip _ -> "Skip"
 
 and bin_op_to_string = function
   | BinOpPlus -> "Plus"
