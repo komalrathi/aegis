@@ -19,6 +19,7 @@ type expr =
   | Seq of loc * expr * expr
   | Print of loc * expr list
   | SecurePrint of loc * expr list
+  | Skip of loc
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the

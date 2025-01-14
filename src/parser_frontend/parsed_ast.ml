@@ -19,6 +19,7 @@ type expr =
   | Seq of loc * expr * expr
   | Print of loc * expr list
   | SecurePrint of loc * expr list
+  | Skip of loc
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
