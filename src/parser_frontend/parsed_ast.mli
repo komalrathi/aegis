@@ -17,6 +17,8 @@ type expr =
   | FunctionApp of loc * identifier * expr list
   | While of loc * expr * expr
   | Seq of loc * expr * expr
+  | Print of loc * expr list
+  | SecurePrint of loc * expr list
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the
