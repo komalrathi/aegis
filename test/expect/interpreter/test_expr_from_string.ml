@@ -44,3 +44,26 @@ let%expect_test "Print Statement" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable]
+
+let%expect_test "Print statement with sequence" =
+  let parsed_program =
+    Parser_frontend.Parse_program.parse_program
+      (Lexing.from_string
+         "let test_var_int:(int,Low) = 54 in (let test_var_bool:(bool,Low) \
+          = True in (print (test_var_int); print (test_var_bool)))" )
+  in
+  match parsed_program with
+  | Ok program ->
+      ( match type_program program with
+      | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
+      | Error _ -> print_endline "Error: could not type program" ) ;
+      [%expect {|
+        54
+        true
+        Function Environment:
+        Result: VUnit
+        Value Environment: []
+        |}]
+  | Error _ ->
+      print_endline "Error: could not parse program" ;
+      [%expect.unreachable]
