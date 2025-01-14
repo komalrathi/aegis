@@ -85,7 +85,7 @@ let rec expr_to_string = function
       Printf.sprintf "Print([%s])"
         (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
   | SecurePrint (_, args) ->
-      Printf.sprintf "SecurePrint([\n        %s])"
+      Printf.sprintf "SecurePrint([%s])"
         (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
   | Skip _ -> "Skip"
 
