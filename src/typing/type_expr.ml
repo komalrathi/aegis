@@ -105,7 +105,10 @@ let rec type_expr expr type_environment pc =
   | Parsed_ast.Identifier (loc, id) -> (
       lookup_var_type type_environment id
       |> function
-      | None -> Error (Error.of_string "Variable does not exist")
+      | None ->
+          Error
+            (Error.of_string
+               (Printf.sprintf "Variable %s does not exist" id) )
       | Some var_type ->
           Ok (var_type, Typed_ast.Identifier (loc, var_type, id), pc) )
   | Parsed_ast.Let (loc, var_name, (var_core_type, var_sec_level), e1, e2) ->
@@ -143,7 +146,10 @@ let rec type_expr expr type_environment pc =
   | Parsed_ast.Assign (loc, var_name, e1) -> (
       lookup_var_type type_environment var_name
       |> function
-      | None -> Error (Error.of_string "Variable does not exist")
+      | None ->
+          Error
+            (Error.of_string
+               (Printf.sprintf "Variable %s does not exist" var_name) )
       | Some (var_core_type, var_sec_level) ->
           type_expr e1 type_environment pc
           >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
