@@ -303,3 +303,36 @@ let rec type_expr expr type_environment pc =
             , typed_e2
             , (e2_core_type, max_security_level e1_sec_level e2_sec_level) )
         , pc )
+  (* normal print is used to print low-security variables. It does not update
+     pc *)
+  | Parsed_ast.Print (loc, args) ->
+      let rec type_args args acc pc =
+        match args with
+        | [] -> Ok (List.rev acc)
+        | expr :: rest ->
+            type_expr expr type_environment pc
+            >>= fun ((_, security_level), typed_expr, pc) ->
+            if equal_security_level_type security_level TSHigh then
+              Error
+                (Error.of_string
+                   "Cannot print high security level data using print" )
+            else type_args rest (typed_expr :: acc) pc
+      in
+      type_args args [] pc
+      >>= fun typed_args ->
+      Ok ((TEUnit, pc), Typed_ast.Print (loc, typed_args), pc)
+  (* securePrint is used to print high-security variables. It updates pc to
+     high *)
+  | Parsed_ast.SecurePrint (loc, args) ->
+      let rec type_args args acc pc =
+        match args with
+        | [] -> Ok (List.rev acc)
+        | expr :: rest ->
+            type_expr expr type_environment pc
+            >>= fun ((_, _), typed_expr, pc) ->
+            type_args rest (typed_expr :: acc) pc
+      in
+      type_args args [] pc
+      >>= fun typed_args ->
+      let new_pc = TSHigh in
+      Ok ((TEUnit, new_pc), Typed_ast.SecurePrint (loc, typed_args), new_pc)
