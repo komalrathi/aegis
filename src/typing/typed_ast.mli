@@ -17,6 +17,9 @@ type expr =
   | FunctionApp of loc * type_expr * identifier * expr list
   | While of loc * expr * expr * type_expr
   | Seq of loc * expr * expr * type_expr
+  (* do not need type_expr for print as it is always of type unit *)
+  | Print of loc * expr list
+  | SecurePrint of loc * expr list
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
