@@ -342,3 +342,4 @@ let rec type_expr expr type_environment pc =
       >>= fun typed_args ->
       let new_pc = TSHigh in
       Ok ((TEUnit, new_pc), Typed_ast.SecurePrint (loc, typed_args), new_pc)
+  | Parsed_ast.Skip loc -> Ok ((TEUnit, pc), Typed_ast.Skip loc, pc)
