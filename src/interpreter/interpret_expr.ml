@@ -6,6 +6,11 @@ open Value_environment
 
 type function_environment = (identifier * (identifier list * expr)) list
 
+let value_to_string = function
+  | VInt i -> Printf.sprintf "%d" i
+  | VBool b -> Printf.sprintf "%b" b
+  | VUnit _ -> "unit"
+
 let apply_int_bin_op bin_op i1 i2 =
   match bin_op with
   | BinOpPlus -> Ok (VInt (i1 + i2))
@@ -30,6 +35,10 @@ let interpret_bin_op bin_op i1 i2 =
       Error
         (Error.of_string
            "Type error: cannot apply binary operation to boolean values" )
+  | VUnit _, _ | _, VUnit _ ->
+      Error
+        (Error.of_string
+           "Type error: cannot apply binary operation to unit values" )
 
 let interpret_comp_op comp_op i1 i2 =
   match (i1, i2) with
@@ -38,6 +47,10 @@ let interpret_comp_op comp_op i1 i2 =
       Error
         (Error.of_string
            "Type error: cannot apply comparison operation to boolean values" )
+  | VUnit _, _ | _, VUnit _ ->
+      Error
+        (Error.of_string
+           "Type error: cannot apply comparison operation to unit values" )
 
 let interpret_bool_comp_op bool_comp_op b1 b2 =
   match (b1, b2) with
@@ -49,6 +62,10 @@ let interpret_bool_comp_op bool_comp_op b1 b2 =
       Error
         (Error.of_string
            "Type error: cannot apply boolean operation to integer values" )
+  | VUnit _, _ | _, VUnit _ ->
+      Error
+        (Error.of_string
+           "Type error: cannot apply boolean operation to unit values" )
 
 let interpret_unary_op unary_op b =
   match b with
@@ -139,7 +156,11 @@ let rec interpret_expr expr value_environment function_environment =
       | VInt _ ->
           Error
             (Error.of_string
-               "Type error: Cannot have int type in the if condition" ) )
+               "Type error: Cannot have int type in the if condition" )
+      | VUnit _ ->
+          Error
+            (Error.of_string
+               "Type error: Cannot have unit type in the if condition" ) )
   | Classify (_, e1, _) ->
       interpret_expr e1 value_environment function_environment
   | Declassify (_, e1, _) ->
@@ -200,6 +221,28 @@ let rec interpret_expr expr value_environment function_environment =
       interpret_expr e1 value_environment function_environment
       >>= fun (_, val_env_1) ->
       interpret_expr e2 val_env_1 function_environment
+  | Print (_, args) ->
+      let rec print_args val_env args =
+        match args with
+        | [] -> Ok (VUnit (), val_env)
+        | arg :: rest ->
+            interpret_expr arg val_env function_environment
+            >>= fun (val1, val_env_1) ->
+            print_endline (value_to_string val1) ;
+            print_args val_env_1 rest
+      in
+      print_args value_environment args
+  | SecurePrint (_, args) ->
+      let rec print_args val_env args =
+        match args with
+        | [] -> Ok (VUnit (), val_env)
+        | arg :: rest ->
+            interpret_expr arg val_env function_environment
+            >>= fun (val1, val_env_1) ->
+            print_endline (value_to_string val1) ;
+            print_args val_env_1 rest
+      in
+      print_args value_environment args
 
 let rec interpret_fn_defns fn_defns function_environment =
   match fn_defns with
