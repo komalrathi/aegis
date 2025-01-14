@@ -12,10 +12,10 @@ let%expect_test "Bad Low Function Parsing" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
-      [%expect
-        {| The function return type does not match the function body type |}]
+      [%expect.unreachable];
+  [%expect {| The function security level return type does not match the function body security level type |}]
 
-let%expect_test "Successful High Function Parsing" =
+let%expect_test "Bad High Function Parsing" =
   match
     Parser_frontend.Parse_program.parse_program
       (Lexing.from_string
@@ -26,4 +26,5 @@ let%expect_test "Successful High Function Parsing" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
-      [%expect {| Function argument type does not match the function type |}]
+      [%expect.unreachable];
+  [%expect {| Function argument type does not match the function type |}]
