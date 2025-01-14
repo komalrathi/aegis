@@ -3,40 +3,40 @@ open Print_interpret_expr
 open Typing.Typed_ast
 open Typing.Type_program
 
-let%expect_test "assign" =
+let%expect_test "Normal Print Statement" =
   let parsed_program =
     Parser_frontend.Parse_program.parse_program
-      (Lexing.from_string "let test_var:(int,Low) = 72 in (test_var - 5)")
+      (Lexing.from_string "let x:(int,Low) = 54 in print(x)")
   in
   match parsed_program with
   | Ok program ->
       ( match type_program program with
       | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
-      [%expect
-        {|
+      [%expect {|
+        54
         Function Environment:
-        Result: VInt(67)
+        Result: VUnit
         Value Environment: []
         |}]
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable]
 
-let%expect_test "Print Statement" =
+let%expect_test "Secure Print Statement" =
   let parsed_program =
     Parser_frontend.Parse_program.parse_program
       (Lexing.from_string
-         "let test_var:(int,Low) = 54 in (print (test_var - 5))" )
+         "let x:(int,High) = 5 in (let y:(int,Low) = 67 in securePrint(x, y))" )
   in
   match parsed_program with
   | Ok program ->
       ( match type_program program with
       | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
-      [%expect
-        {|
-        49
+      [%expect {|
+        5
+        67
         Function Environment:
         Result: VUnit
         Value Environment: []
