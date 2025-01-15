@@ -57,6 +57,9 @@
 %token PRINT
 %token SECUREPRINT
 
+%token CLASS
+%token CONSTRUCTOR
+
 %token EOF
 
 
@@ -111,6 +114,10 @@
 %inline unary_op:
 | NOT { UnaryOpNot }
 
+sec_level:
+| HIGH_SEC_LEVEL {TSHigh}
+| LOW_SEC_LEVEL {TSLow}
+
 type_expression:
 | LEFT_PAREN TYPE_INT COMMA HIGH_SEC_LEVEL RIGHT_PAREN {(TEInt, TSHigh)}
 | LEFT_PAREN TYPE_INT COMMA LOW_SEC_LEVEL RIGHT_PAREN {(TEInt, TSLow)}
@@ -125,6 +132,19 @@ arg:
 function_defn:
 | FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression LEFT_BRACE e=expr RIGHT_BRACE SEMICOLON {FunctionDefn(f, args, t, e)}
 
+field_defn:
+| var=IDENTIFIER COLON t=type_expression {FieldDefn(var, t, None)}
+| var=IDENTIFIER COLON t=type_expression EQUAL e=expr {FieldDefn(var, t, Some(e))}
+
+// constructor example(x:(int, sec_level), y:(int,sec_level)) {e} ;
+constructor:
+| CONSTRUCTOR LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN LEFT_BRACE e=expr RIGHT_BRACE SEMICOLON {Constructor(args, e)}
+
+method_defn:
+| s=sec_level f=function_defn {MethodDefn(s, f)}
+
+class_defn:
+| CLASS c=IDENTIFIER LEFT_BRACE fields=separated_list(SEMICOLON, field_defn) constructor=constructor methods=separated_list(SEMICOLON, method_defn) RIGHT_BRACE SEMICOLON {ClassDefn(c, fields, constructor, methods)}
 
 expr:
 | i=INT {Integer($startpos, i, TSLow)}
@@ -152,6 +172,8 @@ expr:
 | id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 | PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
+// TODO: add object creation and method calls
+
 
 program:
-f = function_defn* e=expr; EOF {Prog(f,e)}
+c=class_defn* f=function_defn* e=expr; EOF {Prog(c, f, e)}

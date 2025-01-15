@@ -65,6 +65,8 @@ rule read_token = parse
     | ";" {SEMICOLON}
     | "print" {PRINT}
     |"securePrint" {SECUREPRINT}
+    | "class" {CLASS}
+    | "constructor" {CONSTRUCTOR}
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int_regex { INT (int_of_string (lexeme lexbuf)) }
