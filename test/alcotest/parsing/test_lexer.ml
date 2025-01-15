@@ -46,6 +46,8 @@ let pp_print_token fmt token =
     | IDENTIFIER id -> Printf.sprintf "IDENTIFIER(%s)" id
     | PRINT -> "PRINT"
     | SECUREPRINT -> "SECUREPRINT"
+    | CLASS -> "CLASS"
+    | CONSTRUCTOR -> "CONSTRUCTOR"
     | EOF -> "EOF" )
 
 let parser_token_testable = Alcotest.testable pp_print_token Stdlib.( = )
@@ -99,7 +101,9 @@ let lex_token_test_cases =
   ; ("fn", FN)
   ; (";", SEMICOLON)
   ; ("print", PRINT)
-  ; ("securePrint", SECUREPRINT) ]
+  ; ("securePrint", SECUREPRINT) 
+  ; ("class", CLASS)
+  ; ("constructor", CONSTRUCTOR) ]
 
 let test_lex_int =
   QCheck.Test.make ~count:100 ~name:"Lex integers" QCheck.int (fun i ->
