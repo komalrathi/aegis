@@ -26,5 +26,23 @@ type expr =
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
 
-(* A program now defines all the functions, and then the main expression. *)
-type program = Prog of function_defn list * expr
+(* A field definition is a field name, a type, and an optional expression
+   that initialises the field. *)
+type field_defn = FieldDefn of identifier * type_expr * expr option
+
+(* A constructor definition is a list of arguments and an expression that is
+   the body of the constructor. *)
+type constructor = Constructor of argument list * expr
+
+(* A method definition is a security level and a function definition. *)
+type method_defn = MethodDefn of security_level_type * function_defn
+
+(* A class definition is a class name, a list of field definitions, a
+   constructor definition, and a list of method definitions. *)
+type class_defn =
+  | ClassDefn of
+      identifier * field_defn list * constructor * method_defn list
+
+(* A program now defines all the classes, functions, and the main
+   expression. *)
+type program = Prog of class_defn list * function_defn list * expr
