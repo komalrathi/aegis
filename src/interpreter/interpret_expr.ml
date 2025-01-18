@@ -7,9 +7,13 @@ open Value_environment
 type function_environment = (identifier * (identifier list * expr)) list
 
 type class_info =
-  { fields: (string * interpreter_val option) list
-  ; constructor: string list * expr
-  ; methods: (security_level_type * string * (string list * expr)) list }
+  { fields: identifier list
+  ; constructor: identifier list * expr
+  ; methods:
+      ( identifier (* function_name *)
+      * identifier list (* arguments *)
+      * expr (* body *) )
+      list }
 
 type class_environment = (identifier * class_info) list
 
@@ -289,15 +293,6 @@ let interpret_class_defns (class_defns : class_defn list)
   (* Helper function to interpret a single class definition *)
   let interpret_class (ClassDefn (class_name, fields, constructor, methods))
       =
-    let interpret_field (FieldDefn (field_name, _, field_expr)) =
-      match field_expr with
-      | Some expr ->
-          interpret_expr expr value_environment function_environment
-            class_environment
-          >>= fun (value, _) -> Ok (field_name, Some value)
-      | None -> Ok (field_name, None)
-    in
-    let field_results = Result.all (List.map ~f:interpret_field fields) in
     let interpret_constructor (Constructor (args, constructor_expr)) =
       let arg_names = List.map ~f:(fun (TArg (name, _)) -> name) args in
       Ok (arg_names, constructor_expr)
