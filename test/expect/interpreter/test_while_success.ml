@@ -6,7 +6,7 @@ open Compiler_types.Ast_types
 open Compiler_types.Language_types
 
 (* does not terminate *)
-(* let%expect_test "While Loop from String" =
+let%expect_test "While Loop from String" =
   let parsed_program =
     Parser_frontend.Parse_program.parse_program
       (Lexing.from_string
@@ -18,10 +18,13 @@ open Compiler_types.Language_types
       | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect {|
-   |}]
+        Function Environment:
+        Result: VUnit
+        Value Environment: []
+        |}]
   | Error _ ->
       print_endline "Error: could not parse program" ;
-      [%expect.unreachable] *)
+      [%expect.unreachable]
 
 let%expect_test "Let and While Loop" =
   let expr =
