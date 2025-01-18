@@ -23,7 +23,7 @@ type expr =
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
 
-type field_defn = FieldDefn of identifier * type_expr * expr option
+type field_defn = FieldDefn of identifier * type_expr
 
 type constructor = Constructor of argument list * expr
 

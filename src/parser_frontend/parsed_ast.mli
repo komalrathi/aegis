@@ -26,9 +26,8 @@ type expr =
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
 
-(* A field definition is a field name, a type, and an optional expression
-   that initialises the field. *)
-type field_defn = FieldDefn of identifier * type_expr * expr option
+(* A field definition is a field name and a type *)
+type field_defn = FieldDefn of identifier * type_expr
 
 (* A constructor definition is a list of arguments and an expression that is
    the body of the constructor. *)

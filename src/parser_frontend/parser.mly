@@ -133,8 +133,7 @@ function_defn:
 | FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression LEFT_BRACE e=expr RIGHT_BRACE SEMICOLON {FunctionDefn(f, args, t, e)}
 
 field_defn:
-| var=IDENTIFIER COLON t=type_expression {FieldDefn(var, t, None)}
-| var=IDENTIFIER COLON t=type_expression EQUAL e=expr {FieldDefn(var, t, Some(e))}
+| var=IDENTIFIER COLON t=type_expression {FieldDefn(var, t)}
 
 // constructor example(x:(int, sec_level), y:(int,sec_level)) {e} ;
 constructor:
