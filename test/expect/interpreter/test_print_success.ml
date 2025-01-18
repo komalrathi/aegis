@@ -11,7 +11,7 @@ let%expect_test "Normal Print Statement" =
   match parsed_program with
   | Ok program ->
       ( match type_program program with
-      | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
+      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect {|
         54
@@ -32,7 +32,7 @@ let%expect_test "Secure Print Statement" =
   match parsed_program with
   | Ok program ->
       ( match type_program program with
-      | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
+      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect {|
         5

@@ -2,6 +2,7 @@ open Core
 open Compiler_types.Language_types
 open Parser_frontend
 open Type_expr
+open Type_class_defn
 open Type_function_defn
 open Typed_ast
 
@@ -20,9 +21,11 @@ let rec type_program_function fn_defns expr type_env pc =
 
 (* initialise pc as low, and pass it through as an argument, keep updating it
    in type_expr *)
-let type_program (Parsed_ast.Prog (fn_defns, expr)) =
+let type_program (Parsed_ast.Prog (class_defns, fn_defns, expr)) =
   let ( >>= ) = Result.( >>= ) in
   let pc = TSLow in
+  type_class_defn class_defns []
+  >>= fun typed_class_defns ->
   type_program_function fn_defns expr [] pc
   >>= fun (typed_fn_defns, typed_expr) ->
-  Ok (Prog (typed_fn_defns, typed_expr))
+  Ok (Prog (typed_class_defns, typed_fn_defns, typed_expr))

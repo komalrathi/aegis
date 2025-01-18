@@ -104,14 +104,50 @@ let rec value_environment_to_string env =
         (value_environment_to_string t)
   | [] -> ""
 
-let print_interpret_expr expr value_env function_env =
-  match interpret_expr expr value_env function_env with
-  | Ok (value, new_env) ->
-      Printf.sprintf
-        "Function Environment: %s\nResult: %s\nValue Environment: [%s]\n"
-        (function_environment_to_string function_env)
-        (value_to_string value)
-        (value_environment_to_string new_env)
-      |> print_endline
-  | Error err ->
-      Printf.sprintf "Error: %s\n" (Error.to_string_hum err) |> print_endline
+let rec class_environment_to_string env =
+  match env with
+  | (name, (fields, constructor, methods)) :: t ->
+      Printf.sprintf "%s { %s; %s; %s } %s" name
+        (String.concat ~sep:"; " (List.map ~f:field_to_string fields))
+        (constructor_to_string constructor)
+        (String.concat ~sep:"; " (List.map ~f:method_to_string methods))
+        (class_environment_to_string t)
+  | [] -> ""
+
+and field_to_string (name, (type_expr, sec_level)) =
+  Printf.sprintf "%s: %s, %s" name
+    (type_expr_to_string (type_expr, sec_level))
+    (sec_level_to_string sec_level)
+
+and constructor_to_string (args, body) =
+  Printf.sprintf "Constructor(%s, %s)"
+    (String.concat ~sep:", " args)
+    (expr_to_string body)
+
+and method_to_string (sec_level, (name, args, body)) =
+  Printf.sprintf "%s(%s) -> %s, %s" name
+    (String.concat ~sep:", " (List.map ~f:arg_to_string args))
+    (expr_to_string body)
+    (sec_level_to_string sec_level)
+
+and arg_to_string (name, (type_expr, sec_level)) =
+  Printf.sprintf "%s: %s, %s" name
+    (type_expr_to_string (type_expr, sec_level))
+    (sec_level_to_string sec_level)
+
+let print_interpret_expr expr value_env function_env class_env =
+  match interpret_expr expr value_env function_env class_env with
+  | Ok (value, new_value_env) ->
+      Printf.printf "Result: %s\n" (value_to_string value) ;
+      Printf.printf "Value Environment: %s\n"
+        (value_environment_to_string new_value_env) ;
+      Printf.printf "Function Environment: %s\n"
+        (function_environment_to_string function_env) ;
+      Printf.printf "Class Environment: %s\n"
+        (class_environment_to_string class_env)
+  | Error e -> Printf.printf "Error: %s\n" (Error.to_string_hum e)
+(* | Ok (value, new_env) -> Printf.sprintf "Function Environment: %s\nResult:
+   %s\nValue Environment: [%s]\n" (function_environment_to_string
+   function_env) (value_to_string value) (value_environment_to_string
+   new_env) |> print_endline | Error err -> Printf.sprintf "Error: %s\n"
+   (Error.to_string_hum err) |> print_endline *)

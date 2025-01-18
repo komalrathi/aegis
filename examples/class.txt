@@ -1,0 +1,20 @@
+class Example {
+    test_var:(int, High)
+    test_bool:(bool,Low) := True
+
+    constructor Example(x:(int,Low), y:(int, Low)) {
+        test_bool:
+        test_var := x+ y
+    }
+    sum(z:(int, Low)) {
+        if (test_bool) then{
+            x := z+6
+        }
+        else:
+        {
+            x := test_var +6
+        }
+    }
+}
+
+new Example(5,6)

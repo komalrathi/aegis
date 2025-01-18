@@ -6,6 +6,13 @@ open Value_environment
 
 type function_environment = (identifier * (identifier list * expr)) list
 
+type class_info =
+  { fields: (string * interpreter_val option) list
+  ; constructor: string list * expr
+  ; methods: (security_level_type * string * (string list * expr)) list }
+
+type class_environment = (identifier * class_info) list
+
 let value_to_string = function
   | VInt i -> Printf.sprintf "%d" i
   | VBool b -> Printf.sprintf "%b" b
@@ -90,34 +97,39 @@ let rec update_var_in_env var_name var_value env =
       else (name, value) :: update_var_in_env var_name var_value t
 
 (* return value, value_environment *)
-let rec interpret_expr expr value_environment function_environment =
+let rec interpret_expr expr value_environment function_environment
+    class_environment =
   let ( >>= ) = Result.( >>= ) in
   match expr with
   | Integer (_, i, _) -> Ok (VInt i, value_environment)
   | Boolean (_, b, _) -> Ok (VBool b, value_environment)
   | BinOp (_, _, bin_op, e1, e2) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (val1, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment
+      interpret_expr e2 val_env_1 function_environment class_environment
       >>= fun (val2, val_env_2) ->
       interpret_bin_op bin_op val1 val2
       >>= fun output_val -> Ok (output_val, val_env_2)
   | CompOp (_, _, comp_op, e1, e2) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (val1, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment
+      interpret_expr e2 val_env_1 function_environment class_environment
       >>= fun (val2, val_env_2) ->
       interpret_comp_op comp_op val1 val2
       >>= fun output_val -> Ok (output_val, val_env_2)
   | BoolOp (_, _, bool_comp_op, e1, e2) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (val1, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment
+      interpret_expr e2 val_env_1 function_environment class_environment
       >>= fun (val2, val_env_2) ->
       interpret_bool_comp_op bool_comp_op val1 val2
       >>= fun output_val -> Ok (output_val, val_env_2)
   | UnaryOp (_, _, unary_op, e1) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (val1, val_env_1) ->
       interpret_unary_op unary_op val1
       >>= fun output_val -> Ok (output_val, val_env_1)
@@ -138,21 +150,26 @@ let rec interpret_expr expr value_environment function_environment =
                  "Type error: variable type does not match value type" ) ) )
   | Let (_, var_name, _, e1, e2, _) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (val1, val_env_1) ->
       let new_env = (var_name, val1) :: val_env_1 in
-      interpret_expr e2 new_env function_environment
+      interpret_expr e2 new_env function_environment class_environment
       >>= fun (val2, val_env_2) ->
       Ok (val2, remove_var_from_env var_name val_env_2)
   | Assign (_, _, var_name, e1) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (val1, val_env_1) ->
       Ok (val1, update_var_in_env var_name val1 val_env_1)
   | If (_, e1, e2, e3, _) -> (
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (val1, val_env_1) ->
       match val1 with
-      | VBool true -> interpret_expr e2 val_env_1 function_environment
-      | VBool false -> interpret_expr e3 val_env_1 function_environment
+      | VBool true ->
+          interpret_expr e2 val_env_1 function_environment class_environment
+      | VBool false ->
+          interpret_expr e3 val_env_1 function_environment class_environment
       | VInt _ ->
           Error
             (Error.of_string
@@ -163,8 +180,10 @@ let rec interpret_expr expr value_environment function_environment =
                "Type error: Cannot have unit type in the if condition" ) )
   | Classify (_, e1, _) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
   | Declassify (_, e1, _) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
   | FunctionApp (_, _, f_name, args) -> (
     match Stdlib.List.assoc_opt f_name function_environment with
     | Some (param_names, body) ->
@@ -173,6 +192,7 @@ let rec interpret_expr expr value_environment function_environment =
           | [] -> Ok (List.rev acc, val_env)
           | arg :: rest ->
               interpret_expr arg val_env function_environment
+                class_environment
               >>= fun (val1, val_env_1) ->
               eval_args val_env_1 rest (val1 :: acc)
         in
@@ -194,17 +214,19 @@ let rec interpret_expr expr value_environment function_environment =
                   "Arity mismatch: number of arguments provided does not \
                    match the function's parameter count"
           in
-          interpret_expr body new_env function_environment
+          interpret_expr body new_env function_environment class_environment
     | None -> Error (Error.of_string "Function not found") )
   | While (_, e1, e2, _) ->
       let rec loop () =
         interpret_expr e1 value_environment function_environment
+          class_environment
         >>= fun (val1, val_env_1) ->
         match val1 with
         | VBool true ->
             (* if condition is true, execute the body e2 and repeat the
                loop *)
             interpret_expr e2 val_env_1 function_environment
+              class_environment
             >>= fun _ ->
             loop () (* Recursively call loop to repeat the evaluation *)
         | VBool false ->
@@ -219,14 +241,15 @@ let rec interpret_expr expr value_environment function_environment =
       loop ()
   | Seq (_, e1, e2, _) ->
       interpret_expr e1 value_environment function_environment
+        class_environment
       >>= fun (_, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment
+      interpret_expr e2 val_env_1 function_environment class_environment
   | Print (_, args) ->
       let rec print_args val_env args =
         match args with
         | [] -> Ok (VUnit (), val_env)
         | arg :: rest ->
-            interpret_expr arg val_env function_environment
+            interpret_expr arg val_env function_environment class_environment
             >>= fun (val1, val_env_1) ->
             print_endline (value_to_string val1) ;
             print_args val_env_1 rest
@@ -237,7 +260,7 @@ let rec interpret_expr expr value_environment function_environment =
         match args with
         | [] -> Ok (VUnit (), val_env)
         | arg :: rest ->
-            interpret_expr arg val_env function_environment
+            interpret_expr arg val_env function_environment class_environment
             >>= fun (val1, val_env_1) ->
             print_endline (value_to_string val1) ;
             print_args val_env_1 rest
@@ -257,3 +280,45 @@ let rec interpret_fn_defns fn_defns function_environment =
         (fn_name, (param_names, fn_body)) :: function_environment
       in
       interpret_fn_defns fn_defns new_env
+
+let interpret_class_defns (class_defns : class_defn list)
+    (value_environment : value_environment)
+    (function_environment : function_environment)
+    (class_environment : class_environment) : class_environment Or_error.t =
+  let ( >>= ) = Result.( >>= ) in
+  (* Helper function to interpret a single class definition *)
+  let interpret_class (ClassDefn (class_name, fields, constructor, methods))
+      =
+    let interpret_field (FieldDefn (field_name, _, field_expr)) =
+      match field_expr with
+      | Some expr ->
+          interpret_expr expr value_environment function_environment
+            class_environment
+          >>= fun (value, _) -> Ok (field_name, Some value)
+      | None -> Ok (field_name, None)
+    in
+    let field_results = Result.all (List.map ~f:interpret_field fields) in
+    let interpret_constructor (Constructor (args, constructor_expr)) =
+      let arg_names = List.map ~f:(fun (TArg (name, _)) -> name) args in
+      Ok (arg_names, constructor_expr)
+    in
+    let interpret_method
+        (MethodDefn
+           (security_level_type, FunctionDefn (method_name, args, _, body))
+          ) =
+      let arg_names = List.map ~f:(fun (TArg (name, _)) -> name) args in
+      Ok (security_level_type, method_name, (arg_names, body))
+    in
+    field_results
+    >>= fun interpreted_fields ->
+    interpret_constructor constructor
+    >>= fun (constructor_arg_names, constructor_body) ->
+    Result.all (List.map ~f:interpret_method methods)
+    >>= fun interpreted_methods ->
+    Ok
+      ( class_name
+      , { fields= interpreted_fields
+        ; constructor= (constructor_arg_names, constructor_body)
+        ; methods= interpreted_methods } )
+  in
+  Result.all (List.map ~f:interpret_class class_defns)

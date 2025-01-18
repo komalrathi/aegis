@@ -108,13 +108,44 @@ let function_defn_to_string (FunctionDefn (name, args, return_type, body)) =
     (type_expr_to_string return_type)
     (expr_to_string body)
 
-let program_to_string (Prog (function_definitions, expr)) =
+let constructor_to_string (Constructor (args, body)) =
+  Printf.sprintf "Constructor([%s], %s)"
+    (String.concat ~sep:"; " (Stdlib.List.map arg_to_string args))
+    (expr_to_string body)
+
+let class_defn_to_string (ClassDefn (name, fields, constructor, methods)) =
+  let fields_string =
+    String.concat ~sep:"\n"
+      (Stdlib.List.map
+         (fun (FieldDefn (field_name, field_type)) ->
+           Printf.sprintf "FieldDefn(%s, %s)" field_name
+             (type_expr_to_string field_type) )
+         fields )
+  in
+  let methods_string =
+    String.concat ~sep:"\n"
+      (Stdlib.List.map
+         (fun (MethodDefn (sec_level, function_defn)) ->
+           Printf.sprintf "MethodDefn(%s, %s)"
+             (sec_level_to_string sec_level)
+             (function_defn_to_string function_defn) )
+         methods )
+  in
+  Printf.sprintf "ClassDefn(%s, %s, %s, %s)" name fields_string
+    (constructor_to_string constructor)
+    methods_string
+
+let program_to_string (Prog (class_defns, function_defns, expr)) =
+  let class_names_string =
+    String.concat ~sep:"\n"
+      (Stdlib.List.map class_defn_to_string class_defns)
+  in
   let function_names_string =
     String.concat ~sep:"\n"
-      (Stdlib.List.map function_defn_to_string function_definitions)
+      (Stdlib.List.map function_defn_to_string function_defns)
   in
-  Printf.sprintf "Program([\n%s\n], %s)" function_names_string
-    (expr_to_string expr)
+  Printf.sprintf "Program([\n%s\n],[\n%s\n], %s)" class_names_string
+    function_names_string (expr_to_string expr)
 
 let print_typed_ast input =
   match Typing.Type_program.type_program input with
