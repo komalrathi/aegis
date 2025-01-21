@@ -1,0 +1,8 @@
+let x:(int, High) = 3 in (
+    let y:(int, High) = 10 in (
+        while (y > x) {
+            (x := x + 1);
+            print(x)
+        }
+    )
+)
