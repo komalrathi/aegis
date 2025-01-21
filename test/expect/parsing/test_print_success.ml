@@ -47,3 +47,20 @@ let%expect_test "Print with while" =
 
     ], Let(x, (Int, Low), Integer(6), Let(y, (Int, Low), Integer(0), While(CompOp(LessThan, Identifier(y), Integer(5)), Seq(Print([Identifier(x)]), Assign(y, BinOp(Plus, Identifier(y), Integer(1))))))))
     |}]
+
+let%expect_test "Secure Print in While Loop" =
+  print_parsed_ast
+    (Lexing.from_string
+       "let x:(int, High) = 3 in (\n\
+       \    let y:(int, High) = 10 in (\n\
+       \        while (y > x) {\n\
+       \            (x := x + 1);\n\
+       \            securePrint(x)\n\
+       \        }\n\
+       \    )\n\
+        )" ) ;
+  [%expect {|
+    Program([
+
+    ], Let(x, (Int, High), Integer(3), Let(y, (Int, High), Integer(10), While(CompOp(GreaterThan, Identifier(y), Identifier(x)), Seq(Assign(x, BinOp(Plus, Identifier(x), Integer(1))), SecurePrint([Identifier(x)]))))))
+    |}]
