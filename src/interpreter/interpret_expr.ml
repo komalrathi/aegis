@@ -4,19 +4,6 @@ open Compiler_types.Ast_types
 open Compiler_types.Language_types
 open Value_environment
 
-type function_environment = (identifier * (identifier list * expr)) list
-
-type class_info =
-  { fields: identifier list
-  ; constructor: identifier list * expr
-  ; methods:
-      ( identifier (* function_name *)
-      * identifier list (* arguments *)
-      * expr (* body *) )
-      list }
-
-type class_environment = (identifier * class_info) list
-
 let value_to_string = function
   | VInt i -> Printf.sprintf "%d" i
   | VBool b -> Printf.sprintf "%b" b
@@ -270,50 +257,3 @@ let rec interpret_expr expr value_environment function_environment
             print_args val_env_1 rest
       in
       print_args value_environment args
-
-let rec interpret_fn_defns fn_defns function_environment =
-  match fn_defns with
-  | [] -> Ok function_environment
-  | FunctionDefn (fn_name, param_list, (_, _), fn_body) :: fn_defns ->
-      (* get the list of parameter names from the argument list *)
-      let param_names =
-        Stdlib.List.map (fun (TArg (id, _)) -> id) param_list
-      in
-      (* add function to the function_environment *)
-      let new_env =
-        (fn_name, (param_names, fn_body)) :: function_environment
-      in
-      interpret_fn_defns fn_defns new_env
-
-let interpret_class_defns (class_defns : class_defn list)
-    (value_environment : value_environment)
-    (function_environment : function_environment)
-    (class_environment : class_environment) : class_environment Or_error.t =
-  let ( >>= ) = Result.( >>= ) in
-  (* Helper function to interpret a single class definition *)
-  let interpret_class (ClassDefn (class_name, fields, constructor, methods))
-      =
-    let interpret_constructor (Constructor (args, constructor_expr)) =
-      let arg_names = List.map ~f:(fun (TArg (name, _)) -> name) args in
-      Ok (arg_names, constructor_expr)
-    in
-    let interpret_method
-        (MethodDefn
-           (security_level_type, FunctionDefn (method_name, args, _, body))
-          ) =
-      let arg_names = List.map ~f:(fun (TArg (name, _)) -> name) args in
-      Ok (security_level_type, method_name, (arg_names, body))
-    in
-    field_results
-    >>= fun interpreted_fields ->
-    interpret_constructor constructor
-    >>= fun (constructor_arg_names, constructor_body) ->
-    Result.all (List.map ~f:interpret_method methods)
-    >>= fun interpreted_methods ->
-    Ok
-      ( class_name
-      , { fields= interpreted_fields
-        ; constructor= (constructor_arg_names, constructor_body)
-        ; methods= interpreted_methods } )
-  in
-  Result.all (List.map ~f:interpret_class class_defns)
