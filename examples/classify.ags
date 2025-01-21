@@ -1,0 +1,8 @@
+let x:(int, High) = 100 in
+    if (x > 50) then {
+        let y:(int, Low) = declassify(x) in
+        print((y+5))
+    } 
+    else {
+        securePrint(x)
+    }
