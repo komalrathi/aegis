@@ -1,11 +1,13 @@
 open Core
 open Typing.Typed_ast
 open Interpret_expr
+open Interpret_class_defn
+open Interpret_fn_defn
 
 let interpret_program (Prog (typed_class_defns, typed_fn_defns, typed_expr))
     =
   let ( >>= ) = Result.( >>= ) in
-  interpret_class_defns typed_class_defns []
+  interpret_class_defns typed_class_defns
   >>= fun class_environment ->
   interpret_fn_defns typed_fn_defns []
   >>= fun function_environment ->
