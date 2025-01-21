@@ -59,7 +59,8 @@ let%expect_test "Secure Print in While Loop" =
        \        }\n\
        \    )\n\
         )" ) ;
-  [%expect {|
+  [%expect
+    {|
     Program([
 
     ], Let(x, (Int, High), Integer(3), Let(y, (Int, High), Integer(10), While(CompOp(GreaterThan, Identifier(y), Identifier(x)), Seq(Assign(x, BinOp(Plus, Identifier(x), Integer(1))), SecurePrint([Identifier(x)]))))))

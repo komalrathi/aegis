@@ -25,7 +25,8 @@ let%expect_test "Less than comparison" =
   print_interpret_expr
     (CompOp (Lexing.dummy_pos, (TEInt, TSLow), comp_op, i1, i2))
     [] [] ;
-  [%expect {|
+  [%expect
+    {|
     Function Environment:
     Result: VBool(true)
     Value Environment: []
@@ -38,7 +39,8 @@ let%expect_test "Boolean And Operation" =
   print_interpret_expr
     (BoolOp (Lexing.dummy_pos, (TEBool, TSLow), bool_op, b1, b2))
     [] [] ;
-  [%expect {|
+  [%expect
+    {|
     Function Environment:
     Result: VBool(false)
     Value Environment: []
@@ -50,7 +52,8 @@ let%expect_test "Unary Operation" =
   print_interpret_expr
     (UnaryOp (Lexing.dummy_pos, (TEBool, TSLow), unary_op, b))
     [] [] ;
-  [%expect {|
+  [%expect
+    {|
     Function Environment:
     Result: VBool(false)
     Value Environment: []

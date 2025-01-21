@@ -10,5 +10,5 @@ let%expect_test "Variable Shadowing" =
   | Ok program -> print_typed_ast program
   | Error _ ->
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {| Variable has already been assigned and has another type |}]
+      [%expect.unreachable] ;
+      [%expect {| Variable has already been assigned and has another type |}]

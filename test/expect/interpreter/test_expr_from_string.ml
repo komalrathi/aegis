@@ -57,7 +57,8 @@ let%expect_test "Print statement with sequence" =
       ( match type_program program with
       | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
-      [%expect {|
+      [%expect
+        {|
         54
         true
         Function Environment:

@@ -11,7 +11,8 @@ let%expect_test "while loop with let statement" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
-  [%expect {|
+      [%expect
+        {|
     Program([
 
     ], Let(x, (Int, Low), Integer(5), While(CompOp(LessThan, (Bool, Low), Identifier(x, (Int, Low)), Integer(5)), Assign((Int, Low), x, BinOp(Plus, (Int, Low), Identifier(x, (Int, Low)), Integer(1))), (Int, Low)), (Int, Low)))
