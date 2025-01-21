@@ -1,6 +1,6 @@
 (lang dune 3.16)
 
-(name infolang)
+(name aegis)
 
 (generate_opam_files true)
 
@@ -12,4 +12,3 @@
 (maintainers "Komal Rathi")
 
 (using menhir 3.0)
-
