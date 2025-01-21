@@ -1,9 +1,9 @@
 class Example {
     test_var:(int, High)
-    test_bool:(bool,Low) := True
+    test_bool:(bool,Low)
 
     constructor Example(x:(int,Low), y:(int, Low)) {
-        test_bool:
+        test_bool:= True
         test_var := x+ y
     }
     sum(z:(int, Low)) {
