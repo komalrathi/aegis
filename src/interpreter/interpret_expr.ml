@@ -1,4 +1,4 @@
-open Core
+(* open Core *)
 open Typing.Typed_ast
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
@@ -15,7 +15,7 @@ let apply_int_bin_op bin_op i1 i2 =
   | BinOpMinus -> Ok (VInt (i1 - i2))
   | BinOpMultiply -> Ok (VInt (i1 * i2))
   | BinOpDivide ->
-      if phys_equal i2 0 then Error (Error.of_string "Division by zero")
+      if i2 = 0 then Error (Core.Error.of_string "Division by zero")
       else Ok (VInt (i1 / i2))
 
 let apply_comp_op comp_op i1 i2 =
@@ -24,18 +24,18 @@ let apply_comp_op comp_op i1 i2 =
   | CompOpGreaterThan -> Ok (VBool (i1 > i2))
   | CompOpLessThanEqual -> Ok (VBool (i1 <= i2))
   | CompOpGreaterThanEqual -> Ok (VBool (i1 >= i2))
-  | CompOpEqual -> Ok (VBool (phys_equal i1 i2))
+  | CompOpEqual -> Ok (VBool (i1 = i2))
 
 let interpret_bin_op bin_op i1 i2 =
   match (i1, i2) with
   | VInt i1, VInt i2 -> apply_int_bin_op bin_op i1 i2
   | VInt _, VBool _ | VBool _, VInt _ | VBool _, VBool _ ->
       Error
-        (Error.of_string
+        (Core.Error.of_string
            "Type error: cannot apply binary operation to boolean values" )
   | VUnit _, _ | _, VUnit _ ->
       Error
-        (Error.of_string
+        (Core.Error.of_string
            "Type error: cannot apply binary operation to unit values" )
 
 let interpret_comp_op comp_op i1 i2 =
@@ -43,11 +43,11 @@ let interpret_comp_op comp_op i1 i2 =
   | VInt i1, VInt i2 -> apply_comp_op comp_op i1 i2
   | VInt _, VBool _ | VBool _, VInt _ | VBool _, VBool _ ->
       Error
-        (Error.of_string
+        (Core.Error.of_string
            "Type error: cannot apply comparison operation to boolean values" )
   | VUnit _, _ | _, VUnit _ ->
       Error
-        (Error.of_string
+        (Core.Error.of_string
            "Type error: cannot apply comparison operation to unit values" )
 
 let interpret_bool_comp_op bool_comp_op b1 b2 =
@@ -58,11 +58,11 @@ let interpret_bool_comp_op bool_comp_op b1 b2 =
     | BoolOpOr -> Ok (VBool (b1 || b2)) )
   | VInt _, VBool _ | VBool _, VInt _ | VInt _, VInt _ ->
       Error
-        (Error.of_string
+        (Core.Error.of_string
            "Type error: cannot apply boolean operation to integer values" )
   | VUnit _, _ | _, VUnit _ ->
       Error
-        (Error.of_string
+        (Core.Error.of_string
            "Type error: cannot apply boolean operation to unit values" )
 
 let interpret_unary_op unary_op b =
@@ -70,27 +70,27 @@ let interpret_unary_op unary_op b =
   | VBool b -> ( match unary_op with UnaryOpNot -> Ok (VBool (not b)) )
   | _ ->
       Error
-        (Error.of_string
+        (Core.Error.of_string
            "Type error: cannot apply unary operation to integer values" )
 
 let rec remove_var_from_env var_name env =
   match env with
   | [] -> []
   | (name, value) :: t ->
-      if phys_equal var_name name then t
+      if var_name = name then t
       else (name, value) :: remove_var_from_env var_name t
 
 let rec update_var_in_env var_name var_value env =
   match env with
   | [] -> []
   | (name, value) :: t ->
-      if phys_equal var_name name then (var_name, var_value) :: t
+      if var_name = name then (var_name, var_value) :: t
       else (name, value) :: update_var_in_env var_name var_value t
 
 (* return value, value_environment *)
 let rec interpret_expr expr value_environment function_environment
     class_environment =
-  let ( >>= ) = Result.( >>= ) in
+  let ( >>= ) = Core.Result.( >>= ) in
   match expr with
   | Integer (_, i, _) -> Ok (VInt i, value_environment)
   | Boolean (_, b, _) -> Ok (VBool b, value_environment)
@@ -129,7 +129,7 @@ let rec interpret_expr expr value_environment function_environment
       |> function
       | None ->
           Error
-            (Error.of_string
+            (Core.Error.of_string
                (Printf.sprintf "Variable %s does not have a value" identifier) )
       | Some var_value -> (
         match (var_type, var_value) with
@@ -137,7 +137,7 @@ let rec interpret_expr expr value_environment function_environment
         | (TEBool, _), VBool b -> Ok (VBool b, value_environment)
         | _ ->
             Error
-              (Error.of_string
+              (Core.Error.of_string
                  "Type error: variable type does not match value type" ) ) )
   | Let (_, var_name, _, e1, e2, _) ->
       interpret_expr e1 value_environment function_environment
@@ -163,11 +163,11 @@ let rec interpret_expr expr value_environment function_environment
           interpret_expr e3 val_env_1 function_environment class_environment
       | VInt _ ->
           Error
-            (Error.of_string
+            (Core.Error.of_string
                "Type error: Cannot have int type in the if condition" )
       | VUnit _ ->
           Error
-            (Error.of_string
+            (Core.Error.of_string
                "Type error: Cannot have unit type in the if condition" ) )
   | Classify (_, e1, _) ->
       interpret_expr e1 value_environment function_environment
@@ -191,14 +191,14 @@ let rec interpret_expr expr value_environment function_environment
         >>= fun (arg_values, args_updated_value_env) ->
         if List.length param_names <> List.length arg_values then
           Error
-            (Error.of_string
+            (Core.Error.of_string
                (Printf.sprintf
                   "Arity mismatch in function '%s': expected %d arguments \
                    but got %d"
                   f_name (List.length param_names) (List.length arg_values) ) )
         else
           let new_env =
-            match List.zip param_names arg_values with
+            match Core.List.zip param_names arg_values with
             | Ok pairs -> pairs @ args_updated_value_env
             | Unequal_lengths ->
                 failwith
@@ -206,30 +206,18 @@ let rec interpret_expr expr value_environment function_environment
                    match the function's parameter count"
           in
           interpret_expr body new_env function_environment class_environment
-    | None -> Error (Error.of_string "Function not found") )
-  | While (_, e1, e2, _) ->
-      let rec loop () =
-        interpret_expr e1 value_environment function_environment
-          class_environment
-        >>= fun (val1, val_env_1) ->
-        match val1 with
-        | VBool true ->
-            (* if condition is true, execute the body e2 and repeat the
-               loop *)
-            interpret_expr e2 val_env_1 function_environment
-              class_environment
-            >>= fun _ ->
-            loop () (* Recursively call loop to repeat the evaluation *)
-        | VBool false ->
-            (* if condition is false, the loop terminates and returns
-               false *)
-            Ok (VBool false, val_env_1)
-        | _ ->
-            Error
-              (Error.of_string
-                 "Type error: Condition in while loop must be a boolean" )
+    | None -> Error (Core.Error.of_string "Function not found") )
+  | While (loc, e1, e2, type_expr) ->
+      let e =
+        If
+          ( loc
+          , e1
+          , Seq (loc, e2, While (loc, e1, e2, type_expr), type_expr)
+          , Skip loc
+          , type_expr )
       in
-      loop ()
+      interpret_expr e value_environment function_environment
+        class_environment
   | Seq (_, e1, e2, _) ->
       interpret_expr e1 value_environment function_environment
         class_environment
@@ -257,3 +245,4 @@ let rec interpret_expr expr value_environment function_environment
             print_args val_env_1 rest
       in
       print_args value_environment args
+  | Skip _ -> Ok (VUnit (), value_environment)

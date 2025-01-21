@@ -1,0 +1,3 @@
+(library
+ (name print)
+ (libraries core fmt parser_frontend compiler_types typing interpreter))

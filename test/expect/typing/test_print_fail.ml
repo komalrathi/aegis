@@ -1,5 +1,5 @@
 open Core
-open Print_typed_ast
+open Print.Print_typed_ast
 
 let%expect_test "Normal Print Statement with High Security Level Variable" =
   match
@@ -9,5 +9,5 @@ let%expect_test "Normal Print Statement with High Security Level Variable" =
   | Ok program -> print_typed_ast program
   | Error _ ->
       print_endline "Error: could not parse program" ;
-      [%expect.unreachable];
-  [%expect {| Cannot print high security level data using print |}]
+      [%expect.unreachable] ;
+      [%expect {| Cannot print high security level data using print |}]

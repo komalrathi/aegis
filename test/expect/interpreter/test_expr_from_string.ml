@@ -1,5 +1,5 @@
 open Core
-open Print_interpret_expr
+open Print.Print_interpret_expr
 open Typing.Typed_ast
 open Typing.Type_program
 
@@ -57,7 +57,8 @@ let%expect_test "Print statement with sequence" =
       ( match type_program program with
       | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
-      [%expect {|
+      [%expect
+        {|
         54
         true
         Function Environment:

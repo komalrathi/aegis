@@ -1,6 +1,6 @@
 (library
  (name parsing_tests)
- (libraries core parser_frontend typing)
+ (libraries core parser_frontend typing print)
  (inline_tests)
  (preprocess
   (pps ppx_expect))

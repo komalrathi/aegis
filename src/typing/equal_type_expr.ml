@@ -13,6 +13,7 @@ let rec equal_core_type a b =
          | Ok result -> result
          | Unequal_lengths -> false )
       && equal_core_type ret_a ret_b
+  | TEUnit, TEUnit -> true
   | _, _ -> false
 
 let equal_security_level_type a b =

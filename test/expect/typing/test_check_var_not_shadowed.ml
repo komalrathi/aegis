@@ -1,5 +1,5 @@
 open Core
-open Print_typed_ast
+open Print.Print_typed_ast
 
 let%expect_test "Variable Shadowing" =
   match
@@ -10,5 +10,5 @@ let%expect_test "Variable Shadowing" =
   | Ok program -> print_typed_ast program
   | Error _ ->
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {| Variable has already been assigned and has another type |}]
+      [%expect.unreachable] ;
+      [%expect {| Variable has already been assigned and has another type |}]

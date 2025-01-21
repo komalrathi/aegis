@@ -1,5 +1,5 @@
 open Core
-open Print_parsed_ast
+open Print.Print_parsed_ast
 
 let%expect_test "Boolean Operation" =
   print_parsed_ast (Lexing.from_string "True && False || !True && False") ;

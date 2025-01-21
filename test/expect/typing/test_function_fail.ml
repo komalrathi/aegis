@@ -1,5 +1,5 @@
 open Core
-open Print_typed_ast
+open Print.Print_typed_ast
 
 let%expect_test "Bad Low Function Parsing" =
   match
@@ -12,8 +12,9 @@ let%expect_test "Bad Low Function Parsing" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {| The function security level return type does not match the function body security level type |}]
+      [%expect.unreachable] ;
+      [%expect
+        {| The function security level return type does not match the function body security level type |}]
 
 let%expect_test "Bad High Function Parsing" =
   match
@@ -26,5 +27,5 @@ let%expect_test "Bad High Function Parsing" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {| Function argument type does not match the function type |}]
+      [%expect.unreachable] ;
+      [%expect {| Function argument type does not match the function type |}]

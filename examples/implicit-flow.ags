@@ -1,0 +1,13 @@
+let z:(int, Low) = 1 in (
+    let x:(bool, High) = True in (
+        if (x) then {
+            z:=2
+        }
+        else {
+            z:=3
+        };
+        print(z)
+    )
+)
+// fails in the Assign rule because pc is High and z is Low
+// therefore follows the no write down Biba security policy

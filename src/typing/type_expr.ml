@@ -22,6 +22,13 @@ let max_security_level sec1 sec2 =
   | TSLow, TSHigh -> TSHigh
   | TSHigh, TSLow -> TSHigh
 
+let core_type_to_string core_type =
+  match core_type with
+  | TEInt -> "Int"
+  | TEBool -> "Bool"
+  | TEUnit -> "Unit"
+  | TFunction _ -> "Function"
+
 let rec type_expr expr type_environment pc =
   let ( >>= ) = Result.( >>= ) in
   match expr with
@@ -53,7 +60,7 @@ let rec type_expr expr type_environment pc =
               , typed_e1
               , typed_e2 )
           , pc )
-      else Error (Error.of_string "binary operands type error")
+      else Error (Error.of_string "Binary operands type error")
   | Parsed_ast.CompOp (loc, comp_op, e1, e2) ->
       type_expr e1 type_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
@@ -72,7 +79,7 @@ let rec type_expr expr type_environment pc =
               , typed_e1
               , typed_e2 )
           , pc )
-      else Error (Error.of_string "comparison operands type error")
+      else Error (Error.of_string "Comparison operands type error")
   | Parsed_ast.BoolOp (loc, bool_comp_op, e1, e2) ->
       type_expr e1 type_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
@@ -91,7 +98,12 @@ let rec type_expr expr type_environment pc =
               , typed_e1
               , typed_e2 )
           , pc )
-      else Error (Error.of_string "boolean comparison operands type error")
+      else
+        Error
+          (Error.of_string
+             (Printf.sprintf "Boolean operation operands type error: %s %s"
+                (core_type_to_string e1_core_type)
+                (core_type_to_string e2_core_type) ) )
   | Parsed_ast.UnaryOp (loc, unary_op, e1) ->
       type_expr e1 type_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
@@ -101,7 +113,7 @@ let rec type_expr expr type_environment pc =
           , Typed_ast.UnaryOp
               (loc, (TEBool, e1_sec_level), unary_op, typed_e1)
           , pc )
-      else Error (Error.of_string "unary operand type error")
+      else Error (Error.of_string "Unary operation type error")
   | Parsed_ast.Identifier (loc, id) -> (
       lookup_var_type type_environment id
       |> function
@@ -137,12 +149,13 @@ let rec type_expr expr type_environment pc =
       else if equal_core_type var_core_type e1_core_type then
         Error
           (Error.of_string
-             "Variable security level type does not match the assigned \
-              security level type" )
+             "The security level of the environment pc and the security \
+              level of the expression do not match" )
       else
         Error
           (Error.of_string
-             "Variable type does not match the assigned expression type" )
+             "Variable core type does not match the assigned expression \
+              core type" )
   | Parsed_ast.Assign (loc, var_name, e1) -> (
       lookup_var_type type_environment var_name
       |> function
@@ -165,20 +178,21 @@ let rec type_expr expr type_environment pc =
           else
             Error
               (Error.of_string
-                 "Variable type does not match the assigned expression type" )
-      )
+                 "Variable security level type does not match the assigned \
+                  security level type" ) )
   | Parsed_ast.If (loc, e1, e2, e3) ->
       type_expr e1 type_environment pc
-      >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
-      type_expr e2 type_environment pc
-      >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
-      type_expr e3 type_environment pc
-      >>= fun ((e3_core_type, e3_sec_level), typed_e3, pc) ->
+      >>= fun ((e1_core_type, e1_sec_level), typed_e1, _) ->
+      let new_pc = join pc e1_sec_level in
+      type_expr e2 type_environment new_pc
+      >>= fun ((e2_core_type, e2_sec_level), typed_e2, _) ->
+      type_expr e3 type_environment new_pc
+      >>= fun ((e3_core_type, e3_sec_level), typed_e3, _) ->
       if
         equal_core_type e1_core_type TEBool
         && equal_core_type e2_core_type e3_core_type
       then
-        let new_pc = join pc e1_sec_level in
+        (* let new_pc = join pc e1_sec_level in *)
         Ok
           ( ( e2_core_type
             , max_security_level e1_sec_level
@@ -295,7 +309,7 @@ let rec type_expr expr type_environment pc =
       else
         Error
           (Error.of_string
-             "Expression types in the while statement are not correct" )
+             "The expression in the while loop is not a boolean" )
   | Parsed_ast.Seq (loc, e1, e2) ->
       type_expr e1 type_environment pc
       >>= fun ((_, e1_sec_level), typed_e1, pc) ->
@@ -342,3 +356,4 @@ let rec type_expr expr type_environment pc =
       >>= fun typed_args ->
       let new_pc = TSHigh in
       Ok ((TEUnit, new_pc), Typed_ast.SecurePrint (loc, typed_args), new_pc)
+  | Parsed_ast.Skip loc -> Ok ((TEUnit, pc), Typed_ast.Skip loc, pc)

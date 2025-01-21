@@ -1,5 +1,5 @@
 open Core
-open Print_typed_ast
+open Print.Print_typed_ast
 
 let%expect_test "Low Security Level Variable Creation using Let" =
   match

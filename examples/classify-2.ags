@@ -1,0 +1,8 @@
+let x:(int, Low) = 15 in
+    let y:(int, High) = classify(x) in
+        if (y > 10) then {
+            let z:(int, Low) = declassify(y) in
+            print(z)
+        } else {
+            securePrint(y)
+        }
