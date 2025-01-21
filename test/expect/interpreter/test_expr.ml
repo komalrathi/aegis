@@ -10,7 +10,7 @@ let%expect_test "Integer Plus Operation" =
   let bin_op = BinOpPlus in
   print_interpret_expr
     (BinOp (Lexing.dummy_pos, (TEInt, TSLow), bin_op, i1, i2))
-    [] [] ;
+    [] [] [] ;
   [%expect
     {|
     Function Environment:
@@ -24,7 +24,7 @@ let%expect_test "Less than comparison" =
   let comp_op = CompOpLessThan in
   print_interpret_expr
     (CompOp (Lexing.dummy_pos, (TEInt, TSLow), comp_op, i1, i2))
-    [] [] ;
+    [] [] [] ;
   [%expect
     {|
     Function Environment:
@@ -38,7 +38,7 @@ let%expect_test "Boolean And Operation" =
   let bool_op = BoolOpAnd in
   print_interpret_expr
     (BoolOp (Lexing.dummy_pos, (TEBool, TSLow), bool_op, b1, b2))
-    [] [] ;
+    [] [] [] ;
   [%expect
     {|
     Function Environment:
@@ -51,7 +51,7 @@ let%expect_test "Unary Operation" =
   let unary_op = UnaryOpNot in
   print_interpret_expr
     (UnaryOp (Lexing.dummy_pos, (TEBool, TSLow), unary_op, b))
-    [] [] ;
+    [] [] [] ;
   [%expect
     {|
     Function Environment:
@@ -64,7 +64,7 @@ let%expect_test "If statement" =
   let i2 = Integer (Lexing.dummy_pos, 5, TSLow) in
   let i3 = Integer (Lexing.dummy_pos, 10, TSLow) in
   let if_expr = If (Lexing.dummy_pos, i1, i2, i3, (TEInt, TSLow)) in
-  print_interpret_expr if_expr [] [] ;
+  print_interpret_expr if_expr [] [] [] ;
   [%expect
     {|
     Function Environment:
@@ -97,7 +97,7 @@ let%expect_test "Function application" =
     Interpreter.Interpret_fn_defn.interpret_fn_defns [function_defn] []
   with
   | Ok function_env ->
-      print_interpret_expr function_app [] function_env ;
+      print_interpret_expr function_app [] function_env [] ;
       [%expect
         {|
         Function Environment: example(x, y) -> BinOp(Plus, Identifier((Int, Low)), Identifier((Int, Low)));
@@ -123,7 +123,7 @@ let%expect_test "Let statement" =
           , Integer (Lexing.dummy_pos, 5, TSLow) )
       , (TEInt, TSLow) )
   in
-  print_interpret_expr let_expr [] [] ;
+  print_interpret_expr let_expr [] [] [] ;
   [%expect
     {|
     Function Environment:

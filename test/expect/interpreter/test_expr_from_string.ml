@@ -11,7 +11,7 @@ let%expect_test "assign" =
   match parsed_program with
   | Ok program ->
       ( match type_program program with
-      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] []
+      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect
         {|
@@ -32,7 +32,7 @@ let%expect_test "Print Statement" =
   match parsed_program with
   | Ok program ->
       ( match type_program program with
-      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] []
+      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect
         {|
@@ -55,7 +55,7 @@ let%expect_test "Print statement with sequence" =
   match parsed_program with
   | Ok program ->
       ( match type_program program with
-      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] []
+      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect
         {|
