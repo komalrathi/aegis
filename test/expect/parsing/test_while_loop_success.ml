@@ -1,5 +1,5 @@
 open Core
-open Print_parsed_ast
+open Print.Print_parsed_ast
 
 let%expect_test "Successful While loop parsing" =
   print_parsed_ast (Lexing.from_string "while (x < 5) { x:= x + 1 }") ;

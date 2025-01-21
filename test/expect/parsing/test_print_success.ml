@@ -1,5 +1,5 @@
 open Core
-open Print_parsed_ast
+open Print.Print_parsed_ast
 
 let%expect_test "Normal Print Statement" =
   print_parsed_ast (Lexing.from_string "let x:(int,Low) = 54 in print(x)") ;

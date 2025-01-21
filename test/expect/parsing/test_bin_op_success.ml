@@ -1,5 +1,5 @@
 open Core
-open Print_parsed_ast
+open Print.Print_parsed_ast
 
 let%expect_test "Binary Operation" =
   print_parsed_ast (Lexing.from_string "5 * 6 / 2 + 7 - 1") ;

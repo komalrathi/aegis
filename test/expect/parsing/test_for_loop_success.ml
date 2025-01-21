@@ -1,5 +1,5 @@
 open Core
-open Print_parsed_ast
+open Print.Print_parsed_ast
 
 let%expect_test "first for loop" =
   print_parsed_ast

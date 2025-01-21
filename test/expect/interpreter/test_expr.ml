@@ -1,5 +1,5 @@
 open Core
-open Print_interpret_expr
+open Print.Print_interpret_expr
 open Compiler_types.Language_types
 open Compiler_types.Ast_types
 open Typing.Typed_ast
