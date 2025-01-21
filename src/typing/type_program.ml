@@ -24,7 +24,7 @@ let rec type_program_function fn_defns expr type_env pc =
 let type_program (Parsed_ast.Prog (class_defns, fn_defns, expr)) =
   let ( >>= ) = Result.( >>= ) in
   let pc = TSLow in
-  type_class_defn class_defns []
+  type_class_defns class_defns []
   >>= fun typed_class_defns ->
   type_program_function fn_defns expr [] pc
   >>= fun (typed_fn_defns, typed_expr) ->
