@@ -1,50 +1,7 @@
 open Core
 open Interpreter.Interpret_expr
-open Compiler_types.Ast_types
-open Compiler_types.Language_types
 open Typing.Typed_ast
-
-let value_to_string = function
-  | VInt i -> Printf.sprintf "VInt(%d)" i
-  | VBool b -> Printf.sprintf "VBool(%b)" b
-  | VUnit _ -> "VUnit"
-
-and unary_op_to_string = function UnaryOpNot -> "Not"
-
-and bin_op_to_string = function
-  | BinOpPlus -> "Plus"
-  | BinOpMinus -> "Minus"
-  | BinOpMultiply -> "Multiply"
-  | BinOpDivide -> "Divide"
-
-and comp_op_to_string = function
-  | CompOpLessThan -> "LessThan"
-  | CompOpGreaterThan -> "GreaterThan"
-  | CompOpLessThanEqual -> "LessThanEqual"
-  | CompOpGreaterThanEqual -> "GreaterThanEqual"
-  | CompOpEqual -> "Equal"
-
-and bool_op_to_string = function BoolOpAnd -> "And" | BoolOpOr -> "Or"
-
-let rec type_expr_to_string = function
-  | TEInt, TSHigh -> "(Int, High)"
-  | TEInt, TSLow -> "(Int, Low)"
-  | TEBool, TSHigh -> "(Bool, High)"
-  | TEBool, TSLow -> "(Bool, Low)"
-  | TFunction (args, return_type), sec_level ->
-      let args_str =
-        String.concat ~sep:"; "
-          (Stdlib.List.map
-             (fun arg -> type_expr_to_string (arg, sec_level))
-             args )
-      in
-      Printf.sprintf "(Function (%s) -> %s, %s)" args_str
-        (type_expr_to_string (return_type, sec_level))
-        (sec_level_to_string sec_level)
-  | TEUnit, TSHigh -> "(Unit, High)"
-  | TEUnit, TSLow -> "(Unit, Low)"
-
-and sec_level_to_string = function TSHigh -> "High" | TSLow -> "Low"
+open Print_compiler_types
 
 let rec expr_to_string = function
   | Integer (_, i, _) -> Printf.sprintf "Integer(%d)" i
