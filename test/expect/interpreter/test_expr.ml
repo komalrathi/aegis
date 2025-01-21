@@ -93,7 +93,9 @@ let%expect_test "Function application" =
       , [ Integer (Lexing.dummy_pos, 5, TSLow)
         ; Integer (Lexing.dummy_pos, 10, TSLow) ] )
   in
-  match Interpreter.Interpret_expr.interpret_fn_defns [function_defn] [] with
+  match
+    Interpreter.Interpret_fn_defn.interpret_fn_defns [function_defn] []
+  with
   | Ok function_env ->
       print_interpret_expr function_app [] function_env ;
       [%expect

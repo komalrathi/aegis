@@ -16,7 +16,7 @@ let%expect_test "While Loop from String" =
   match parsed_program with
   | Ok program ->
       ( match type_program program with
-      | Ok (Prog (_, expr)) -> print_interpret_expr expr [] []
+      | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect
         {|
@@ -56,14 +56,9 @@ let%expect_test "Let and While Loop" =
            , (TEInt, TSLow) )
        , (TEInt, TSLow) )
    in
-   print_interpret_expr expr [] [] )
-  <<<<<<< HEAD
-            [%expect
-              {|
-=======
+   print_interpret_expr expr [] [] ) ;
   [%expect
     {|
->>>>>>> main
     Function Environment:
     Result: VUnit
     Value Environment: []
