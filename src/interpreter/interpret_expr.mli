@@ -3,6 +3,7 @@ open Compiler_types.Language_types
 open Compiler_types.Ast_types
 open Value_environment
 open Typing
+open Interpret_fn_defn
 open Interpret_class_defn
 
 val apply_int_bin_op :

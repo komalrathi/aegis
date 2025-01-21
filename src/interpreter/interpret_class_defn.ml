@@ -2,7 +2,6 @@ open Core
 open Typing.Typed_ast
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
-open Interpret_fn_defn
 
 type class_info =
   { fields: identifier list
@@ -19,9 +18,8 @@ type class_environment = (identifier * class_info) list
 let interpret_class_defns (class_defns : class_defn list) :
     class_environment Or_error.t =
   let ( >>= ) = Result.( >>= ) in
-  (* Helper function to interpret a single class definition *)
-  let interpret_class (ClassDefn (class_name, fields, constructor, methods))
-      =
+  let interpret_class_defn
+      (ClassDefn (class_name, fields, constructor, methods)) =
     let interpret_fields fields =
       (* can drop the type information from the field definition because we
          have type checked it already *)
@@ -54,4 +52,4 @@ let interpret_class_defns (class_defns : class_defn list) :
         ; constructor= (constructor_arg_names, constructor_body)
         ; methods= interpreted_methods } )
   in
-  Result.all (List.map ~f:interpret_class class_defns)
+  Result.all (List.map ~f:interpret_class_defn class_defns)

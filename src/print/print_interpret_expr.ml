@@ -1,5 +1,6 @@
 open Core
 open Interpreter.Interpret_expr
+open Interpreter.Interpret_class_defn
 open Typing.Typed_ast
 open Print_compiler_types
 
@@ -64,7 +65,7 @@ let rec value_environment_to_string env =
 
 let rec class_environment_to_string env =
   match env with
-  | (name, (fields, constructor, methods)) :: t ->
+  | (name, {fields; constructor; methods}) :: t ->
       Printf.sprintf "%s { %s; %s; %s } %s" name
         (String.concat ~sep:"; " (List.map ~f:field_to_string fields))
         (constructor_to_string constructor)
@@ -72,26 +73,32 @@ let rec class_environment_to_string env =
         (class_environment_to_string t)
   | [] -> ""
 
-and field_to_string (name, (type_expr, sec_level)) =
-  Printf.sprintf "%s: %s, %s" name
-    (type_expr_to_string (type_expr, sec_level))
-    (sec_level_to_string sec_level)
+(* and field_to_string (name, (type_expr, sec_level)) = Printf.sprintf "%s:
+   %s, %s" name (type_expr_to_string (type_expr, sec_level))
+   (sec_level_to_string sec_level) *)
+and field_to_string field_name = field_name
 
 and constructor_to_string (args, body) =
   Printf.sprintf "Constructor(%s, %s)"
     (String.concat ~sep:", " args)
     (expr_to_string body)
 
-and method_to_string (sec_level, (name, args, body)) =
-  Printf.sprintf "%s(%s) -> %s, %s" name
-    (String.concat ~sep:", " (List.map ~f:arg_to_string args))
-    (expr_to_string body)
-    (sec_level_to_string sec_level)
+(* and method_to_string (sec_level, (name, args, body)) = Printf.sprintf
+   "%s(%s) -> %s, %s" name (String.concat ~sep:", " (List.map
+   ~f:arg_to_string args)) (expr_to_string body) (sec_level_to_string
+   sec_level) *)
 
-and arg_to_string (name, (type_expr, sec_level)) =
-  Printf.sprintf "%s: %s, %s" name
-    (type_expr_to_string (type_expr, sec_level))
+and method_to_string (sec_level, method_name, arg_names, expr) =
+  (* Print method details: security level, name, and arguments *)
+  Printf.sprintf "%s %s(%s) -> %s"
     (sec_level_to_string sec_level)
+    method_name
+    (String.concat ~sep:", " arg_names)
+    (expr_to_string expr)
+
+(* and arg_to_string (name, (type_expr, sec_level)) = Printf.sprintf "%s: %s,
+   %s" name (type_expr_to_string (type_expr, sec_level)) (sec_level_to_string
+   sec_level) *)
 
 let print_interpret_expr expr value_env function_env class_env =
   match interpret_expr expr value_env function_env class_env with
