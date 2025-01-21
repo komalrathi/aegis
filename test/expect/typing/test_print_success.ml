@@ -11,13 +11,10 @@ let%expect_test "Normal Print Statement" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {|
-    var_core_type: Int
-    e1_core_type: Int
-    var_sec_level: Low
-    e1_sec_level: Low
-    pc: Low
+      [%expect.unreachable] ;
+      [%expect.unreachable] ;
+      [%expect
+        {|
     Program([
 
     ], Let(x, (Int, Low), Integer(54), Print([Identifier(x, (Int, Low))]), (Unit, Low)))
@@ -33,13 +30,10 @@ let%expect_test "Secure Print Statement" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {|
-    var_core_type: Int
-    e1_core_type: Int
-    var_sec_level: High
-    e1_sec_level: Low
-    pc: Low
+      [%expect.unreachable] ;
+      [%expect.unreachable] ;
+      [%expect
+        {|
     Program([
 
     ], Let(x, (Int, High), Integer(5), SecurePrint([
@@ -59,18 +53,10 @@ let%expect_test "Normal Print with Sequence" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {|
-    var_core_type: Int
-    e1_core_type: Int
-    var_sec_level: Low
-    e1_sec_level: Low
-    pc: Low
-    var_core_type: Bool
-    e1_core_type: Bool
-    var_sec_level: Low
-    e1_sec_level: Low
-    pc: Low
+      [%expect.unreachable] ;
+      [%expect.unreachable] ;
+      [%expect
+        {|
     Program([
 
     ], Let(test_var_int, (Int, Low), Integer(54), Let(test_var_bool, (Bool, Low), Boolean(true), Seq(Print([Identifier(test_var_int, (Int, Low))]), Print([Identifier(test_var_bool, (Bool, Low))]), (Unit, Low)), (Unit, Low)), (Unit, Low)))
@@ -93,18 +79,8 @@ let%expect_test "Secure Print in While Loop" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
-      [%expect.unreachable];
-  [%expect {|
-    var_core_type: Int
-    e1_core_type: Int
-    var_sec_level: High
-    e1_sec_level: Low
-    pc: Low
-    var_core_type: Int
-    e1_core_type: Int
-    var_sec_level: High
-    e1_sec_level: Low
-    pc: Low
+      [%expect
+        {|
     Program([
 
     ], Let(x, (Int, High), Integer(3), Let(y, (Int, High), Integer(10), While(CompOp(GreaterThan, (Bool, High), Identifier(y, (Int, High)), Identifier(x, (Int, High))), Seq(Assign((Int, High), x, BinOp(Plus, (Int, High), Identifier(x, (Int, High)), Integer(1))), SecurePrint([
