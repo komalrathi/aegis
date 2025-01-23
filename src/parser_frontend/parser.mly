@@ -59,6 +59,8 @@
 
 %token CLASS
 %token CONSTRUCTOR
+%token NEW
+%token DOT
 
 %token EOF
 
@@ -171,7 +173,9 @@ expr:
 | id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
 | PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
-// TODO: add object creation and method calls
+// object creation
+| NEW c=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Object($startpos, c, args)}
+| e=expr DOT id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {MethodCall($startpos, e, id, args)}
 
 
 program:
