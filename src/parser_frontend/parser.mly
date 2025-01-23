@@ -174,7 +174,9 @@ expr:
 | PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
 // object creation
-| NEW c=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Object($startpos, c, args)}
+// new High ExampleClass(x, y)
+| NEW s=sec_level c=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Object($startpos, s, c, args)}
+// exampleObject.method(x, y)
 | e=expr DOT id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {MethodCall($startpos, e, id, args)}
 
 
