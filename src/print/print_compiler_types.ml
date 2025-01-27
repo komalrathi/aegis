@@ -19,6 +19,8 @@ let rec type_expr_to_string = function
         (sec_level_to_string sec_level)
   | TEUnit, TSLow -> "(Unit, Low)"
   | TEUnit, TSHigh -> "(Unit, High)"
+  | TEObject obj, TSHigh -> Printf.sprintf "(Object %s, High)" obj
+  | TEObject obj, TSLow -> Printf.sprintf "(Object %s, Low)" obj
 
 and sec_level_to_string = function TSHigh -> "High" | TSLow -> "Low"
 
@@ -46,3 +48,11 @@ and value_to_string = function
   | VInt i -> Printf.sprintf "VInt(%d)" i
   | VBool b -> Printf.sprintf "VBool(%b)" b
   | VUnit _ -> "VUnit"
+  | VObject (obj, args) ->
+      let args_str =
+        String.concat ~sep:"; "
+          (Stdlib.List.map
+             (fun value -> Printf.sprintf "%s" (value_to_string value))
+             args )
+      in
+      Printf.sprintf "VObject(%s, {%s})" obj args_str

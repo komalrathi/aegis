@@ -46,6 +46,14 @@ let rec expr_to_string = function
       Printf.sprintf "SecurePrint([%s])"
         (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
   | Skip _ -> "Skip"
+  | Object (_, sec_level, id, fields, _) ->
+      Printf.sprintf "Object(%s, %s, [%s])"
+        (sec_level_to_string sec_level)
+        id
+        (String.concat ~sep:"; " (List.map ~f:expr_to_string fields))
+  | MethodCall (_, _, _, id, args) ->
+      Printf.sprintf "MethodCall(%s, [%s])" id
+        (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
 
 let rec function_environment_to_string env =
   match env with

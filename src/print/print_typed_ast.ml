@@ -61,6 +61,16 @@ let rec expr_to_string = function
       Printf.sprintf "SecurePrint([\n%s])"
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
   | Skip _ -> "Skip"
+  | Object (_, sec_level, id, fields, type_expr) ->
+      Printf.sprintf "Object(%s, %s, [%s], %s)"
+        (sec_level_to_string sec_level)
+        id
+        (String.concat ~sep:"; " (Stdlib.List.map expr_to_string fields))
+        (type_expr_to_string type_expr)
+  | MethodCall (_, type_expr, e, id, args) ->
+      Printf.sprintf "MethodCall(%s, %s, %s, [%s])" (expr_to_string e) id
+        (type_expr_to_string type_expr)
+        (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
 
 let function_defn_to_string (FunctionDefn (name, args, return_type, body)) =
   Printf.sprintf "FunctionDefn(%s, [%s], %s, %s)" name
