@@ -21,6 +21,8 @@ type expr =
   | Print of loc * expr list
   | SecurePrint of loc * expr list
   | Skip of loc
+  | Object of loc * security_level_type * identifier * expr list * type_expr
+  | MethodCall of loc * type_expr * expr * identifier * expr list
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
