@@ -1,5 +1,6 @@
 (* open Core *)
 open Typing.Typed_ast
+open Interpret_class_defn
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
 open Value_environment
@@ -8,6 +9,7 @@ let value_to_string = function
   | VInt i -> Printf.sprintf "%d" i
   | VBool b -> Printf.sprintf "%b" b
   | VUnit _ -> "unit"
+  | VObject (obj_name, _) -> obj_name
 
 let apply_int_bin_op bin_op i1 i2 =
   match bin_op with
@@ -37,6 +39,10 @@ let interpret_bin_op bin_op i1 i2 =
       Error
         (Core.Error.of_string
            "Type error: cannot apply binary operation to unit values" )
+  | VObject _, _ | _, VObject _ ->
+      Error
+        (Core.Error.of_string
+           "Type error: cannot apply binary operation to object values" )
 
 let interpret_comp_op comp_op i1 i2 =
   match (i1, i2) with
@@ -49,6 +55,10 @@ let interpret_comp_op comp_op i1 i2 =
       Error
         (Core.Error.of_string
            "Type error: cannot apply comparison operation to unit values" )
+  | VObject _, _ | _, VObject _ ->
+      Error
+        (Core.Error.of_string
+           "Type error: cannot apply comparison operation to object values" )
 
 let interpret_bool_comp_op bool_comp_op b1 b2 =
   match (b1, b2) with
@@ -64,6 +74,10 @@ let interpret_bool_comp_op bool_comp_op b1 b2 =
       Error
         (Core.Error.of_string
            "Type error: cannot apply boolean operation to unit values" )
+  | _, _ ->
+      Error
+        (Core.Error.of_string
+           "Type error: cannot apply boolean operation to object values" )
 
 let interpret_unary_op unary_op b =
   match b with
@@ -168,7 +182,11 @@ let rec interpret_expr expr value_environment function_environment
       | VUnit _ ->
           Error
             (Core.Error.of_string
-               "Type error: Cannot have unit type in the if condition" ) )
+               "Type error: Cannot have unit type in the if condition" )
+      | VObject _ ->
+          Error
+            (Core.Error.of_string
+               "Type error: Cannot have object type in the if condition" ) )
   | Classify (_, e1, _) ->
       interpret_expr e1 value_environment function_environment
         class_environment
@@ -246,3 +264,68 @@ let rec interpret_expr expr value_environment function_environment
       in
       print_args value_environment args
   | Skip _ -> Ok (VUnit (), value_environment)
+  | Object (_, _, class_name, args, _) ->
+      let rec eval_args val_env args acc =
+        match args with
+        | [] -> Ok (List.rev acc, val_env)
+        | field_expr :: rest ->
+            interpret_expr field_expr val_env function_environment
+              class_environment
+            >>= fun (val1, val_env_1) ->
+            eval_args val_env_1 rest (val1 :: acc)
+      in
+      eval_args value_environment args []
+      >>= fun (arg_values, updated_value_env) ->
+      Ok (VObject (class_name, arg_values), updated_value_env)
+  | MethodCall (_, _, obj_expr, method_name, arg_exprs) -> (
+      interpret_expr obj_expr value_environment function_environment
+        class_environment
+      >>= fun (obj_val, val_env_1) ->
+      match obj_val with
+      | VObject (obj_name, _) -> (
+        match get_class_info obj_name class_environment with
+        | None ->
+            Error
+              (Core.Error.of_string
+                 (Printf.sprintf "Class %s not found" obj_name) )
+        | Some {methods; _} ->
+            get_method_info method_name methods
+            >>= fun (_, param_info, method_body) ->
+            let rec eval_args val_env args acc =
+              match args with
+              | [] -> Ok (List.rev acc, val_env)
+              | arg :: rest ->
+                  interpret_expr arg val_env function_environment
+                    class_environment
+                  >>= fun (val1, val_env_1) ->
+                  eval_args val_env_1 rest (val1 :: acc)
+            in
+            eval_args val_env_1 arg_exprs []
+            >>= fun (arg_values, args_updated_value_env) ->
+            if List.length param_info <> List.length arg_values then
+              Error
+                (Core.Error.of_string
+                   (Printf.sprintf
+                      "Arity mismatch in method '%s': expected %d arguments \
+                       but got %d"
+                      method_name (List.length param_info)
+                      (List.length arg_values) ) )
+            else
+              let new_env =
+                match Core.List.zip param_info arg_values with
+                | Ok pairs ->
+                    Core.List.map pairs ~f:(fun (param_name, value) ->
+                        (param_name, value) )
+                    @ args_updated_value_env
+                | Unequal_lengths ->
+                    failwith
+                      "Arity mismatch: number of arguments provided does \
+                       not match the method's parameter count"
+              in
+              (* Interpret the method body with the updated environment *)
+              interpret_expr method_body new_env function_environment
+                class_environment )
+      | _ ->
+          Error
+            (Core.Error.of_string
+               "Type error: cannot call method on non-object value" ) )
