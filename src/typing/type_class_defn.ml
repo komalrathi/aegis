@@ -10,15 +10,15 @@ open Type_function_defn
 (* Need to typecheck the constructor, methods and fields *)
 
 (* Typecheck the method definition - similar to type_function_defn *)
-let type_method_defn method_defn type_env =
+let type_method_defn method_defn type_env class_environment =
   let ( >>= ) = Result.( >>= ) in
   let (Parsed_ast.MethodDefn (sec_level, fn_defn)) = method_defn in
-  type_function_defn fn_defn type_env
+  type_function_defn fn_defn type_env class_environment
   >>= fun (_, _, typed_f_defn) ->
   Ok (Typed_ast.MethodDefn (sec_level, typed_f_defn))
 
 (* Typecheck the class definitions *)
-let type_class_defns class_defns type_env =
+let type_class_defns class_defns type_env class_environment =
   let ( >>= ) = Result.( >>= ) in
   let type_class_defn
       (Parsed_ast.ClassDefn
@@ -43,7 +43,7 @@ let type_class_defns class_defns type_env =
     in
     let constructor_type = TFunction (constructor_args, TEUnit) in
     let constructor_type_env = field_types_env @ type_env in
-    type_expr constructor_expr constructor_type_env TSLow
+    type_expr constructor_expr constructor_type_env class_environment TSLow
     >>= fun ((constructor_core_type, _), typed_constructor, _) ->
     if equal_core_type constructor_type constructor_core_type then
       let type_field_expr (Parsed_ast.FieldDefn (field_name, field_type)) =
@@ -54,7 +54,8 @@ let type_class_defns class_defns type_env =
       let typed_method_defns =
         List.map
           ~f:(fun method_defn ->
-            type_method_defn method_defn constructor_type_env )
+            type_method_defn method_defn constructor_type_env
+              class_environment )
           method_defns
       in
       Result.all typed_method_defns
@@ -74,3 +75,4 @@ let type_class_defns class_defns type_env =
            "The constructor type does not match the constructor body type" )
   in
   Result.all (List.map ~f:type_class_defn class_defns)
+  >>= fun typed_class_defns -> Ok (typed_class_defns, class_environment)

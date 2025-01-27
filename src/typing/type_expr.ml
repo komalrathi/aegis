@@ -2,6 +2,7 @@ open Core
 open Parser_frontend
 open Compiler_types.Language_types
 open Equal_type_expr
+open Class_environment
 open Type_environment
 open Subtyping_security_levels_check
 
@@ -28,8 +29,9 @@ let core_type_to_string core_type =
   | TEBool -> "Bool"
   | TEUnit -> "Unit"
   | TFunction _ -> "Function"
+  | TEObject obj -> Printf.sprintf "Object %s" obj
 
-let rec type_expr expr type_environment pc =
+let rec type_expr expr type_environment class_environment pc =
   let ( >>= ) = Result.( >>= ) in
   match expr with
   | Parsed_ast.Integer (loc, i, security_level) ->
@@ -43,9 +45,9 @@ let rec type_expr expr type_environment pc =
         , Typed_ast.Boolean (loc, b, security_level)
         , pc )
   | Parsed_ast.BinOp (loc, bin_op, e1, e2) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
-      type_expr e2 type_environment pc
+      type_expr e2 type_environment class_environment pc
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
       if
         equal_core_type e1_core_type e2_core_type
@@ -62,9 +64,9 @@ let rec type_expr expr type_environment pc =
           , pc )
       else Error (Error.of_string "Binary operands type error")
   | Parsed_ast.CompOp (loc, comp_op, e1, e2) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
-      type_expr e2 type_environment pc
+      type_expr e2 type_environment class_environment pc
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
       if
         equal_core_type e1_core_type e2_core_type
@@ -81,9 +83,9 @@ let rec type_expr expr type_environment pc =
           , pc )
       else Error (Error.of_string "Comparison operands type error")
   | Parsed_ast.BoolOp (loc, bool_comp_op, e1, e2) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
-      type_expr e2 type_environment pc
+      type_expr e2 type_environment class_environment pc
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
       if
         equal_core_type e1_core_type e2_core_type
@@ -105,7 +107,7 @@ let rec type_expr expr type_environment pc =
                 (core_type_to_string e1_core_type)
                 (core_type_to_string e2_core_type) ) )
   | Parsed_ast.UnaryOp (loc, unary_op, e1) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
       if equal_core_type e1_core_type TEBool then
         Ok
@@ -126,7 +128,7 @@ let rec type_expr expr type_environment pc =
   | Parsed_ast.Let (loc, var_name, (var_core_type, var_sec_level), e1, e2) ->
       check_var_not_shadowed type_environment var_name
       >>= fun () ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
       if
         subtyping_check pc e1_sec_level var_sec_level
@@ -134,7 +136,7 @@ let rec type_expr expr type_environment pc =
       then
         type_expr e2
           ((var_name, (var_core_type, var_sec_level)) :: type_environment)
-          pc
+          class_environment pc
         >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
         Ok
           ( (e2_core_type, e2_sec_level)
@@ -164,7 +166,7 @@ let rec type_expr expr type_environment pc =
             (Error.of_string
                (Printf.sprintf "Variable %s does not exist" var_name) )
       | Some (var_core_type, var_sec_level) ->
-          type_expr e1 type_environment pc
+          type_expr e1 type_environment class_environment pc
           >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
           if
             subtyping_check pc e1_sec_level var_sec_level
@@ -181,12 +183,12 @@ let rec type_expr expr type_environment pc =
                  "Variable security level type does not match the assigned \
                   security level type" ) )
   | Parsed_ast.If (loc, e1, e2, e3) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, _) ->
       let new_pc = join pc e1_sec_level in
-      type_expr e2 type_environment new_pc
+      type_expr e2 type_environment class_environment new_pc
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, _) ->
-      type_expr e3 type_environment new_pc
+      type_expr e3 type_environment class_environment new_pc
       >>= fun ((e3_core_type, e3_sec_level), typed_e3, _) ->
       if
         equal_core_type e1_core_type TEBool
@@ -211,7 +213,7 @@ let rec type_expr expr type_environment pc =
           (Error.of_string
              "Expression types in the if statement are not correct" )
   | Parsed_ast.Classify (loc, e1) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
       if equal_security_level_type e1_sec_level TSHigh then
         Error
@@ -222,7 +224,7 @@ let rec type_expr expr type_environment pc =
           , Typed_ast.Classify (loc, typed_e1, (e1_core_type, TSHigh))
           , pc )
   | Parsed_ast.Declassify (loc, e1) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
       if equal_security_level_type e1_sec_level TSLow then
         Error
@@ -254,7 +256,7 @@ let rec type_expr expr type_environment pc =
             (* Type-check each argument *)
             let arg_types_env_result =
               List.map arg_types_env ~f:(fun (arg_type, arg_expr) ->
-                  type_expr arg_expr type_environment pc
+                  type_expr arg_expr type_environment class_environment pc
                   >>= fun ( (arg_expr_core_type, arg_expr_sec_level)
                           , typed_arg_expr
                           , _ )
@@ -291,9 +293,9 @@ let rec type_expr expr type_environment pc =
       | Ok _ ->
           Error (Error.of_string "Function type is not a function type") )
   | Parsed_ast.While (loc, e1, e2) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
-      type_expr e2 type_environment pc
+      type_expr e2 type_environment class_environment pc
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
       if equal_core_type e1_core_type TEBool then
         let new_pc = join pc e1_sec_level in
@@ -311,9 +313,9 @@ let rec type_expr expr type_environment pc =
           (Error.of_string
              "The expression in the while loop is not a boolean" )
   | Parsed_ast.Seq (loc, e1, e2) ->
-      type_expr e1 type_environment pc
+      type_expr e1 type_environment class_environment pc
       >>= fun ((_, e1_sec_level), typed_e1, pc) ->
-      type_expr e2 type_environment pc
+      type_expr e2 type_environment class_environment pc
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
       Ok
         ( (e2_core_type, max_security_level e1_sec_level e2_sec_level)
@@ -330,7 +332,7 @@ let rec type_expr expr type_environment pc =
         match args with
         | [] -> Ok (List.rev acc)
         | expr :: rest ->
-            type_expr expr type_environment pc
+            type_expr expr type_environment class_environment pc
             >>= fun ((_, security_level), typed_expr, pc) ->
             if equal_security_level_type security_level TSHigh then
               Error
@@ -348,7 +350,7 @@ let rec type_expr expr type_environment pc =
         match args with
         | [] -> Ok (List.rev acc)
         | expr :: rest ->
-            type_expr expr type_environment pc
+            type_expr expr type_environment class_environment pc
             >>= fun ((_, _), typed_expr, pc) ->
             type_args rest (typed_expr :: acc) pc
       in
@@ -357,3 +359,136 @@ let rec type_expr expr type_environment pc =
       let new_pc = TSHigh in
       Ok ((TEUnit, new_pc), Typed_ast.SecurePrint (loc, typed_args), new_pc)
   | Parsed_ast.Skip loc -> Ok ((TEUnit, pc), Typed_ast.Skip loc, pc)
+  (* only need to typecheck arguments and constructor *)
+  | Parsed_ast.Object (loc, security_level_type, class_name, args) -> (
+      get_class_info class_name class_environment
+      |> function
+      | None ->
+          Error
+            (Error.of_string
+               (Printf.sprintf "Class %s does not exist" class_name) )
+      | Some {constructor; _} ->
+          let constructor_arg_count = List.length (fst constructor) in
+          let provided_arg_count = List.length args in
+          if constructor_arg_count <> provided_arg_count then
+            Error
+              (Error.of_string
+                 (Printf.sprintf
+                    "Class %s constructor expects %d arguments, but %d were \
+                     provided"
+                    class_name constructor_arg_count provided_arg_count ) )
+          else
+            let arg_types_env = List.zip_exn (fst constructor) args in
+            (* type-check each argument *)
+            let arg_types_env_result =
+              List.map arg_types_env
+                ~f:(fun
+                    ( ( _
+                      , (constructor_arg_core_type, constructor_arg_sec_level)
+                      )
+                    , arg_expr )
+                  ->
+                  type_expr arg_expr type_environment class_environment pc
+                  >>= fun ( (arg_expr_core_type, arg_expr_sec_level)
+                          , typed_arg_expr
+                          , _ )
+                      ->
+                  if
+                    equal_type_expr
+                      (constructor_arg_core_type, constructor_arg_sec_level)
+                      (arg_expr_core_type, arg_expr_sec_level)
+                  then
+                    Ok
+                      ( (arg_expr_core_type, arg_expr_sec_level)
+                      , typed_arg_expr )
+                  else
+                    Error
+                      (Error.of_string
+                         "Object argument type does not match the \
+                          constructor type" ) )
+            in
+            Result.all arg_types_env_result
+            >>= fun typed_args ->
+            let typed_args_exprs = List.map typed_args ~f:snd in
+            Ok
+              ( (TEObject class_name, security_level_type)
+              , Typed_ast.Object
+                  ( loc
+                  , security_level_type
+                  , class_name
+                  , typed_args_exprs
+                  , (TEObject class_name, security_level_type) )
+              , pc ) )
+  | Parsed_ast.MethodCall (loc, obj, method_name, args) -> (
+      (* type-check the object to get its type and security level *)
+      type_expr obj type_environment class_environment pc
+      >>= fun ((obj_core_type, obj_sec_level), typed_obj, pc) ->
+      match obj_core_type with
+      | TEObject class_name -> (
+          get_class_info class_name class_environment
+          |> function
+          | None ->
+              Error
+                (Error.of_string
+                   (Printf.sprintf "Class %s does not exist" class_name) )
+          | Some {methods; _} -> (
+            match get_method_info method_name methods with
+            | Error _ ->
+                Error (Error.of_string "Method does not exist in the class")
+            | Ok (method_sec_level, arg_types, _) ->
+                (* TODO: have not updated pc - check where I need to do so *)
+                if less_than_or_equal method_sec_level obj_sec_level then
+                  let expected_arg_count = List.length arg_types in
+                  let provided_arg_count = List.length args in
+                  if expected_arg_count <> provided_arg_count then
+                    Error
+                      (Error.of_string
+                         (Printf.sprintf
+                            "Method %s\n\
+                             expects %d arguments, but %d were\n\
+                             provided"
+                            method_name expected_arg_count provided_arg_count ) )
+                  else
+                    (* type-check each argument *)
+                    let arg_types_env = List.zip_exn arg_types args in
+                    let arg_types_env_result =
+                      List.map arg_types_env ~f:(fun (arg_type, arg_expr) ->
+                          type_expr arg_expr type_environment
+                            class_environment pc
+                          >>= fun ( (arg_expr_core_type, arg_expr_sec_level)
+                                  , typed_arg_expr
+                                  , _ )
+                              ->
+                          let arg_core_type = fst (snd arg_type) in
+                          if equal_core_type arg_core_type arg_expr_core_type
+                          then
+                            Ok
+                              ( (arg_expr_core_type, arg_expr_sec_level)
+                              , typed_arg_expr )
+                          else
+                            Error
+                              (Error.of_string
+                                 "Method argument type does not match the \
+                                  method type" ) )
+                    in
+                    Result.all arg_types_env_result
+                    >>= fun typed_args ->
+                    let typed_args_exprs = List.map typed_args ~f:snd in
+                    (* TODO: unsure whether I should return method's return
+                       type or TEUnit *)
+                    Ok
+                      ( (TEUnit, method_sec_level)
+                      , Typed_ast.MethodCall
+                          ( loc
+                          , (TEUnit, method_sec_level)
+                          , typed_obj
+                          , method_name
+                          , typed_args_exprs )
+                      , pc )
+                else
+                  Error
+                    (Error.of_string
+                       (Printf.sprintf
+                          "Security level of object is not high enough to \
+                           call the method" ) ) ) )
+      | _ -> Error (Error.of_string "Method call on non-object type") )
