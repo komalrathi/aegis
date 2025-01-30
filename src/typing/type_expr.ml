@@ -62,7 +62,20 @@ let rec type_expr expr type_environment class_environment pc =
               , typed_e1
               , typed_e2 )
           , pc )
-      else Error (Error.of_string "Binary operands type error")
+      else if equal_core_type e1_core_type e2_core_type then
+        Error
+          (Error.of_string
+             Printf.(
+               sprintf
+                 "Binary operation operands type error: operand is type %s \
+                  instead of integer type"
+                 (core_type_to_string e1_core_type) ) )
+      else
+        Error
+          (Error.of_string
+             (Printf.sprintf "Binary operation operands type error: %s %s"
+                (core_type_to_string e1_core_type)
+                (core_type_to_string e2_core_type) ) )
   | Parsed_ast.CompOp (loc, comp_op, e1, e2) ->
       type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
@@ -81,7 +94,20 @@ let rec type_expr expr type_environment class_environment pc =
               , typed_e1
               , typed_e2 )
           , pc )
-      else Error (Error.of_string "Comparison operands type error")
+      else if equal_core_type e1_core_type e2_core_type then
+        Error
+          (Error.of_string
+             (Printf.sprintf
+                "Comparison operation operands type error: operand is type \
+                 %s instead of integer type"
+                (core_type_to_string e1_core_type) ) )
+      else
+        Error
+          (Error.of_string
+             (Printf.sprintf
+                "Comparison operation operands type error: %s %s"
+                (core_type_to_string e1_core_type)
+                (core_type_to_string e2_core_type) ) )
   | Parsed_ast.BoolOp (loc, bool_comp_op, e1, e2) ->
       type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
@@ -100,6 +126,13 @@ let rec type_expr expr type_environment class_environment pc =
               , typed_e1
               , typed_e2 )
           , pc )
+      else if equal_core_type e1_core_type e2_core_type then
+        Error
+          (Error.of_string
+             (Printf.sprintf
+                "Boolean operation operands type error: operand is type %s \
+                 instead of boolean type"
+                (core_type_to_string e1_core_type) ) )
       else
         Error
           (Error.of_string
@@ -115,7 +148,13 @@ let rec type_expr expr type_environment class_environment pc =
           , Typed_ast.UnaryOp
               (loc, (TEBool, e1_sec_level), unary_op, typed_e1)
           , pc )
-      else Error (Error.of_string "Unary operation type error")
+      else
+        Error
+          (Error.of_string
+             (Printf.sprintf
+                "Unary operation operand type error: operand is type %s \
+                 instead of boolean type"
+                (core_type_to_string e1_core_type) ) )
   | Parsed_ast.Identifier (loc, id) -> (
       lookup_var_type type_environment id
       |> function
@@ -156,8 +195,11 @@ let rec type_expr expr type_environment class_environment pc =
       else
         Error
           (Error.of_string
-             "Variable core type does not match the assigned expression \
-              core type" )
+             (Printf.sprintf
+                "Variable core type (%s) does not match the assigned \
+                 expression core type (%s)"
+                (core_type_to_string var_core_type)
+                (core_type_to_string e1_core_type) ) )
   | Parsed_ast.Assign (loc, var_name, e1) -> (
       lookup_var_type type_environment var_name
       |> function
@@ -177,11 +219,22 @@ let rec type_expr expr type_environment class_environment pc =
               , Typed_ast.Assign
                   (loc, (var_core_type, var_sec_level), var_name, typed_e1)
               , pc )
+          else if equal_core_type var_core_type e1_core_type then
+            Error
+              (Error.of_string
+                 (Printf.sprintf
+                    "Variable %s security level type does not match the \
+                     assigned security level type"
+                    var_name ) )
           else
             Error
               (Error.of_string
-                 "Variable security level type does not match the assigned \
-                  security level type" ) )
+                 (Printf.sprintf
+                    "Variable %s core type (%s) does not match the assigned \
+                     core type (%s)"
+                    var_name
+                    (core_type_to_string var_core_type)
+                    (core_type_to_string e1_core_type) ) ) )
   | Parsed_ast.If (loc, e1, e2, e3) ->
       type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, _) ->
@@ -208,10 +261,20 @@ let rec type_expr expr type_environment class_environment pc =
                 , max_security_level e1_sec_level
                     (max_security_level e2_sec_level e3_sec_level) ) )
           , new_pc )
+      else if equal_core_type e1_core_type TEBool then
+        Error
+          (Error.of_string
+             (Printf.sprintf
+                "The expressions in the if statement do not have the same \
+                 type: %s %s"
+                (core_type_to_string e2_core_type)
+                (core_type_to_string e3_core_type) ) )
       else
         Error
           (Error.of_string
-             "Expression types in the if statement are not correct" )
+             (Printf.sprintf
+                "The expression in the if statement is not a boolean\ne1: %s"
+                (core_type_to_string e1_core_type) ) )
   | Parsed_ast.Classify (loc, e1) ->
       type_expr e1 type_environment class_environment pc
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
@@ -240,7 +303,8 @@ let rec type_expr expr type_environment class_environment pc =
       |> function
       | Error _ ->
           Error
-            (Error.of_string "Function does not exist in type environment")
+            (Error.of_string
+               Printf.(sprintf "Function %s does not exist" fn_name) )
       | Ok (TFunction (arg_types, return_type), fn_sec_level) ->
           (* Check function's arity matches the provided arguments *)
           let expected_arg_count = List.length arg_types in
@@ -276,8 +340,11 @@ let rec type_expr expr type_environment class_environment pc =
                   else
                     Error
                       (Error.of_string
-                         "Function argument type does not match the \
-                          function type" ) )
+                         (Printf.sprintf
+                            "Function argument type (%s) does not match the \
+                             function type (%s)"
+                            (core_type_to_string arg_type)
+                            (core_type_to_string arg_expr_core_type) ) ) )
             in
             Result.all arg_types_env_result
             >>= fun typed_args ->
@@ -311,7 +378,9 @@ let rec type_expr expr type_environment class_environment pc =
       else
         Error
           (Error.of_string
-             "The expression in the while loop is not a boolean" )
+             (Printf.sprintf
+                "The expression in the while loop is %s instead of a boolean"
+                (core_type_to_string e1_core_type) ) )
   | Parsed_ast.Seq (loc, e1, e2) ->
       type_expr e1 type_environment class_environment pc
       >>= fun ((_, e1_sec_level), typed_e1, pc) ->
@@ -337,7 +406,7 @@ let rec type_expr expr type_environment class_environment pc =
             if equal_security_level_type security_level TSHigh then
               Error
                 (Error.of_string
-                   "Cannot print high security level data using print" )
+                   "Cannot print high security level data using normal print" )
             else type_args rest (typed_expr :: acc) pc
       in
       type_args args [] pc
@@ -401,11 +470,22 @@ let rec type_expr expr type_environment class_environment pc =
                     Ok
                       ( (arg_expr_core_type, arg_expr_sec_level)
                       , typed_arg_expr )
+                  else if
+                    equal_core_type constructor_arg_core_type
+                      arg_expr_core_type
+                  then
+                    Error
+                      (Error.of_string
+                         "Object argument security level does not match the \
+                          constructor security level" )
                   else
                     Error
                       (Error.of_string
-                         "Object argument type does not match the \
-                          constructor type" ) )
+                         (Printf.sprintf
+                            "Object argument type (%s) does not match the \
+                             constructor type (%s)"
+                            (core_type_to_string constructor_arg_core_type)
+                            (core_type_to_string arg_expr_core_type) ) ) )
             in
             Result.all arg_types_env_result
             >>= fun typed_args ->
@@ -434,7 +514,9 @@ let rec type_expr expr type_environment class_environment pc =
           | Some {methods; _} -> (
             match get_method_info method_name methods with
             | Error _ ->
-                Error (Error.of_string "Method does not exist in the class")
+                Error
+                  (Error.of_string
+                     (Printf.sprintf "Method %s does not exist" method_name) )
             | Ok (method_sec_level, arg_types, _) ->
                 (* TODO: have not updated pc - check where I need to do so *)
                 if less_than_or_equal method_sec_level obj_sec_level then
@@ -468,8 +550,11 @@ let rec type_expr expr type_environment class_environment pc =
                           else
                             Error
                               (Error.of_string
-                                 "Method argument type does not match the \
-                                  method type" ) )
+                                 (Printf.sprintf
+                                    "Method argument type (%s) does not \
+                                     match the method type (%s)"
+                                    (core_type_to_string arg_core_type)
+                                    (core_type_to_string arg_expr_core_type) ) ) )
                     in
                     Result.all arg_types_env_result
                     >>= fun typed_args ->
