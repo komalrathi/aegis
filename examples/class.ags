@@ -1,20 +1,19 @@
 class Example {
-    test_var:(int, High)
+    test_var:(int, High);
     test_bool:(bool,Low)
 
-    constructor Example(x:(int,Low), y:(int, Low)) {
-        test_bool:= True
-        test_var := x+ y
-    }
-    sum(z:(int, Low)) {
+    constructor (x:(int,Low), y:(int, Low)) {
+        test_bool:= True;
+        test_var := x+y
+    };
+    Low fn sum(z:(int, Low)) : (int, Low) {
         if (test_bool) then{
             x := z+6
         }
-        else:
+        else
         {
             x := test_var +6
         }
-    }
-}
-
-new Example(5,6)
+    };
+};
+let y:(int,Low) = 72 in (y - 5)
