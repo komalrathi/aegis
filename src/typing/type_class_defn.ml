@@ -38,12 +38,22 @@ let type_class_defns class_defns type_env class_environment =
       match constructor with
       | Parsed_ast.Constructor (args, _) ->
           List.map
+            ~f:(fun (TArg (arg_name, (arg_core_type, arg_security_level))) ->
+              (arg_name, (arg_core_type, arg_security_level)) )
+            args
+    in
+    let constructor_arg_core_types =
+      match constructor with
+      | Parsed_ast.Constructor (args, _) ->
+          List.map
             ~f:(fun (TArg (_, (arg_core_type, _))) -> arg_core_type)
             args
     in
-    let constructor_type = TFunction (constructor_args, TEUnit) in
+    let constructor_type = TFunction (constructor_arg_core_types, TEUnit) in
     let constructor_type_env = field_types_env @ type_env in
-    type_expr constructor_expr constructor_type_env class_environment TSLow
+    type_expr constructor_expr
+      (constructor_args @ constructor_type_env)
+      class_environment TSLow
     >>= fun ((constructor_core_type, _), typed_constructor, _) ->
     if equal_core_type constructor_type constructor_core_type then
       let type_field_expr (Parsed_ast.FieldDefn (field_name, field_type)) =
