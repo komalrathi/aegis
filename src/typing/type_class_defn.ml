@@ -2,12 +2,21 @@ open Core
 open Parser_frontend
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
-open Equal_type_expr
+
+(* open Equal_type_expr *)
 open Type_expr
 open Type_function_defn
 
 (* Convert a Parsed_ast.class_defn to a Typed_ast.class_defn *)
 (* Need to typecheck the constructor, methods and fields *)
+(* 
+let core_type_to_string core_type =
+  match core_type with
+  | TEInt -> "Int"
+  | TEBool -> "Bool"
+  | TEUnit -> "Unit"
+  | TFunction _ -> "Function"
+  | TEObject _ -> "Object" *)
 
 (* Typecheck the method definition - similar to type_function_defn *)
 let type_method_defn method_defn type_env class_environment =
@@ -42,47 +51,46 @@ let type_class_defns class_defns type_env class_environment =
               (arg_name, (arg_core_type, arg_security_level)) )
             args
     in
-    let constructor_arg_core_types =
+    (* let constructor_arg_core_types =
       match constructor with
       | Parsed_ast.Constructor (args, _) ->
           List.map
             ~f:(fun (TArg (_, (arg_core_type, _))) -> arg_core_type)
             args
-    in
-    let constructor_type = TFunction (constructor_arg_core_types, TEUnit) in
+    in *)
+    (* let constructor_type = TFunction (constructor_arg_core_types, TEUnit)
+       in let constructor_type = TEUnit in *)
     let constructor_type_env = field_types_env @ type_env in
     type_expr constructor_expr
       (constructor_args @ constructor_type_env)
       class_environment TSLow
-    >>= fun ((constructor_core_type, _), typed_constructor, _) ->
-    if equal_core_type constructor_type constructor_core_type then
-      let type_field_expr (Parsed_ast.FieldDefn (field_name, field_type)) =
-        Ok (Typed_ast.FieldDefn (field_name, field_type))
-      in
-      Result.all (List.map ~f:type_field_expr field_defns)
-      >>= fun typed_field_defns ->
-      let typed_method_defns =
-        List.map
-          ~f:(fun method_defn ->
-            type_method_defn method_defn constructor_type_env
-              class_environment )
-          method_defns
-      in
-      Result.all typed_method_defns
-      >>= fun typed_method_defns ->
-      Ok
-        (Typed_ast.ClassDefn
-           ( class_name
-           , typed_field_defns
-           , Typed_ast.Constructor
-               ( ( match constructor with
-                 | Parsed_ast.Constructor (args, _) -> args )
-               , typed_constructor )
-           , typed_method_defns ) )
-    else
-      Error
-        (Error.of_string
-           "The constructor type does not match the constructor body type" )
+    >>= fun ((_, _), typed_constructor, _) ->
+    (* if equal_core_type constructor_type constructor_core_type then *)
+    let type_field_expr (Parsed_ast.FieldDefn (field_name, field_type)) =
+      Ok (Typed_ast.FieldDefn (field_name, field_type))
+    in
+    Result.all (List.map ~f:type_field_expr field_defns)
+    >>= fun typed_field_defns ->
+    let typed_method_defns =
+      List.map
+        ~f:(fun method_defn ->
+          type_method_defn method_defn constructor_type_env class_environment )
+        method_defns
+    in
+    Result.all typed_method_defns
+    >>= fun typed_method_defns ->
+    Ok
+      (Typed_ast.ClassDefn
+         ( class_name
+         , typed_field_defns
+         , Typed_ast.Constructor
+             ( ( match constructor with
+               | Parsed_ast.Constructor (args, _) -> args )
+             , typed_constructor )
+         , typed_method_defns ) )
+    (* else Error (Error.of_string (Printf.sprintf "The constructor type %s
+       does not match the constructor body \ type %s" (core_type_to_string
+       constructor_type) (core_type_to_string constructor_core_type) ) ) *)
   in
   Result.all (List.map ~f:type_class_defn class_defns)
   >>= fun typed_class_defns -> Ok (typed_class_defns, class_environment)
