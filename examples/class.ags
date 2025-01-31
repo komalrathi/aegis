@@ -5,14 +5,14 @@ class Example {
     constructor (x:(int,Low), y:(int, Low)) {
         test_bool:= True;
         test_var := x+y
-    };
-    Low fn sum(z:(int, Low)) : (int, Low) {
+    }
+    High fn sum(z:(int, Low)) : (int, High) {
         if (test_bool) then{
-            x := z+6
+            test_var := z+6
         }
         else
         {
-            x := test_var +6
+            test_var := test_var +6
         }
     };
 };
