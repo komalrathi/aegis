@@ -11,4 +11,5 @@ let%expect_test "Binary Operation with Boolean" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect {| binary operands type error |}]
+      [%expect.unreachable];
+  [%expect {| Binary operation operands type error: Int Bool |}]

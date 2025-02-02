@@ -10,8 +10,8 @@ let%expect_test "While Loop from String" =
   let parsed_program =
     Parser_frontend.Parse_program.parse_program
       (Lexing.from_string
-         "let test_var:(int,Low) = 5 in while (test_var < 6) {test_var := \
-          test_var + 1}" )
+         "let test_var:(int,Low) = 5 in {while (test_var < 6) {test_var := \
+          test_var + 1}}" )
   in
   match parsed_program with
   | Ok program ->
@@ -20,9 +20,10 @@ let%expect_test "While Loop from String" =
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect
         {|
-        Function Environment:
         Result: VUnit
-        Value Environment: []
+        Value Environment:
+        Function Environment:
+        Class Environment:
         |}]
   | Error _ ->
       print_endline "Error: could not parse program" ;
@@ -59,9 +60,10 @@ let%expect_test "Let and While Loop" =
    print_interpret_expr expr [] [] [] ) ;
   [%expect
     {|
-    Function Environment:
     Result: VUnit
-    Value Environment: []
+    Value Environment:
+    Function Environment:
+    Class Environment:
     |}]
 
 let%expect_test "While Loop" =
@@ -90,7 +92,8 @@ let%expect_test "While Loop" =
   print_interpret_expr expr env [] [] ;
   [%expect
     {|
-    Function Environment:
     Result: VUnit
-    Value Environment: [test_var -> VInt(6); ]
+    Value Environment: test_var -> VInt(6);
+    Function Environment:
+    Class Environment:
     |}]

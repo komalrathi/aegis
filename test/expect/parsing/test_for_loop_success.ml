@@ -10,6 +10,8 @@ let%expect_test "first for loop" =
     {|
     Program([
 
+    ],[
+
     ], Let(x, (Int, High), Integer(2), While(CompOp(LessThan, Identifier(x), Integer(6)), Seq(If(CompOp(GreaterThan, Identifier(x), Integer(4)), Assign(x, BinOp(Plus, Identifier(x), Integer(1))), Assign(x, BinOp(Plus, Identifier(x), Integer(2)))), Assign(x, BinOp(Plus, Identifier(x), Integer(1)))))))
     |}]
 
@@ -21,6 +23,8 @@ let%expect_test "second for loop" =
   [%expect
     {|
     Program([
+
+    ],[
 
     ], Let(x, (Int, Low), Integer(10), While(CompOp(GreaterThan, Identifier(x), Integer(1)), Seq(If(CompOp(LessThan, Identifier(x), Integer(4)), Assign(y, BinOp(Multiply, Identifier(x), Integer(4))), Assign(y, BinOp(Multiply, Identifier(x), Integer(2)))), Assign(x, BinOp(Divide, Identifier(x), Integer(2)))))))
     |}]

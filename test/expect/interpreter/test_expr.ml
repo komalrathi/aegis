@@ -13,9 +13,10 @@ let%expect_test "Integer Plus Operation" =
     [] [] [] ;
   [%expect
     {|
-    Function Environment:
     Result: VInt(6)
-    Value Environment: []
+    Value Environment:
+    Function Environment:
+    Class Environment:
     |}]
 
 let%expect_test "Less than comparison" =
@@ -27,9 +28,10 @@ let%expect_test "Less than comparison" =
     [] [] [] ;
   [%expect
     {|
-    Function Environment:
     Result: VBool(true)
-    Value Environment: []
+    Value Environment:
+    Function Environment:
+    Class Environment:
     |}]
 
 let%expect_test "Boolean And Operation" =
@@ -41,9 +43,10 @@ let%expect_test "Boolean And Operation" =
     [] [] [] ;
   [%expect
     {|
-    Function Environment:
     Result: VBool(false)
-    Value Environment: []
+    Value Environment:
+    Function Environment:
+    Class Environment:
     |}]
 
 let%expect_test "Unary Operation" =
@@ -54,9 +57,10 @@ let%expect_test "Unary Operation" =
     [] [] [] ;
   [%expect
     {|
-    Function Environment:
     Result: VBool(false)
-    Value Environment: []
+    Value Environment:
+    Function Environment:
+    Class Environment:
     |}]
 
 let%expect_test "If statement" =
@@ -67,9 +71,10 @@ let%expect_test "If statement" =
   print_interpret_expr if_expr [] [] [] ;
   [%expect
     {|
-    Function Environment:
     Result: VInt(5)
-    Value Environment: []
+    Value Environment:
+    Function Environment:
+    Class Environment:
     |}]
 
 let%expect_test "Function application" =
@@ -100,9 +105,10 @@ let%expect_test "Function application" =
       print_interpret_expr function_app [] function_env [] ;
       [%expect
         {|
-        Function Environment: example(x, y) -> BinOp(Plus, Identifier((Int, Low)), Identifier((Int, Low)));
         Result: VInt(15)
-        Value Environment: [x -> VInt(5); y -> VInt(10); ]
+        Value Environment: x -> VInt(5); y -> VInt(10);
+        Function Environment: example(x, y) -> BinOp(Plus, Identifier((Int, Low)), Identifier((Int, Low)));
+        Class Environment:
         |}]
   | Error err -> Printf.printf "Error: %s\n" (Error.to_string_hum err)
 
@@ -126,7 +132,8 @@ let%expect_test "Let statement" =
   print_interpret_expr let_expr [] [] [] ;
   [%expect
     {|
-    Function Environment:
     Result: VInt(67)
-    Value Environment: []
+    Value Environment:
+    Function Environment:
+    Class Environment:
     |}]

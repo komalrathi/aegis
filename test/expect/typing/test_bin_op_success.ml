@@ -13,9 +13,11 @@ let%expect_test "Binary Operation" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect
-        {|
+      [%expect.unreachable];
+  [%expect {|
     Program([
+
+    ],[
 
     ], BinOp(Minus, (Int, Low), BinOp(Plus, (Int, Low), BinOp(Divide, (Int, Low), BinOp(Multiply, (Int, Low), Integer(5), Integer(6)), Integer(2)), Integer(7)), Integer(1)))
     |}]
@@ -32,9 +34,11 @@ let%expect_test "Binary Operation with Parentheses" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect
-        {|
+      [%expect.unreachable];
+  [%expect {|
     Program([
+
+    ],[
 
     ], BinOp(Minus, (Int, Low), BinOp(Divide, (Int, Low), BinOp(Multiply, (Int, Low), Integer(5), Integer(6)), BinOp(Plus, (Int, Low), Integer(2), Integer(7))), Integer(1)))
     |}]

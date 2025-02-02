@@ -14,7 +14,7 @@ let%expect_test "fib" =
          \    else {\n\
          \        fib(x - 1) + fib(x - 2)\n\
          \    }\n\
-          };\n\
+          }\n\
           fib(3)" )
   in
   match parsed_program with
@@ -23,11 +23,7 @@ let%expect_test "fib" =
       | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect
-        {|
-        FunctionApp: fib
-        Function Environment:
-        Error: Function not found
-        |}]
+        {| Error: Function not found |}]
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable]

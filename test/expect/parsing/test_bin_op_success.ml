@@ -7,6 +7,8 @@ let%expect_test "Binary Operation" =
     {|
     Program([
 
+    ],[
+
     ], BinOp(Minus, BinOp(Plus, BinOp(Divide, BinOp(Multiply, Integer(5), Integer(6)), Integer(2)), Integer(7)), Integer(1)))
     |}]
 
@@ -15,6 +17,8 @@ let%expect_test "Binary Operation with Parentheses" =
   [%expect
     {|
     Program([
+
+    ],[
 
     ], BinOp(Minus, BinOp(Divide, BinOp(Multiply, Integer(5), Integer(6)), BinOp(Plus, Integer(2), Integer(7))), Integer(1)))
     |}]
