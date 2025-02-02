@@ -116,15 +116,17 @@
 | AND { BoolOpAnd }
 | OR { BoolOpOr }
 
+core_type:
+| TYPE_INT {TEInt}
+| TYPE_BOOL {TEBool}
+| obj=IDENTIFIER {TEObject(obj)}
+
 sec_level:
 | HIGH_SEC_LEVEL {TSHigh}
 | LOW_SEC_LEVEL {TSLow}
 
 type_expression:
-| LEFT_PAREN TYPE_INT COMMA HIGH_SEC_LEVEL RIGHT_PAREN {(TEInt, TSHigh)}
-| LEFT_PAREN TYPE_INT COMMA LOW_SEC_LEVEL RIGHT_PAREN {(TEInt, TSLow)}
-| LEFT_PAREN TYPE_BOOL COMMA HIGH_SEC_LEVEL RIGHT_PAREN {(TEBool, TSHigh)}
-| LEFT_PAREN TYPE_BOOL COMMA LOW_SEC_LEVEL RIGHT_PAREN {(TEBool, TSLow)}
+| LEFT_PAREN core_type=core_type COMMA sec_level=sec_level RIGHT_PAREN {(core_type, sec_level)}
 
 // x: int, sec_level
 arg:
@@ -132,10 +134,10 @@ arg:
 
 // fn example(x: (int, sec_level), y:(int,sec_level)) : (int, sec_level) {e} ;
 function_defn:
-| FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression LEFT_BRACE e=block_expr RIGHT_BRACE SEMICOLON {FunctionDefn(f, args, t, e)}
+| FN f=IDENTIFIER LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN COLON t=type_expression LEFT_BRACE e=block_expr RIGHT_BRACE {FunctionDefn(f, args, t, e)}
 
 field_defn:
-| var=IDENTIFIER COLON t=type_expression {FieldDefn(var, t)}
+| var=IDENTIFIER COLON t=type_expression SEMICOLON{FieldDefn(var, t)}
 
 // constructor example(x:(int, sec_level), y:(int,sec_level)) {e} ;
 constructor:
@@ -145,7 +147,7 @@ method_defn:
 | s=sec_level f=function_defn {MethodDefn(s, f)}
 
 class_defn:
-| CLASS c=IDENTIFIER LEFT_BRACE fields=separated_list(SEMICOLON, field_defn) constructor=constructor methods=separated_list(SEMICOLON, method_defn) RIGHT_BRACE SEMICOLON {ClassDefn(c, fields, constructor, methods)}
+| CLASS c=IDENTIFIER LEFT_BRACE fields=list(field_defn) constructor=constructor methods=list( method_defn) RIGHT_BRACE {ClassDefn(c, fields, constructor, methods)}
 
 block_expr:
 | e1=expr SEMICOLON e2=block_expr {Seq($startpos, e1, e2)}
