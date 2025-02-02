@@ -66,8 +66,6 @@
 
 
 // Need to specify the associativity and precedence of the operators
-// In is used in the Let expression Let x : type_expr = e1 in e2 -> we need to evaluate e2 first before reducing e1
-%nonassoc IN
 %right ASSIGN
 %left OR
 %left AND
@@ -168,7 +166,7 @@ expr:
 // object creation
 // new High ExampleClass(x, y)
 | NEW s=sec_level c=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Object($startpos, s, c, args)}
-| LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN e2=expr {Let($startpos, x, t, e1, e2) }
+| LET x=IDENTIFIER COLON t=type_expression EQUAL e1=expr IN LEFT_BRACE e2=block_expr RIGHT_BRACE {Let($startpos, x, t, e1, e2) }
 | x=IDENTIFIER ASSIGN e=expr {Assign($startpos, x, e)}
 // function application
 | id=IDENTIFIER LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {FunctionApp($startpos, id, args)}
