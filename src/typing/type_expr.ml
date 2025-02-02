@@ -499,10 +499,14 @@ let rec type_expr expr type_environment class_environment pc =
                   , typed_args_exprs
                   , (TEObject class_name, security_level_type) )
               , pc ) )
-  | Parsed_ast.MethodCall (loc, obj, method_name, args) -> (
+  | Parsed_ast.MethodCall (loc, obj_name, method_name, args) -> (
       (* type-check the object to get its type and security level *)
-      type_expr obj type_environment class_environment pc
-      >>= fun ((obj_core_type, obj_sec_level), typed_obj, pc) ->
+      lookup_var_type type_environment obj_name
+      |> (function
+      | None -> Error (Error.of_string "Object does not exist")
+      | Some (obj_core_type, obj_sec_level) ->
+          Ok (obj_core_type, obj_sec_level) )
+      >>= fun (obj_core_type, obj_sec_level) ->
       match obj_core_type with
       | TEObject class_name -> (
           get_class_info class_name class_environment
@@ -517,7 +521,7 @@ let rec type_expr expr type_environment class_environment pc =
                 Error
                   (Error.of_string
                      (Printf.sprintf "Method %s does not exist" method_name) )
-            | Ok (method_sec_level, arg_types, _) ->
+            | Ok (method_sec_level, arg_types, return_type, _) ->
                 (* TODO: have not updated pc - check where I need to do so *)
                 if less_than_or_equal method_sec_level obj_sec_level then
                   let expected_arg_count = List.length arg_types in
@@ -559,14 +563,12 @@ let rec type_expr expr type_environment class_environment pc =
                     Result.all arg_types_env_result
                     >>= fun typed_args ->
                     let typed_args_exprs = List.map typed_args ~f:snd in
-                    (* TODO: unsure whether I should return method's return
-                       type or TEUnit *)
                     Ok
-                      ( (TEUnit, method_sec_level)
+                      ( return_type
                       , Typed_ast.MethodCall
                           ( loc
                           , (TEUnit, method_sec_level)
-                          , typed_obj
+                          , obj_name
                           , method_name
                           , typed_args_exprs )
                       , pc )

@@ -10,6 +10,7 @@ type class_info =
       ( security_level_type
       * identifier (* function_name *)
       * (identifier * type_expr) list (* arguments *)
+      * type_expr (* return type*)
       * expr (* body *) )
       list }
 
@@ -22,7 +23,8 @@ let get_class_info (class_name : identifier)
 let rec get_method_info method_name methods =
   match methods with
   | [] -> Error (Core.Error.of_string "Method does not exist in the class")
-  | (method_sec_level, method_name', arg_types, typed_expr) :: rest ->
+  | (method_sec_level, method_name', arg_types, return_type, typed_expr)
+    :: rest ->
       if String.equal method_name method_name' then
-        Ok (method_sec_level, arg_types, typed_expr)
+        Ok (method_sec_level, arg_types, return_type, typed_expr)
       else get_method_info method_name rest
