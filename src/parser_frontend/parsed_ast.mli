@@ -21,7 +21,7 @@ type expr =
   | SecurePrint of loc * expr list
   | Skip of loc
   | Object of loc * security_level_type * identifier * expr list
-  | MethodCall of loc * expr * identifier * expr list
+  | MethodCall of loc * identifier * identifier * expr list
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the
