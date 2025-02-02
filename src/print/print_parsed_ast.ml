@@ -51,7 +51,7 @@ let rec expr_to_string = function
   | MethodCall (_, e, id, args) ->
       Printf.sprintf "MethodCall(%s, [%s], %s)" id
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
-        (expr_to_string e)
+        e
 
 let function_defn_to_string (FunctionDefn (name, args, return_type, body)) =
   Printf.sprintf "FunctionDefn(%s, [%s], %s, %s)" name

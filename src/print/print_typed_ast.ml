@@ -68,7 +68,7 @@ let rec expr_to_string = function
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string fields))
         (type_expr_to_string type_expr)
   | MethodCall (_, type_expr, e, id, args) ->
-      Printf.sprintf "MethodCall(%s, %s, %s, [%s])" (expr_to_string e) id
+      Printf.sprintf "MethodCall(%s, %s, %s, [%s])" e id
         (type_expr_to_string type_expr)
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
 
