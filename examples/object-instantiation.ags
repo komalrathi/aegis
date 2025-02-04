@@ -19,4 +19,4 @@ class Example {
         let a:(int,Low) = 7 in {test_var + 5 + a}
     }
 }
-let y:(Example,High) = new High Example(72, True) in {y.sum(5)}
+let y:(Example,High) = new High Example(72, 8) in {y.sum(5)}
