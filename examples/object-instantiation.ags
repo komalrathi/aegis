@@ -1,0 +1,22 @@
+class Example {
+    test_var:(int, High);
+    test_bool:(bool,Low);
+
+    constructor (x:(int,Low), y:(int, Low)) {
+        test_bool:= True;
+        test_var := x+y
+    }
+    High fn sum(z:(int, Low)) : (int, High) {
+        if (test_bool) then{
+            test_var := z+6
+        }
+        else
+        {
+            test_var := test_var +6
+        }
+    }
+    High fn test() : (int, High) {
+        let a:(int,Low) = 7 in {test_var + 5 + a}
+    }
+}
+let y:(Example,High) = new High Example(72, True) in {y.sum(5)}
