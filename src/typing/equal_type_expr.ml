@@ -14,6 +14,7 @@ let rec equal_core_type a b =
          | Unequal_lengths -> false )
       && equal_core_type ret_a ret_b
   | TEUnit, TEUnit -> true
+  | TEObject name1, TEObject name2 -> String.equal name1 name2
   | _, _ -> false
 
 let equal_security_level_type a b =
