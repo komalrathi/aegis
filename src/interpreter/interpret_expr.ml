@@ -1,9 +1,14 @@
 (* open Core *)
+open Interpret_ops
 open Typing.Typed_ast
-open Interpret_class_defn
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
 open Value_environment
+
+let get_class class_name class_defns =
+  Core.List.find
+    ~f:(fun (ClassDefn (c_name, _, _, _)) -> String.equal c_name class_name)
+    class_defns
 
 let value_to_string = function
   | VInt i -> Printf.sprintf "%d" i
@@ -11,81 +16,9 @@ let value_to_string = function
   | VUnit _ -> "unit"
   | VObject (obj_name, _) -> obj_name
 
-let apply_int_bin_op bin_op i1 i2 =
-  match bin_op with
-  | BinOpPlus -> Ok (VInt (i1 + i2))
-  | BinOpMinus -> Ok (VInt (i1 - i2))
-  | BinOpMultiply -> Ok (VInt (i1 * i2))
-  | BinOpDivide ->
-      if i2 = 0 then Error (Core.Error.of_string "Division by zero")
-      else Ok (VInt (i1 / i2))
-
-let apply_comp_op comp_op i1 i2 =
-  match comp_op with
-  | CompOpLessThan -> Ok (VBool (i1 < i2))
-  | CompOpGreaterThan -> Ok (VBool (i1 > i2))
-  | CompOpLessThanEqual -> Ok (VBool (i1 <= i2))
-  | CompOpGreaterThanEqual -> Ok (VBool (i1 >= i2))
-  | CompOpEqual -> Ok (VBool (i1 = i2))
-
-let interpret_bin_op bin_op i1 i2 =
-  match (i1, i2) with
-  | VInt i1, VInt i2 -> apply_int_bin_op bin_op i1 i2
-  | VInt _, VBool _ | VBool _, VInt _ | VBool _, VBool _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply binary operation to boolean values" )
-  | VUnit _, _ | _, VUnit _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply binary operation to unit values" )
-  | VObject _, _ | _, VObject _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply binary operation to object values" )
-
-let interpret_comp_op comp_op i1 i2 =
-  match (i1, i2) with
-  | VInt i1, VInt i2 -> apply_comp_op comp_op i1 i2
-  | VInt _, VBool _ | VBool _, VInt _ | VBool _, VBool _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply comparison operation to boolean values" )
-  | VUnit _, _ | _, VUnit _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply comparison operation to unit values" )
-  | VObject _, _ | _, VObject _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply comparison operation to object values" )
-
-let interpret_bool_comp_op bool_comp_op b1 b2 =
-  match (b1, b2) with
-  | VBool b1, VBool b2 -> (
-    match bool_comp_op with
-    | BoolOpAnd -> Ok (VBool (b1 && b2))
-    | BoolOpOr -> Ok (VBool (b1 || b2)) )
-  | VInt _, VBool _ | VBool _, VInt _ | VInt _, VInt _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply boolean operation to integer values" )
-  | VUnit _, _ | _, VUnit _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply boolean operation to unit values" )
-  | _, _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply boolean operation to object values" )
-
-let interpret_unary_op unary_op b =
-  match b with
-  | VBool b -> ( match unary_op with UnaryOpNot -> Ok (VBool (not b)) )
-  | _ ->
-      Error
-        (Core.Error.of_string
-           "Type error: cannot apply unary operation to integer values" )
+(* let value_environment_to_string value_environment = Core.List.fold_left
+   ~f:(fun acc (name, value) -> Printf.sprintf "%s%s: %s\n" acc name
+   (value_to_string value) ) ~init:"" value_environment *)
 
 let rec remove_var_from_env var_name env =
   match env with
@@ -96,45 +29,41 @@ let rec remove_var_from_env var_name env =
 
 let rec update_var_in_env var_name var_value env =
   match env with
-  | [] -> []
+  | [] -> [(var_name, var_value)]
   | (name, value) :: t ->
       if var_name = name then (var_name, var_value) :: t
       else (name, value) :: update_var_in_env var_name var_value t
 
 (* return value, value_environment *)
 let rec interpret_expr expr value_environment function_environment
-    class_environment =
+    class_defns =
   let ( >>= ) = Core.Result.( >>= ) in
   match expr with
   | Integer (_, i, _) -> Ok (VInt i, value_environment)
   | Boolean (_, b, _) -> Ok (VBool b, value_environment)
   | BinOp (_, _, bin_op, e1, e2) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (val1, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment class_environment
+      interpret_expr e2 val_env_1 function_environment class_defns
       >>= fun (val2, val_env_2) ->
       interpret_bin_op bin_op val1 val2
       >>= fun output_val -> Ok (output_val, val_env_2)
   | CompOp (_, _, comp_op, e1, e2) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (val1, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment class_environment
+      interpret_expr e2 val_env_1 function_environment class_defns
       >>= fun (val2, val_env_2) ->
       interpret_comp_op comp_op val1 val2
       >>= fun output_val -> Ok (output_val, val_env_2)
   | BoolOp (_, _, bool_comp_op, e1, e2) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (val1, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment class_environment
+      interpret_expr e2 val_env_1 function_environment class_defns
       >>= fun (val2, val_env_2) ->
       interpret_bool_comp_op bool_comp_op val1 val2
       >>= fun output_val -> Ok (output_val, val_env_2)
   | UnaryOp (_, _, unary_op, e1) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (val1, val_env_1) ->
       interpret_unary_op unary_op val1
       >>= fun output_val -> Ok (output_val, val_env_1)
@@ -154,27 +83,24 @@ let rec interpret_expr expr value_environment function_environment
               (Core.Error.of_string
                  "Type error: variable type does not match value type" ) ) )
   | Let (_, var_name, _, e1, e2, _) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (val1, val_env_1) ->
       let new_env = (var_name, val1) :: val_env_1 in
-      interpret_expr e2 new_env function_environment class_environment
+      interpret_expr e2 new_env function_environment class_defns
       >>= fun (val2, val_env_2) ->
       Ok (val2, remove_var_from_env var_name val_env_2)
   | Assign (_, _, var_name, e1) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (val1, val_env_1) ->
       Ok (val1, update_var_in_env var_name val1 val_env_1)
   | If (_, e1, e2, e3, _) -> (
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (val1, val_env_1) ->
       match val1 with
       | VBool true ->
-          interpret_expr e2 val_env_1 function_environment class_environment
+          interpret_expr e2 val_env_1 function_environment class_defns
       | VBool false ->
-          interpret_expr e3 val_env_1 function_environment class_environment
+          interpret_expr e3 val_env_1 function_environment class_defns
       | VInt _ ->
           Error
             (Core.Error.of_string
@@ -188,11 +114,9 @@ let rec interpret_expr expr value_environment function_environment
             (Core.Error.of_string
                "Type error: Cannot have object type in the if condition" ) )
   | Classify (_, e1, _) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
   | Declassify (_, e1, _) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
   | FunctionApp (_, _, f_name, args) -> (
     match Stdlib.List.assoc_opt f_name function_environment with
     | Some (param_names, body) ->
@@ -200,8 +124,7 @@ let rec interpret_expr expr value_environment function_environment
           match args with
           | [] -> Ok (List.rev acc, val_env)
           | arg :: rest ->
-              interpret_expr arg val_env function_environment
-                class_environment
+              interpret_expr arg val_env function_environment class_defns
               >>= fun (val1, val_env_1) ->
               eval_args val_env_1 rest (val1 :: acc)
         in
@@ -223,7 +146,7 @@ let rec interpret_expr expr value_environment function_environment
                   "Arity mismatch: number of arguments provided does not \
                    match the function's parameter count"
           in
-          interpret_expr body new_env function_environment class_environment
+          interpret_expr body new_env function_environment class_defns
     | None -> Error (Core.Error.of_string "Function not found") )
   | While (loc, e1, e2, type_expr) ->
       let e =
@@ -234,19 +157,17 @@ let rec interpret_expr expr value_environment function_environment
           , Skip loc
           , type_expr )
       in
-      interpret_expr e value_environment function_environment
-        class_environment
+      interpret_expr e value_environment function_environment class_defns
   | Seq (_, e1, e2, _) ->
-      interpret_expr e1 value_environment function_environment
-        class_environment
+      interpret_expr e1 value_environment function_environment class_defns
       >>= fun (_, val_env_1) ->
-      interpret_expr e2 val_env_1 function_environment class_environment
+      interpret_expr e2 val_env_1 function_environment class_defns
   | Print (_, args) ->
       let rec print_args val_env args =
         match args with
         | [] -> Ok (VUnit (), val_env)
         | arg :: rest ->
-            interpret_expr arg val_env function_environment class_environment
+            interpret_expr arg val_env function_environment class_defns
             >>= fun (val1, val_env_1) ->
             print_endline (value_to_string val1) ;
             print_args val_env_1 rest
@@ -257,26 +178,47 @@ let rec interpret_expr expr value_environment function_environment
         match args with
         | [] -> Ok (VUnit (), val_env)
         | arg :: rest ->
-            interpret_expr arg val_env function_environment class_environment
+            interpret_expr arg val_env function_environment class_defns
             >>= fun (val1, val_env_1) ->
             print_endline (value_to_string val1) ;
             print_args val_env_1 rest
       in
       print_args value_environment args
   | Skip _ -> Ok (VUnit (), value_environment)
-  | Object (_, _, class_name, args, _) ->
-      let rec eval_args val_env args acc =
-        match args with
-        | [] -> Ok (List.rev acc, val_env)
-        | field_expr :: rest ->
-            interpret_expr field_expr val_env function_environment
-              class_environment
-            >>= fun (val1, val_env_1) ->
-            eval_args val_env_1 rest (val1 :: acc)
-      in
-      eval_args value_environment args []
-      >>= fun (arg_values, updated_value_env) ->
-      Ok (VObject (class_name, arg_values), updated_value_env)
+  | Object (_, _, class_name, args, _) -> (
+    match get_class class_name class_defns with
+    | None ->
+        Error
+          (Core.Error.of_string
+             (Printf.sprintf "Class %s not found" class_name) )
+    | Some (ClassDefn (_, _, Constructor (params, constructor_expr), _)) ->
+        let rec eval_args val_env args acc =
+          match args with
+          | [] -> Ok (List.rev acc, val_env)
+          | arg :: rest ->
+              interpret_expr arg val_env function_environment class_defns
+              >>= fun (val1, val_env_1) ->
+              eval_args val_env_1 rest (val1 :: acc)
+        in
+        eval_args value_environment args []
+        >>= fun (evaluated_args, new_val_env) ->
+        let rec bind_args params args acc =
+          match (params, args) with
+          | [], [] -> Ok acc
+          | TArg (name, _) :: param_rest, arg_val :: arg_rest ->
+              bind_args param_rest arg_rest ((name, arg_val) :: acc)
+          | _ ->
+              Error
+                (Core.Error.of_string
+                   "Mismatched argument count in object instantiation" )
+        in
+        bind_args params evaluated_args []
+        >>= fun arg_bindings ->
+        let extended_env = arg_bindings @ new_val_env in
+        interpret_expr constructor_expr extended_env function_environment
+          class_defns
+        >>= fun (_, final_val_env) ->
+        Ok (VObject (class_name, evaluated_args), final_val_env) )
   | MethodCall (_, _, obj_name, method_name, arg_exprs) -> (
       lookup_var_value value_environment obj_name
       |> function
@@ -284,52 +226,53 @@ let rec interpret_expr expr value_environment function_environment
           Error
             (Core.Error.of_string
                (Printf.sprintf "Object %s not found" obj_name) )
-      | Some obj_val -> (
-        match obj_val with
-        | VObject (obj_name, _) -> (
-          match get_class_info obj_name class_environment with
+      | Some (VObject (class_name, _)) -> (
+        match get_class class_name class_defns with
+        | None ->
+            Error
+              (Core.Error.of_string
+                 (Printf.sprintf "Class %s not found" class_name) )
+        | Some (ClassDefn (_, _, _, methods)) -> (
+          match
+            Core.List.find
+              ~f:(fun (MethodDefn (_, FunctionDefn (name, _, _, _))) ->
+                name = method_name )
+              methods
+          with
           | None ->
               Error
                 (Core.Error.of_string
-                   (Printf.sprintf "Class %s not found" obj_name) )
-          | Some {methods; _} ->
-              get_method_info method_name methods
-              >>= fun (_, param_info, method_body) ->
+                   (Printf.sprintf "Method %s not found" method_name) )
+          | Some (MethodDefn (_, FunctionDefn (_, params, _, body))) ->
+              (* Evaluate method arguments *)
               let rec eval_args val_env args acc =
                 match args with
                 | [] -> Ok (List.rev acc, val_env)
                 | arg :: rest ->
                     interpret_expr arg val_env function_environment
-                      class_environment
+                      class_defns
                     >>= fun (val1, val_env_1) ->
                     eval_args val_env_1 rest (val1 :: acc)
               in
               eval_args value_environment arg_exprs []
-              >>= fun (arg_values, args_updated_value_env) ->
-              if List.length param_info <> List.length arg_values then
-                Error
-                  (Core.Error.of_string
-                     (Printf.sprintf
-                        "Arity mismatch in method '%s': expected %d \
-                         arguments but got %d"
-                        method_name (List.length param_info)
-                        (List.length arg_values) ) )
-              else
-                let new_env =
-                  match Core.List.zip param_info arg_values with
-                  | Ok pairs ->
-                      Core.List.map pairs ~f:(fun (param_name, value) ->
-                          (param_name, value) )
-                      @ args_updated_value_env
-                  | Unequal_lengths ->
-                      failwith
-                        "Arity mismatch: number of arguments provided does \
-                         not match the method's parameter count"
-                in
-                (* Interpret the method body with the updated environment *)
-                interpret_expr method_body new_env function_environment
-                  class_environment )
-        | _ ->
-            Error
-              (Core.Error.of_string
-                 "Type error: cannot call method on non-object value" ) ) )
+              >>= fun (evaluated_args, new_val_env) ->
+              (* Bind arguments to parameter names *)
+              let rec bind_args params args acc =
+                match (params, args) with
+                | [], [] -> Ok acc
+                | TArg (name, _) :: param_rest, arg_val :: arg_rest ->
+                    bind_args param_rest arg_rest ((name, arg_val) :: acc)
+                | _ ->
+                    Error
+                      (Core.Error.of_string
+                         "Mismatched argument count in method call" )
+              in
+              bind_args params evaluated_args []
+              >>= fun arg_bindings ->
+              let extended_env = arg_bindings @ new_val_env in
+              interpret_expr body extended_env function_environment
+                class_defns ) )
+      | Some _ ->
+          Error
+            (Core.Error.of_string
+               "Type error: variable type does not match value type" ) )
