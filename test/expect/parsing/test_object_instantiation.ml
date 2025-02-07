@@ -24,7 +24,7 @@ let%expect_test "Object Instantiation" =
        \        let a:(int,Low) = 7 in {test_var + 5 + a}\n\
        \    }\n\
         }\n\
-        let y:(Example,High) = new High Example(72, True) in {y.sum(5)}" ) ;
+        let obj:(Example,High) = new High Example(72, 8) in {obj.sum(9)}" ) ;
   [%expect
     {|
     Program([
@@ -33,5 +33,5 @@ let%expect_test "Object Instantiation" =
     MethodDefn(High, FunctionDefn(test, [], (Int, High), Let(a, (Int, Low), Integer(7), BinOp(Plus, BinOp(Plus, Identifier(test_var), Integer(5)), Identifier(a))))))
     ],[
 
-    ], Let(y, (Object Example, High), Object(High, Example, [Integer(72); Boolean(true)]), MethodCall(sum, [Integer(5)], y)))
+    ], Let(obj, (Object Example, High), Object(High, Example, [Integer(72); Integer(8)]), MethodCall(sum, [Integer(9)], obj)))
     |}]
