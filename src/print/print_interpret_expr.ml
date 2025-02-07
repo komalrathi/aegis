@@ -1,6 +1,5 @@
 open Core
 open Interpreter.Interpret_expr
-open Interpreter.Interpret_class_defn
 open Typing.Typed_ast
 open Print_compiler_types
 
@@ -71,45 +70,55 @@ let rec value_environment_to_string env =
         (value_environment_to_string t)
   | [] -> ""
 
-let rec class_environment_to_string env =
-  match env with
-  | (name, {fields; constructor; methods}) :: t ->
-      Printf.sprintf "%s { %s; %s; %s } %s" name
-        (String.concat ~sep:"; " (List.map ~f:field_to_string fields))
+let rec class_defns_to_string (class_defns : class_defn list) =
+  match class_defns with
+  | ClassDefn (class_name, fields, constructor, methods) :: t ->
+      Printf.sprintf "Class %s: %s; %s; %s; %s" class_name
+        (String.concat ~sep:", " (List.map ~f:field_to_string fields))
         (constructor_to_string constructor)
         (String.concat ~sep:"; " (List.map ~f:method_to_string methods))
-        (class_environment_to_string t)
+        (class_defns_to_string t)
   | [] -> ""
 
 (* and field_to_string (name, (type_expr, sec_level)) = Printf.sprintf "%s:
    %s, %s" name (type_expr_to_string (type_expr, sec_level))
    (sec_level_to_string sec_level) *)
-and field_to_string field_name = field_name
+and field_to_string field_name =
+  match field_name with
+  | FieldDefn (name, type_expr) ->
+      Printf.sprintf "%s: %s" name (type_expr_to_string type_expr)
 
-and constructor_to_string (args, body) =
-  Printf.sprintf "Constructor(%s, %s)"
-    (String.concat ~sep:", " args)
-    (expr_to_string body)
+and constructor_to_string constructor =
+  match constructor with
+  | Constructor (args, expr) ->
+      Printf.sprintf "Constructor(%s, %s)"
+        (String.concat ~sep:", " (List.map ~f:arg_to_string args))
+        (expr_to_string expr)
 
 (* and method_to_string (sec_level, (name, args, body)) = Printf.sprintf
    "%s(%s) -> %s, %s" name (String.concat ~sep:", " (List.map
    ~f:arg_to_string args)) (expr_to_string body) (sec_level_to_string
    sec_level) *)
 
-and method_to_string (sec_level, method_name, arg_names, expr) =
-  (* Print method details: security level, name, and arguments *)
-  Printf.sprintf "%s %s(%s) -> %s"
-    (sec_level_to_string sec_level)
-    method_name
-    (String.concat ~sep:", " arg_names)
-    (expr_to_string expr)
+and method_to_string method_defn =
+  match method_defn with
+  | MethodDefn (sec_level, fn_defn) ->
+      Printf.sprintf "%s, %s"
+        (sec_level_to_string sec_level)
+        (function_defn_to_string fn_defn)
 
+and function_defn_to_string fn_defn =
+  match fn_defn with
+  | FunctionDefn (name, args, _, body) ->
+      Printf.sprintf "%s(%s) -> %s" name
+        (String.concat ~sep:", " (List.map ~f:arg_to_string args))
+        (expr_to_string body)
 (* and arg_to_string (name, (type_expr, sec_level)) = Printf.sprintf "%s: %s,
    %s" name (type_expr_to_string (type_expr, sec_level)) (sec_level_to_string
    sec_level) *)
 
-let print_interpret_expr expr value_env function_env class_env =
-  match interpret_expr expr value_env function_env class_env with
+let print_interpret_expr expr value_env function_env class_defns =
+  match interpret_expr expr value_env function_env class_defns with
   | Ok (value, new_value_env) ->
       Printf.printf "Result: %s\n" (value_to_string value) ;
       Printf.printf "Value Environment: %s\n"
@@ -117,7 +126,7 @@ let print_interpret_expr expr value_env function_env class_env =
       Printf.printf "Function Environment: %s\n"
         (function_environment_to_string function_env) ;
       Printf.printf "Class Environment: %s\n"
-        (class_environment_to_string class_env)
+        (class_defns_to_string class_defns)
   | Error e -> Printf.printf "Error: %s\n" (Error.to_string_hum e)
 (* | Ok (value, new_env) -> Printf.sprintf "Function Environment: %s\nResult:
    %s\nValue Environment: [%s]\n" (function_environment_to_string
