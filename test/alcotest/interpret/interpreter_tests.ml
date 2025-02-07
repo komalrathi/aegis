@@ -1,5 +1,6 @@
 open Compiler_types.Language_types
 open Compiler_types.Ast_types
+open Interpreter.Interpret_ops
 open Interpreter.Interpret_expr
 
 let test_apply_int_plus_bin_op () =
