@@ -1,6 +1,6 @@
-let x:(int, Low) = 0 in (
-    let y:(bool, High) = True in (
-        let z:(int, High) = 5 in (
+let x:(int, Low) = 0 in {
+    let y:(bool, High) = True in {
+        let z:(int, High) = 5 in {
             if (y) then {
                 if (z > 2) then {
                     x := 1
@@ -11,7 +11,7 @@ let x:(int, Low) = 0 in (
             else {
                 x := 3
             }
-        )
-    )
-)
+        }
+    }
+}
 // fails again due to no write down Biba security policy
