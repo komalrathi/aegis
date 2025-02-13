@@ -1,5 +1,9 @@
 (* Types defined in the Aegis language specification *)
 
+(* There are 2 supported exceptions in Aegis: division by zero, and integer
+   overflow *)
+type exception_type = DivisionByZero | IntegerOverflow
+
 (* Aegis has 3 types of expressions in the type system: int, bool, and
    function *)
 type core_type =
@@ -10,6 +14,7 @@ type core_type =
   (* class_name *)
   | TEObject of string
   | TEUnit
+  | TException of exception_type
 
 (* For now, Aegis only supports 2 security levels *)
 type security_level_type = TSLow | TSHigh
