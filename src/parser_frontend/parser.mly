@@ -62,6 +62,11 @@
 %token NEW
 %token DOT
 
+%token RAISE
+%token TRY
+%token CATCH
+%token FINALLY
+
 %token EOF
 
 
@@ -183,6 +188,10 @@ expr:
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
+// exception handling
+| RAISE exception_name=IDENTIFIER var=IDENTIFIER {Raise($startpos, exception_name, var)}
+| TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=IDENTIFIER var=IDENTIFIER RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, e2, e3)}
+
 
 program:
 c=class_defn* f=function_defn* e=block_expr; EOF {Prog(c, f, e)}
