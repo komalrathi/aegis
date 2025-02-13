@@ -21,8 +21,10 @@ let rec type_expr_to_string = function
   | TEUnit, TSHigh -> "(Unit, High)"
   | TEObject obj, TSHigh -> Printf.sprintf "(Object %s, High)" obj
   | TEObject obj, TSLow -> Printf.sprintf "(Object %s, Low)" obj
-  | TException e, TSHigh -> Printf.sprintf "(Exception %s, High)" e
-  | TException e, TSLow -> Printf.sprintf "(Exception %s, Low)" e
+  | TException e, TSHigh ->
+      Printf.sprintf "(Exception %s, High)" (exception_type_to_string e)
+  | TException e, TSLow ->
+      Printf.sprintf "(Exception %s, Low)" (exception_type_to_string e)
 
 and sec_level_to_string = function TSHigh -> "High" | TSLow -> "Low"
 
@@ -58,3 +60,7 @@ and value_to_string = function
              args )
       in
       Printf.sprintf "VObject(%s, {%s})" obj args_str
+
+and exception_type_to_string = function
+  | DivisionByZero -> "DivisionByZero"
+  | IntegerOverflow -> "IntegerOverflow"
