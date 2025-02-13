@@ -71,6 +71,14 @@ let rec expr_to_string = function
       Printf.sprintf "MethodCall(%s, %s, %s, [%s])" e id
         (type_expr_to_string type_expr)
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
+  | Raise (_, exception_name, var_name, type_expr) ->
+      Printf.sprintf "Raise(%s, %s) %s" exception_name var_name
+        (type_expr_to_string type_expr)
+  | TryCatchFinally (_, e1, exception_name, var_name, e2, e3, type_expr) ->
+      Printf.sprintf "Try {%s} Catch (%s %s) {%s} Finally %s {%s}"
+        (expr_to_string e1) exception_name var_name (expr_to_string e2)
+        (expr_to_string e3)
+        (type_expr_to_string type_expr)
 
 let function_defn_to_string (FunctionDefn (name, args, return_type, body)) =
   Printf.sprintf "FunctionDefn(%s, [%s], %s, %s)" name

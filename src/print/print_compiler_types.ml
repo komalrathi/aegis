@@ -21,6 +21,8 @@ let rec type_expr_to_string = function
   | TEUnit, TSHigh -> "(Unit, High)"
   | TEObject obj, TSHigh -> Printf.sprintf "(Object %s, High)" obj
   | TEObject obj, TSLow -> Printf.sprintf "(Object %s, Low)" obj
+  | TException e, TSHigh -> Printf.sprintf "(Exception %s, High)" e
+  | TException e, TSLow -> Printf.sprintf "(Exception %s, Low)" e
 
 and sec_level_to_string = function TSHigh -> "High" | TSLow -> "Low"
 
