@@ -62,6 +62,9 @@
 %token NEW
 %token DOT
 
+%token DIVISION_BY_ZERO
+%token INTEGER_OVERFLOW
+
 %token RAISE
 %token TRY
 %token CATCH
@@ -118,6 +121,10 @@
 %inline bool_comp_op:
 | AND { BoolOpAnd }
 | OR { BoolOpOr }
+
+exception_type:
+| DIVISION_BY_ZERO {DivisionByZero}
+| INTEGER_OVERFLOW {IntegerOverflow}
 
 core_type:
 | TYPE_INT {TEInt}
@@ -189,8 +196,8 @@ expr:
 | PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
 // exception handling
-| RAISE exception_name=IDENTIFIER var=IDENTIFIER {Raise($startpos, exception_name, var)}
-| TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=IDENTIFIER var=IDENTIFIER RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, e2, e3)}
+| RAISE exception_name=exception_type var=IDENTIFIER {Raise($startpos, exception_name, var)}
+| TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, e2, e3)}
 
 
 program:

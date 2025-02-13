@@ -22,8 +22,8 @@ type expr =
   | Skip of loc
   | Object of loc * security_level_type * identifier * expr list
   | MethodCall of loc * identifier * identifier * expr list
-  | Raise of loc * identifier * identifier
-  | TryCatchFinally of loc * expr * identifier * identifier * expr * expr
+  | Raise of loc * exception_type * identifier
+  | TryCatchFinally of loc * expr * exception_type * identifier * expr * expr
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
