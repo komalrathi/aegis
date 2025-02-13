@@ -22,6 +22,8 @@ type expr =
   | Skip of loc
   | Object of loc * security_level_type * identifier * expr list
   | MethodCall of loc * identifier * identifier * expr list
+  | Raise of loc * identifier * identifier
+  | TryCatchFinally of loc * expr * identifier * identifier * expr * expr
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the
