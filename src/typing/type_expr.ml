@@ -23,6 +23,11 @@ let max_security_level sec1 sec2 =
   | TSLow, TSHigh -> TSHigh
   | TSHigh, TSLow -> TSHigh
 
+let exception_type_to_string exception_type =
+  match exception_type with
+  | DivisionByZero -> "DivisionByZero"
+  | IntegerOverflow -> "IntegerOverflow"
+
 let core_type_to_string core_type =
   match core_type with
   | TEInt -> "Int"
@@ -30,6 +35,8 @@ let core_type_to_string core_type =
   | TEUnit -> "Unit"
   | TFunction _ -> "Function"
   | TEObject obj -> Printf.sprintf "Object %s" obj
+  | TException e ->
+      Printf.sprintf "Exception %s" (exception_type_to_string e)
 
 let rec type_expr expr type_environment class_defns pc =
   let ( >>= ) = Result.( >>= ) in
@@ -590,3 +597,51 @@ let rec type_expr expr type_environment class_defns pc =
                           "Security level of object is not high enough to \
                            call the method" ) ) ) )
       | _ -> Error (Error.of_string "Method call on non-object type") )
+  | Parsed_ast.Raise (loc, exception_name, var_name) ->
+      lookup_var_type type_environment var_name
+      |> (function
+      | None -> Error (Error.of_string "Variable does not exist")
+      | Some (var_core_type, var_sec_level) ->
+          Ok (var_core_type, var_sec_level) )
+      >>= fun (_, var_sec_level) ->
+      let updated_pc = join pc var_sec_level in
+      Ok
+        ( (TException exception_name, var_sec_level)
+        , Typed_ast.Raise
+            ( loc
+            , exception_name
+            , var_name
+            , (TException exception_name, var_sec_level) )
+        , updated_pc )
+  | Parsed_ast.TryCatchFinally (loc, e1, exception_name, var_name, e2, e3) ->
+      type_expr e1 type_environment class_defns pc
+      >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc) ->
+      let new_pc = join pc e1_sec_level in
+      type_expr e2
+        ((var_name, (TException exception_name, new_pc)) :: type_environment)
+        class_defns new_pc
+      >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc) ->
+      type_expr e3 type_environment class_defns pc
+      >>= fun ((e3_core_type, e3_sec_level), typed_e3, pc) ->
+      if subtyping_check pc e1_sec_level e3_sec_level then
+        (* return type is the finally block *)
+        Ok
+          ( (e3_core_type, e3_sec_level)
+          , Typed_ast.TryCatchFinally
+              ( loc
+              , typed_e1
+              , exception_name
+              , var_name
+              , typed_e2
+              , typed_e3
+              , (e2_core_type, max_security_level e1_sec_level e2_sec_level)
+              )
+          , pc )
+      else
+        Error
+          (Error.of_string
+             (Printf.sprintf
+                "Try block type (%s) does not match the catch block type \
+                 (%s)"
+                (core_type_to_string e1_core_type)
+                (core_type_to_string e2_core_type) ) )
