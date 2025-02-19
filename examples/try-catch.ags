@@ -1,0 +1,19 @@
+let x:(int, Low) = 7 in {
+    let y:(int, Low) = 8 in {
+        try {
+            if (y == 0) then {
+                raise DivisionByZero y
+            }
+            else {
+                x := x/y
+            }
+        }
+        catch DivisionByZero y {
+            print(y)
+        }
+        finally {
+            y := 101;
+            print(x,y)
+        }
+    }
+}
