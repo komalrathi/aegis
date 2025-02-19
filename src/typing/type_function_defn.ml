@@ -11,7 +11,7 @@ let type_function_defn
        ( fn_name
        , args
        , (fn_return_core_type, fn_return_security_level_type)
-       , expr_body ) ) type_env class_defns =
+       , expr_body ) ) type_env class_defns row =
   let ( >>= ) = Result.( >>= ) in
   let fn_return_type =
     (fn_return_core_type, fn_return_security_level_type)
@@ -29,15 +29,20 @@ let type_function_defn
   type_expr expr_body
     ( (fn_name, (fn_type, fn_return_security_level_type))
     :: (arg_types_env @ type_env) )
-    class_defns TSLow
-  >>= fun ((expr_body_core_type, expr_body_sec_level), typed_expr_body, _) ->
+    class_defns TSLow row
+  >>= fun ( (expr_body_core_type, expr_body_sec_level)
+          , typed_expr_body
+          , _
+          , row )
+      ->
   if equal_type_expr fn_return_type (expr_body_core_type, expr_body_sec_level)
   then
     Ok
       ( fn_name
       , (fn_type, fn_return_security_level_type)
       , Typed_ast.FunctionDefn
-          (fn_name, args, fn_return_type, typed_expr_body) )
+          (fn_name, args, fn_return_type, typed_expr_body)
+      , row )
   else if equal_core_type fn_return_core_type expr_body_core_type then
     Error
       (Error.of_string

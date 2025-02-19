@@ -8,4 +8,5 @@ val type_function_defn :
      Parsed_ast.function_defn
   -> type_environment
   -> Parsed_ast.class_defn list
-  -> (identifier * type_expr * Typed_ast.function_defn) Or_error.t
+  -> row
+  -> (identifier * type_expr * Typed_ast.function_defn * row) Or_error.t
