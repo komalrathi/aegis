@@ -196,7 +196,7 @@ expr:
 | PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
 // exception handling
-| RAISE exception_name=exception_type var=IDENTIFIER {Raise($startpos, exception_name, var)}
+| RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{Raise($startpos, exception_name, var)}
 | TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, e2, e3)}
 
 
