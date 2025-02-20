@@ -29,5 +29,5 @@ let%expect_test "Normal Print Statement" =
 
     ],[
 
-    ], Let(x, (Int, Low), Integer(7), Let(y, (Int, Low), Integer(8), Seq(Assign(y, Integer(0)), Try {If(CompOp(Equality, Identifier(y), Integer(0)), Raise(DivisionByZero, y), Assign(x, BinOp(Divide, Identifier(x), Identifier(y))))} Catch (DivisionByZero y) {Print([Identifier(y)])} Finally Seq(Assign(y, Integer(101)), Print([Identifier(y)]))))))
+    ], Let(x, (Int, Low), Integer(7), Let(y, (Int, Low), Integer(8), Seq(Assign(y, Integer(0)), Try {If(CompOp(Equality, Identifier(y), Integer(0)), Raise(DivisionByZero, y), Assign(x, BinOp(Divide, Identifier(x), Identifier(y))))} Catch (DivisionByZero y) {Print([Identifier(y)])} Finally {Seq(Assign(y, Integer(101)), Print([Identifier(y)]))}))))
     |}]

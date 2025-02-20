@@ -28,10 +28,11 @@ let%expect_test "Normal Print Statement" =
   with
   | Ok program -> print_typed_ast program
   | Error _ -> print_endline "Error: could not parse program";
+  [%expect.unreachable];
   [%expect {|
     Program([
 
     ],[
 
-    ], Let(x, (Int, Low), Integer(7), Let(y, (Int, Low), Integer(8), Seq(Assign((Int, Low), y, Integer(0)), Try {If(CompOp(Equality, (Bool, Low), Identifier(y, (Int, Low)), Integer(0)), Raise(DivisionByZero, y) (Exception DivisionByZero, Low), Assign((Int, Low), x, BinOp(Divide, (Int, Low), Identifier(x, (Int, Low)), Identifier(y, (Int, Low)))), (Exception DivisionByZero, Low))} Catch (DivisionByZero y) {Print([Identifier(y, (Exception DivisionByZero, Low))])} Finally Seq(Assign((Int, Low), y, Integer(101)), Print([Identifier(y, (Int, Low))]), (Unit, Low)) {(Unit, Low)}, (Unit, Low)), (Unit, Low)), (Unit, Low)))
+    ], Let(x, (Int, Low), Integer(7), Let(y, (Int, Low), Integer(8), Seq(Assign((Int, Low), y, Integer(0)), Try {If(CompOp(Equality, (Bool, Low), Identifier(y, (Int, Low)), Integer(0)), Raise(DivisionByZero, y) (Exception DivisionByZero, Low), Assign((Int, Low), x, BinOp(Divide, (Int, Low), Identifier(x, (Int, Low)), Identifier(y, (Int, Low)))), (Exception DivisionByZero, Low))} Catch (DivisionByZero y) {Print([Identifier(y, (Exception DivisionByZero, Low))])} Finally {Seq(Assign((Int, Low), y, Integer(101)), Print([Identifier(y, (Int, Low))]), (Unit, Low))} (Unit, Low), (Unit, Low)), (Unit, Low)), (Unit, Low)))
     |}]
