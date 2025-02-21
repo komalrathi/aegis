@@ -285,10 +285,10 @@ let rec type_expr expr type_environment class_defns pc row =
       type_expr e2 type_environment class_defns new_pc row
       >>= fun ((e2_core_type, e2_sec_level), typed_e2, _, row) ->
       type_expr e3 type_environment class_defns new_pc row
-      >>= fun ((e3_core_type, e3_sec_level), typed_e3, _, row) ->
+      >>= fun ((_, e3_sec_level), typed_e3, _, row) ->
       if
         equal_core_type e1_core_type TEBool
-        && equal_core_type e2_core_type e3_core_type
+        (* && equal_core_type e2_core_type e3_core_type *)
       then
         (* let new_pc = join pc e1_sec_level in *)
         Ok
@@ -305,19 +305,11 @@ let rec type_expr expr type_environment class_defns pc row =
                     (max_security_level e2_sec_level e3_sec_level) ) )
           , new_pc
           , row )
-      else if equal_core_type e1_core_type TEBool then
-        Error
-          (Core.Error.of_string
-             (Printf.sprintf
-                "The expressions in the if statement do not have the same \
-                 type: %s %s"
-                (core_type_to_string e2_core_type)
-                (core_type_to_string e3_core_type) ) )
       else
         Error
           (Core.Error.of_string
              (Printf.sprintf
-                "The expression in the if statement is not a boolean\ne1: %s"
+                "The expression in the if statement is not a boolean: %s"
                 (core_type_to_string e1_core_type) ) )
   | Parsed_ast.Classify (loc, e1) ->
       type_expr e1 type_environment class_defns pc row
