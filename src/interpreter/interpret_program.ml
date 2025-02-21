@@ -12,5 +12,14 @@ let interpret_program (Prog (typed_class_defns, typed_fn_defns, typed_expr))
     interpret_expr typed_expr [] function_environment typed_class_defns
   with
   | Ok (IValue (output_val, _)) -> Ok output_val
-  | Ok (IException (_, _)) -> Error (Error.of_string "Exception Raised")
+  | Ok (IException (exception_type, _)) -> (
+    match exception_type with
+    | DivisionByZero ->
+        Error
+          (Error.of_string
+             "Exception Thrown and not caught: Division By Zero" )
+    | IntegerOverflow ->
+        Error
+          (Error.of_string
+             "Exception Thrown and not caught: Integer Overflow" ) )
   | Error err -> Error err
