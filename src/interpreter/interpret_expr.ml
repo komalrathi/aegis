@@ -99,6 +99,12 @@ let rec interpret_expr expr value_environment function_environment
         match (var_type, var_value) with
         | (TEInt, _), VInt i -> Ok (IValue (VInt i, value_environment))
         | (TEBool, _), VBool b -> Ok (IValue (VBool b, value_environment))
+        | (TEObject _, _), VObject (obj_name, _) ->
+            Ok (IValue (VObject (obj_name, []), value_environment))
+        | (TException DivisionByZero, _), _ ->
+            Ok (IException (IntegerOverflow, var_value))
+        | (TException IntegerOverflow, _), _ ->
+            Ok (IException (IntegerOverflow, var_value))
         | _ ->
             Error
               (Core.Error.of_string
@@ -202,12 +208,6 @@ let rec interpret_expr expr value_environment function_environment
           interpret_expr e2 val_env_1 function_environment class_defns
       | IException (exception_type, var_name) ->
           Ok (IException (exception_type, var_name)) )
-  (* | Print (_, args) -> let rec print_args val_env args = match args with |
-     [] -> Ok (VUnit (), val_env) | arg :: rest -> ( interpret_expr arg
-     val_env function_environment class_defns >>= function | IValue (val1,
-     val_env_1) -> print_endline (value_to_string val1) ; print_args
-     val_env_1 rest | IException (exception_type, var_name) -> Ok (IException
-     (exception_type, var_name)) ) in print_args value_environment args *)
   | Print (_, args) ->
       let rec print_args val_env args =
         match args with
@@ -392,7 +392,11 @@ let rec interpret_expr expr value_environment function_environment
             interpret_expr catch_expr new_value_environment
               function_environment class_defns
           with
-          | Error _ -> Error (Core.Error.of_string "Error in catch block")
+          | Error err ->
+              Error
+                (Core.Error.of_string
+                   (Printf.sprintf "Error in catch block: %s"
+                      (Core.Error.to_string_hum err) ) )
           (* Catch block expression evaluated successfully - now evaluate
              finally block *)
           | Ok (IValue (v_catch, env_catch)) -> (
@@ -433,6 +437,7 @@ let rec interpret_expr expr value_environment function_environment
               function_environment class_defns
           with
           | Ok (IValue (_, env_after_final)) ->
+              Printf.printf "Exception raised does not match exc_name\n" ;
               Ok (IValue (VUnit (), env_after_final))
           | Ok (IException (_, _)) ->
               Error
