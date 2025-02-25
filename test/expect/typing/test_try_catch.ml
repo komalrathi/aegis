@@ -1,7 +1,7 @@
 open Core
 open Print.Print_typed_ast
 
-let%expect_test "Normal Print Statement" =
+let%expect_test "DivisionByZero exception raised" =
   match
     Parser_frontend.Parse_program.parse_program
       (Lexing.from_string
@@ -27,9 +27,12 @@ let%expect_test "Normal Print Statement" =
           }" )
   with
   | Ok program -> print_typed_ast program
-  | Error _ -> print_endline "Error: could not parse program";
-  [%expect.unreachable];
-  [%expect {|
+  | Error _ ->
+      print_endline "Error: could not parse program" ;
+      [%expect.unreachable] ;
+      [%expect.unreachable] ;
+      [%expect
+        {|
     Program([
 
     ],[

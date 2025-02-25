@@ -1,7 +1,7 @@
 open Core
 open Print.Print_parsed_ast
 
-let%expect_test "Normal Print Statement" =
+let%expect_test "DivisionByZero exception raised" =
   print_parsed_ast
     (Lexing.from_string
        "let x:(int, Low) = 7 in {\n\
@@ -24,7 +24,8 @@ let%expect_test "Normal Print Statement" =
        \        }\n\
        \    }\n\
         }" ) ;
-  [%expect {|
+  [%expect
+    {|
     Program([
 
     ],[
