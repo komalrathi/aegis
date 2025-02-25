@@ -1,0 +1,36 @@
+class Example {
+    test_var:(int, Low);
+    test_bool:(bool,Low);
+
+    constructor (x:(int,Low), y:(int, Low)) {
+        test_bool := True;
+        test_var := x+y
+    }
+    Low fn division(z:(int, Low)) : (int, Low) {
+        if (test_bool) then{
+            try {
+                if (z == 0) then {
+                    raise (DivisionByZero z)
+                }
+                else {
+                    test_var := test_var / z
+                }
+            }
+            catch (DivisionByZero z) {
+                print(test_var);
+                test_var := 1003
+            }
+            finally {
+                print(test_var);
+                z := 508;
+                print(z);
+                z := 60
+            }
+        }
+        else
+        {
+            test_var := test_var + 6
+        }
+    }
+}
+let obj:(Example,Low) = new Low Example(72, 8) in {obj.division(0)}
