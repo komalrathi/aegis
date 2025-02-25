@@ -8,7 +8,7 @@ open Get_class
 
 type row = (exception_type * security_level_type) list
 
-let is_constant_row (try_row : row) (catch_row : row) : bool =
+let is_constant_row (row_1 : row) (row_2 : row) : bool =
   let rec is_constant_row_helper (try_row : row) (catch_row : row) : bool =
     match (try_row, catch_row) with
     | [], [] -> true
@@ -19,7 +19,7 @@ let is_constant_row (try_row : row) (catch_row : row) : bool =
         else false
     | _ -> false
   in
-  is_constant_row_helper try_row catch_row
+  is_constant_row_helper row_1 row_2
 
 let rec remove_first_exception exception_name exception_security_level row =
   match row with
