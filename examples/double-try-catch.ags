@@ -1,0 +1,31 @@
+let x:(int, Low) = 7 in {
+    let y:(int, Low) = 8 in {
+        y := 0;
+        try {
+            if (y == 0) then {
+                raise (DivisionByZero y)
+            }
+            else {
+                y := x/y
+            }
+        }
+        catch (DivisionByZero y) {
+            let z: (int, Low)= 7 in {
+                try {
+                    z := 10
+                }
+                catch (IntegerOverflow z) {
+                    print(z)
+                }
+                finally {
+                    x := 105;
+                    print(x)
+                }
+            }
+        }
+        finally {
+            y := 101;
+            print(y)
+        }
+    }
+}
