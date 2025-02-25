@@ -66,6 +66,11 @@ let core_type_to_string core_type =
   | TException e ->
       Printf.sprintf "Exception %s" (exception_type_to_string e)
 
+(* let print_row row = Core.List.iter row ~f:(fun (exception_type, sec_level)
+   -> Printf.printf "Exception: %s, Security Level: %s\n"
+   (exception_type_to_string exception_type) (security_level_type_to_string
+   sec_level) ) *)
+
 let rec type_expr expr type_environment class_defns pc row =
   let ( >>= ) = Core.Result.( >>= ) in
   match expr with
@@ -678,7 +683,7 @@ let rec type_expr expr type_environment class_defns pc row =
               , pc_after_catch_block
               , row_after_catch_block )
           ->
-      if not (is_constant_row row_after_catch_block row_after_try_block) then
+      if not (is_constant_row row_after_try_block row_after_catch_block) then
         Error
           (Core.Error.of_string
              "The catch block has raised new exceptions that were not \
@@ -702,7 +707,16 @@ let rec type_expr expr type_environment class_defns pc row =
                 , pc_after_finally_block
                 , row_after_finally_block )
             ->
-        if subtyping_check pc e1_sec_level e3_sec_level then
+        (* check that finally block does not introduce any new exceptions *)
+        if
+          not
+            (is_constant_row updated_row_after_catch row_after_finally_block)
+        then
+          Error
+            (Core.Error.of_string
+               "The finally block has raised new exceptions that were not \
+                raised in the try block. This is not permitted." )
+        else if subtyping_check pc e1_sec_level e3_sec_level then
           (* return type is the finally block *)
           Ok
             ( (e3_core_type, e3_sec_level)
