@@ -102,7 +102,7 @@ let rec interpret_expr expr value_environment function_environment
         | (TEObject _, _), VObject (obj_name, _) ->
             Ok (IValue (VObject (obj_name, []), value_environment))
         | (TException DivisionByZero, _), _ ->
-            Ok (IException (IntegerOverflow, var_value))
+            Ok (IException (DivisionByZero, var_value))
         | (TException IntegerOverflow, _), _ ->
             Ok (IException (IntegerOverflow, var_value))
         | _ ->
