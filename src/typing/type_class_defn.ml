@@ -8,14 +8,6 @@ open Type_function_defn
 (* Convert a Parsed_ast.class_defn to a Typed_ast.class_defn *)
 (* Need to typecheck the constructor, methods and fields *)
 
-(* Typecheck the method definition - similar to type_function_defn *)
-let type_method_defn method_defn type_env class_defns row =
-  let ( >>= ) = Result.( >>= ) in
-  let (Parsed_ast.MethodDefn (sec_level, fn_defn)) = method_defn in
-  type_function_defn fn_defn type_env class_defns row
-  >>= fun (_, _, typed_f_defn, updated_row) ->
-  Ok (Typed_ast.MethodDefn (sec_level, typed_f_defn), updated_row)
-
 (* Typecheck the class definitions *)
 let type_class_defns class_defns type_env row =
   let ( >>= ) = Result.( >>= ) in
@@ -55,11 +47,13 @@ let type_class_defns class_defns type_env row =
     Result.all
       (List.map
          ~f:(fun method_defn ->
-           type_method_defn method_defn constructor_type_env class_defns
+           type_function_defn method_defn constructor_type_env class_defns
              updated_row )
          method_defns )
-    >>= fun typed_method_defns ->
-    let typed_methods = fst (List.unzip typed_method_defns) in
+    >>= fun typed_methods ->
+    let typed_methods =
+      List.map ~f:(fun (_, _, typed_f_defn, _) -> typed_f_defn) typed_methods
+    in
     Ok
       (Typed_ast.ClassDefn
          ( class_name

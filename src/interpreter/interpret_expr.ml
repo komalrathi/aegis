@@ -293,15 +293,14 @@ let rec interpret_expr expr value_environment function_environment
         | Some (ClassDefn (_, _, _, methods)) -> (
           match
             Core.List.find
-              ~f:(fun (MethodDefn (_, FunctionDefn (name, _, _, _))) ->
-                name = method_name )
+              ~f:(fun (FunctionDefn (name, _, _, _)) -> name = method_name)
               methods
           with
           | None ->
               Error
                 (Core.Error.of_string
                    (Printf.sprintf "Method %s not found" method_name) )
-          | Some (MethodDefn (_, FunctionDefn (_, params, _, body))) ->
+          | Some (FunctionDefn (_, params, _, body)) ->
               (* Evaluate method arguments *)
               let rec eval_args val_env args acc =
                 match args with

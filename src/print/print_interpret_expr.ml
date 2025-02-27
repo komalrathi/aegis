@@ -86,7 +86,8 @@ let rec class_defns_to_string (class_defns : class_defn list) =
       Printf.sprintf "Class %s: %s; %s; %s; %s" class_name
         (String.concat ~sep:", " (List.map ~f:field_to_string fields))
         (constructor_to_string constructor)
-        (String.concat ~sep:"; " (List.map ~f:method_to_string methods))
+        (String.concat ~sep:"; "
+           (List.map ~f:function_defn_to_string methods) )
         (class_defns_to_string t)
   | [] -> ""
 
@@ -105,27 +106,12 @@ and constructor_to_string constructor =
         (String.concat ~sep:", " (List.map ~f:arg_to_string args))
         (expr_to_string expr)
 
-(* and method_to_string (sec_level, (name, args, body)) = Printf.sprintf
-   "%s(%s) -> %s, %s" name (String.concat ~sep:", " (List.map
-   ~f:arg_to_string args)) (expr_to_string body) (sec_level_to_string
-   sec_level) *)
-
-and method_to_string method_defn =
-  match method_defn with
-  | MethodDefn (sec_level, fn_defn) ->
-      Printf.sprintf "%s, %s"
-        (sec_level_to_string sec_level)
-        (function_defn_to_string fn_defn)
-
 and function_defn_to_string fn_defn =
   match fn_defn with
   | FunctionDefn (name, args, _, body) ->
       Printf.sprintf "%s(%s) -> %s" name
         (String.concat ~sep:", " (List.map ~f:arg_to_string args))
         (expr_to_string body)
-(* and arg_to_string (name, (type_expr, sec_level)) = Printf.sprintf "%s: %s,
-   %s" name (type_expr_to_string (type_expr, sec_level)) (sec_level_to_string
-   sec_level) *)
 
 let print_interpret_expr expr value_env function_env class_defns =
   match interpret_expr expr value_env function_env class_defns with

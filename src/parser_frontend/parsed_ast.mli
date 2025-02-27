@@ -38,14 +38,11 @@ type field_defn = FieldDefn of identifier * type_expr
    the body of the constructor. *)
 type constructor = Constructor of argument list * expr
 
-(* A method definition is a security level and a function definition. *)
-type method_defn = MethodDefn of security_level_type * function_defn
-
 (* A class definition is a class name, a list of field definitions, a
    constructor definition, and a list of method definitions. *)
 type class_defn =
   | ClassDefn of
-      identifier * field_defn list * constructor * method_defn list
+      identifier * field_defn list * constructor * function_defn list
 
 (* A program now defines all the classes, functions, and the main
    expression. *)

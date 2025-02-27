@@ -33,10 +33,8 @@ type field_defn = FieldDefn of identifier * type_expr
 
 type constructor = Constructor of argument list * expr
 
-type method_defn = MethodDefn of security_level_type * function_defn
-
 type class_defn =
   | ClassDefn of
-      identifier * field_defn list * constructor * method_defn list
+      identifier * field_defn list * constructor * function_defn list
 
 type program = Prog of class_defn list * function_defn list * expr

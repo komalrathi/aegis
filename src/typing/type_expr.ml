@@ -580,12 +580,14 @@ let rec type_expr expr type_environment class_defns pc row =
                   (Core.Error.of_string
                      (Printf.sprintf "Method %s does not exist" method_name) )
             | Some
-                (Parsed_ast.MethodDefn
-                   ( method_sec_level
-                   , Parsed_ast.FunctionDefn
-                       (method_name, fn_args, return_type, _) ) ) ->
+                (Parsed_ast.FunctionDefn
+                   ( method_name
+                   , fn_args
+                   , (return_type_core_type, return_type_sec_level)
+                   , _ ) ) ->
                 (* TODO: have not updated pc - check where I need to do so *)
-                if less_than_or_equal method_sec_level obj_sec_level then
+                if less_than_or_equal return_type_sec_level obj_sec_level
+                then
                   let expected_arg_count = List.length fn_args in
                   let provided_arg_count = List.length args in
                   if expected_arg_count <> provided_arg_count then
@@ -632,10 +634,10 @@ let rec type_expr expr type_environment class_defns pc row =
                     >>= fun typed_args ->
                     let typed_args_exprs = Core.List.map typed_args ~f:snd in
                     Ok
-                      ( return_type
+                      ( (return_type_core_type, return_type_sec_level)
                       , Typed_ast.MethodCall
                           ( loc
-                          , (TEUnit, method_sec_level)
+                          , (TEUnit, return_type_sec_level)
                           , obj_name
                           , method_name
                           , typed_args_exprs )
