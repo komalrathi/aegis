@@ -7,7 +7,7 @@ class Example {
         test_var := x+y
     }
 
-    High fn division(z:(int, High)) : (int, High) {
+    fn division(z:(int, High)) : (int, High) {
         if (test_bool) then {
             try {
                 if (z == 0) then {

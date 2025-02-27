@@ -6,7 +6,7 @@ class Example {
         test_bool := True;
         test_var := x+y
     }
-    Low fn division(z:(int, Low)) : (int, Low) {
+    fn division(z:(int, Low)) : (int, Low) {
         if (test_bool) then{
             try {
                 if (z == 0) then {
