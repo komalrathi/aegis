@@ -11,7 +11,7 @@ let%expect_test "Example Class" =
        \        test_bool := True;\n\
        \        test_var := x+y\n\
        \    }\n\
-       \    High fn sum(z:(int, Low)) : (int, High) {\n\
+       \    fn sum(z:(int, Low)) : (int, High) {\n\
        \        if (test_bool) then{\n\
        \            test_var := z+6\n\
        \        }\n\
@@ -26,7 +26,7 @@ let%expect_test "Example Class" =
     {|
     Program([
     ClassDefn(Example, FieldDefn(test_var, (Int, High))
-    FieldDefn(test_bool, (Bool, Low)), Constructor([x: (Int, Low); y: (Int, Low)], Seq(Assign(test_bool, Boolean(true)), Assign(test_var, BinOp(Plus, Identifier(x), Identifier(y))))), MethodDefn(High, FunctionDefn(sum, [z: (Int, Low)], (Int, High), If(Identifier(test_bool), Assign(test_var, BinOp(Plus, Identifier(z), Integer(6))), Assign(test_var, BinOp(Plus, Identifier(test_var), Integer(6)))))))
+    FieldDefn(test_bool, (Bool, Low)), Constructor([x: (Int, Low); y: (Int, Low)], Seq(Assign(test_bool, Boolean(true)), Assign(test_var, BinOp(Plus, Identifier(x), Identifier(y))))), FunctionDefn(sum, [z: (Int, Low)], (Int, High), If(Identifier(test_bool), Assign(test_var, BinOp(Plus, Identifier(z), Integer(6))), Assign(test_var, BinOp(Plus, Identifier(test_var), Integer(6))))))
     ],[
 
     ], Let(y, (Int, Low), Integer(72), BinOp(Minus, Identifier(y), Integer(5))))

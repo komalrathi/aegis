@@ -14,7 +14,7 @@ let%expect_test "Object Instantiation" =
          \        test_bool:= True;\n\
          \        test_var := x+y\n\
          \    }\n\
-         \    High fn sum(z:(int, Low)) : (int, High) {\n\
+         \    fn sum(z:(int, Low)) : (int, High) {\n\
          \        if (test_bool) then{\n\
          \            test_var := z+6\n\
          \        }\n\
@@ -23,7 +23,7 @@ let%expect_test "Object Instantiation" =
          \            test_var := test_var +6\n\
          \        }\n\
          \    }\n\
-         \    High fn test() : (int, High) {\n\
+         \    fn test() : (int, High) {\n\
          \        let a:(int,Low) = 7 in {test_var + 5 + a}\n\
          \    }\n\
           }\n\

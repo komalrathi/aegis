@@ -34,7 +34,6 @@ let%expect_test "DivisionByZero exception raised" =
       | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect {|
-        Exception raised in try block: DivisionByZero
         101
         Result: VUnit
         Value Environment:

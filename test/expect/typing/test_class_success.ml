@@ -12,7 +12,7 @@ let%expect_test "Example Class" =
          \        test_bool := True;\n\
          \        test_var := x+y\n\
          \    }\n\
-         \    High fn sum(z:(int, Low)) : (int, High) {\n\
+         \    fn sum(z:(int, Low)) : (int, High) {\n\
          \        if (test_bool) then{\n\
          \            test_var := z+6\n\
          \        }\n\
@@ -37,11 +37,12 @@ let%expect_test "Example Class" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
+      [%expect.unreachable] ;
       [%expect.unreachable];
   [%expect {|
     Program([
     ClassDefn(Example, FieldDefn(test_var, (Int, High))
-    FieldDefn(test_bool, (Bool, Low)), Constructor([x: (Int, Low); y: (Int, Low)], Seq(Assign((Bool, Low), test_bool, Boolean(true)), Assign((Int, High), test_var, BinOp(Plus, (Int, Low), Identifier(x, (Int, Low)), Identifier(y, (Int, Low)))), (Int, High))), MethodDefn(High, FunctionDefn(sum, [z: (Int, Low)], (Int, High), If(Identifier(test_bool, (Bool, Low)), Assign((Int, High), test_var, BinOp(Plus, (Int, Low), Identifier(z, (Int, Low)), Integer(6))), Assign((Int, High), test_var, BinOp(Plus, (Int, High), Identifier(test_var, (Int, High)), Integer(6))), (Int, High)))))
+    FieldDefn(test_bool, (Bool, Low)), Constructor([x: (Int, Low); y: (Int, Low)], Seq(Assign((Bool, Low), test_bool, Boolean(true)), Assign((Int, High), test_var, BinOp(Plus, (Int, Low), Identifier(x, (Int, Low)), Identifier(y, (Int, Low)))), (Int, High))), FunctionDefn(sum, [z: (Int, Low)], (Int, High), If(Identifier(test_bool, (Bool, Low)), Assign((Int, High), test_var, BinOp(Plus, (Int, Low), Identifier(z, (Int, Low)), Integer(6))), Assign((Int, High), test_var, BinOp(Plus, (Int, High), Identifier(test_var, (Int, High)), Integer(6))), (Int, High))))
     ],[
 
     ], Let(y, (Int, Low), Integer(72), BinOp(Minus, (Int, Low), Identifier(y, (Int, Low)), Integer(5)), (Int, Low)))

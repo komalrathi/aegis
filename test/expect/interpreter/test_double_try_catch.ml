@@ -45,7 +45,6 @@ let%expect_test "2 TryCatchFinally Blocks" =
       | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect {|
-        Exception raised in try block: DivisionByZero
         105
         101
         Result: VUnit
