@@ -6,7 +6,7 @@ class Example {
         test_bool:= True;
         test_var := x+y
     }
-    High fn sum(z:(int, Low)) : (int, High) {
+    fn sum(z:(int, Low)) : (int, High) {
         if (test_bool) then{
             test_var := z+6
         }
@@ -15,7 +15,7 @@ class Example {
             test_var := test_var +6
         }
     }
-    High fn test() : (int, High) {
+    fn test() : (int, High) {
         let a:(int,Low) = 7 in {print(a);(test_var + 5 + a)}
     }
 }

@@ -23,6 +23,9 @@ type expr =
   | Skip of loc
   | Object of loc * security_level_type * identifier * expr list * type_expr
   | MethodCall of loc * type_expr * identifier * identifier * expr list
+  | Raise of loc * exception_type * identifier * type_expr
+  | TryCatchFinally of
+      loc * expr * exception_type * identifier * expr * expr * type_expr
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
@@ -31,10 +34,8 @@ type field_defn = FieldDefn of identifier * type_expr
 
 type constructor = Constructor of argument list * expr
 
-type method_defn = MethodDefn of security_level_type * function_defn
-
 type class_defn =
   | ClassDefn of
-      identifier * field_defn list * constructor * method_defn list
+      identifier * field_defn list * constructor * function_defn list
 
 type program = Prog of class_defn list * function_defn list * expr

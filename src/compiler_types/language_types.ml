@@ -1,9 +1,12 @@
+type exception_type = DivisionByZero | IntegerOverflow
+
 type core_type =
   | TEInt
   | TEBool
   | TFunction of core_type list * core_type
   | TEObject of string
   | TEUnit
+  | TException of exception_type
 
 type security_level_type = TSLow | TSHigh
 

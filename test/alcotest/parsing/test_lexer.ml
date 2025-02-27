@@ -50,6 +50,12 @@ let pp_print_token fmt token =
     | CONSTRUCTOR -> "CONSTRUCTOR"
     | NEW -> "NEW"
     | DOT -> "DOT"
+    | DIVISION_BY_ZERO -> "DIVISION_BY_ZERO"
+    | INTEGER_OVERFLOW -> "INTEGER_OVERFLOW"
+    | RAISE -> "RAISE"
+    | TRY -> "TRY"
+    | CATCH -> "CATCH"
+    | FINALLY -> "FINALLY"
     | EOF -> "EOF" )
 
 let parser_token_testable = Alcotest.testable pp_print_token Stdlib.( = )
@@ -107,7 +113,13 @@ let lex_token_test_cases =
   ; ("class", CLASS)
   ; ("constructor", CONSTRUCTOR)
   ; ("new", NEW)
-  ; (".", DOT) ]
+  ; (".", DOT)
+  ; ("DivisionByZero", DIVISION_BY_ZERO)
+  ; ("IntegerOverflow", INTEGER_OVERFLOW)
+  ; ("raise", RAISE)
+  ; ("try", TRY)
+  ; ("catch", CATCH)
+  ; ("finally", FINALLY) ]
 
 let test_lex_int =
   QCheck.Test.make ~count:100 ~name:"Lex integers" QCheck.int (fun i ->

@@ -1,0 +1,22 @@
+fn division (x :(int, Low), y:(int, Low)):(int, Low) { 
+    try {
+        if (y == 0) then {
+            raise (DivisionByZero y)
+        }
+        else {
+            x := x/y
+        }
+    }   
+    catch (DivisionByZero y) {
+        print(x);
+        x := 1003
+    }
+    finally {
+        print(x);
+        y := 508;
+        print(y);
+        y := 60
+    }
+}
+division(7, 4);
+division(8, 0)

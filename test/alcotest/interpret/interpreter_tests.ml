@@ -108,7 +108,7 @@ let test_binop_interpret_expr () =
              , Integer (Lexing.dummy_pos, i2, sl) ) )
           [] [] []
       with
-      | Ok (VInt i, _) -> i = i1 + i2
+      | Ok (IValue (VInt i, _)) -> i = i1 + i2
       | _ -> false )
 
 let test_comp_op_interpret_expr () =
@@ -129,7 +129,7 @@ let test_comp_op_interpret_expr () =
              , Integer (Lexing.dummy_pos, i2, sl) ) )
           [] [] []
       with
-      | Ok (VBool b, _) -> b = (i1 < i2)
+      | Ok (IValue (VBool b, _)) -> b = (i1 < i2)
       | _ -> false )
 
 let test_boolean_compop_interpret_expr () =
@@ -150,7 +150,7 @@ let test_boolean_compop_interpret_expr () =
              , Boolean (Lexing.dummy_pos, b2, sl) ) )
           [] [] []
       with
-      | Ok (VBool b, _) -> b = (b1 && b2)
+      | Ok (IValue (VBool b, _)) -> b = (b1 && b2)
       | _ -> false )
 
 let test_unary_op_interpret_expr () =
@@ -170,7 +170,7 @@ let test_unary_op_interpret_expr () =
              , Boolean (Lexing.dummy_pos, b, sl) ) )
           [] [] []
       with
-      | Ok (VBool result, _) -> result = not b
+      | Ok (IValue (VBool result, _)) -> result = not b
       | _ -> false )
 
 let () =

@@ -62,6 +62,14 @@
 %token NEW
 %token DOT
 
+%token DIVISION_BY_ZERO
+%token INTEGER_OVERFLOW
+
+%token RAISE
+%token TRY
+%token CATCH
+%token FINALLY
+
 %token EOF
 
 
@@ -88,7 +96,7 @@
 %type <function_defn> function_defn
 %type <field_defn> field_defn
 %type <constructor> constructor
-%type <method_defn> method_defn
+// %type <method_defn> method_defn
 %type <class_defn> class_defn
 %type <expr> block_expr
 
@@ -113,6 +121,10 @@
 %inline bool_comp_op:
 | AND { BoolOpAnd }
 | OR { BoolOpOr }
+
+exception_type:
+| DIVISION_BY_ZERO {DivisionByZero}
+| INTEGER_OVERFLOW {IntegerOverflow}
 
 core_type:
 | TYPE_INT {TEInt}
@@ -141,11 +153,11 @@ field_defn:
 constructor:
 | CONSTRUCTOR LEFT_PAREN args=separated_list(COMMA,arg) RIGHT_PAREN LEFT_BRACE e=block_expr RIGHT_BRACE {Constructor(args, e)}
 
-method_defn:
-| s=sec_level f=function_defn {MethodDefn(s, f)}
+// method_defn:
+// | s=sec_level f=function_defn {MethodDefn(s, f)}
 
 class_defn:
-| CLASS c=IDENTIFIER LEFT_BRACE fields=list(field_defn) constructor=constructor methods=list( method_defn) RIGHT_BRACE {ClassDefn(c, fields, constructor, methods)}
+| CLASS c=IDENTIFIER LEFT_BRACE fields=list(field_defn) constructor=constructor methods=list(function_defn) RIGHT_BRACE {ClassDefn(c, fields, constructor, methods)}
 
 block_expr:
 | e1=expr SEMICOLON e2=block_expr {Seq($startpos, e1, e2)}
@@ -183,6 +195,10 @@ expr:
 | DECLASSIFY LEFT_PAREN e=expr RIGHT_PAREN {Declassify($startpos, e)}
 | PRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {Print($startpos, args)}
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
+// exception handling
+| RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{Raise($startpos, exception_name, var)}
+| TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, e2, e3)}
+
 
 program:
 c=class_defn* f=function_defn* e=block_expr; EOF {Prog(c, f, e)}

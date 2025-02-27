@@ -4,9 +4,13 @@ open Value_environment
 open Typing
 open Interpret_fn_defn
 
+type interpret_expr_result =
+  | IValue of interpreter_val * value_environment
+  | IException of exception_type * interpreter_val
+
 val interpret_expr :
      Typed_ast.expr
   -> value_environment
   -> function_environment
   -> Typed_ast.class_defn list
-  -> (interpreter_val * value_environment) Or_error.t
+  -> interpret_expr_result Or_error.t

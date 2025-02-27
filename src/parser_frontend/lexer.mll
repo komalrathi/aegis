@@ -69,6 +69,12 @@ rule read_token = parse
     | "constructor" {CONSTRUCTOR}
     | "new" {NEW}
     | "." {DOT}
+    | "raise" {RAISE}
+    | "try" {TRY}
+    | "catch" {CATCH}
+    | "finally" {FINALLY}
+    | "DivisionByZero" {DIVISION_BY_ZERO}
+    | "IntegerOverflow" {INTEGER_OVERFLOW}
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int_regex { INT (int_of_string (lexeme lexbuf)) }

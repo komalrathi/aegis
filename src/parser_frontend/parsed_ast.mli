@@ -22,6 +22,8 @@ type expr =
   | Skip of loc
   | Object of loc * security_level_type * identifier * expr list
   | MethodCall of loc * identifier * identifier * expr list
+  | Raise of loc * exception_type * identifier
+  | TryCatchFinally of loc * expr * exception_type * identifier * expr * expr
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the
@@ -36,14 +38,11 @@ type field_defn = FieldDefn of identifier * type_expr
    the body of the constructor. *)
 type constructor = Constructor of argument list * expr
 
-(* A method definition is a security level and a function definition. *)
-type method_defn = MethodDefn of security_level_type * function_defn
-
 (* A class definition is a class name, a list of field definitions, a
    constructor definition, and a list of method definitions. *)
 type class_defn =
   | ClassDefn of
-      identifier * field_defn list * constructor * method_defn list
+      identifier * field_defn list * constructor * function_defn list
 
 (* A program now defines all the classes, functions, and the main
    expression. *)

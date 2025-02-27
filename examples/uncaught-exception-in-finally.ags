@@ -1,0 +1,29 @@
+let x:(int, Low) = 7 in {
+    let y:(int, Low) = 8 in {
+        y := 0;
+        try {
+            if (y == 0) then {
+                raise (DivisionByZero y)
+            }
+            else {
+                y := x/y
+            }
+        }
+        catch (DivisionByZero y) {
+            x := 55;
+            print(x)
+        }
+        finally {
+            y := 101;
+            print(y);
+            let z:(int, Low) = 9 in {
+                if (z == 0) then {
+                    raise (DivisionByZero z)
+                }
+                else {
+                    z := x/z
+                }
+            }
+        }
+    }
+}

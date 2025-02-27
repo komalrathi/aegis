@@ -16,3 +16,5 @@ val unary_op_to_string : unary_op -> string
 val arg_to_string : argument -> string
 
 val value_to_string : interpreter_val -> string
+
+val exception_type_to_string : exception_type -> string

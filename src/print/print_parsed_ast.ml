@@ -52,6 +52,15 @@ let rec expr_to_string = function
       Printf.sprintf "MethodCall(%s, [%s], %s)" id
         (String.concat ~sep:"; " (Stdlib.List.map expr_to_string args))
         e
+  | Raise (_, exception_name, var_name) ->
+      Printf.sprintf "Raise(%s, %s)"
+        (exception_type_to_string exception_name)
+        var_name
+  | TryCatchFinally (_, e1, exception_name, var_name, e2, e3) ->
+      Printf.sprintf "Try {%s} Catch (%s %s) {%s} Finally {%s}"
+        (expr_to_string e1)
+        (exception_type_to_string exception_name)
+        var_name (expr_to_string e2) (expr_to_string e3)
 
 let function_defn_to_string (FunctionDefn (name, args, return_type, body)) =
   Printf.sprintf "FunctionDefn(%s, [%s], %s, %s)" name
@@ -74,13 +83,7 @@ let class_defn_to_string (ClassDefn (name, fields, constructor, methods)) =
          fields )
   in
   let methods_string =
-    String.concat ~sep:"\n"
-      (Stdlib.List.map
-         (fun (MethodDefn (sec_level, function_defn)) ->
-           Printf.sprintf "MethodDefn(%s, %s)"
-             (sec_level_to_string sec_level)
-             (function_defn_to_string function_defn) )
-         methods )
+    String.concat ~sep:"\n" (Stdlib.List.map function_defn_to_string methods)
   in
   Printf.sprintf "ClassDefn(%s, %s, %s, %s)" name fields_string
     (constructor_to_string constructor)

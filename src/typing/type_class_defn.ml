@@ -2,24 +2,14 @@ open Core
 open Parser_frontend
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
-
-(* open Equal_type_expr *)
 open Type_expr
 open Type_function_defn
 
 (* Convert a Parsed_ast.class_defn to a Typed_ast.class_defn *)
 (* Need to typecheck the constructor, methods and fields *)
 
-(* Typecheck the method definition - similar to type_function_defn *)
-let type_method_defn method_defn type_env class_defns =
-  let ( >>= ) = Result.( >>= ) in
-  let (Parsed_ast.MethodDefn (sec_level, fn_defn)) = method_defn in
-  type_function_defn fn_defn type_env class_defns
-  >>= fun (_, _, typed_f_defn) ->
-  Ok (Typed_ast.MethodDefn (sec_level, typed_f_defn))
-
 (* Typecheck the class definitions *)
-let type_class_defns class_defns type_env =
+let type_class_defns class_defns type_env row =
   let ( >>= ) = Result.( >>= ) in
   let type_class_defn
       (Parsed_ast.ClassDefn
@@ -47,8 +37,8 @@ let type_class_defns class_defns type_env =
     (* add class information to the class environment *)
     type_expr constructor_expr
       (constructor_args @ constructor_type_env)
-      class_defns TSLow
-    >>= fun ((_, _), typed_constructor, _) ->
+      class_defns TSLow row
+    >>= fun ((_, _), typed_constructor, _, updated_row) ->
     let type_field_expr (Parsed_ast.FieldDefn (field_name, field_type)) =
       Ok (Typed_ast.FieldDefn (field_name, field_type))
     in
@@ -57,9 +47,13 @@ let type_class_defns class_defns type_env =
     Result.all
       (List.map
          ~f:(fun method_defn ->
-           type_method_defn method_defn constructor_type_env class_defns )
+           type_function_defn method_defn constructor_type_env class_defns
+             updated_row )
          method_defns )
-    >>= fun typed_method_defns ->
+    >>= fun typed_methods ->
+    let typed_methods =
+      List.map ~f:(fun (_, _, typed_f_defn, _) -> typed_f_defn) typed_methods
+    in
     Ok
       (Typed_ast.ClassDefn
          ( class_name
@@ -68,7 +62,7 @@ let type_class_defns class_defns type_env =
              ( ( match constructor with
                | Parsed_ast.Constructor (args, _) -> args )
              , typed_constructor )
-         , typed_method_defns ) )
+         , typed_methods ) )
   in
   Result.all (List.map ~f:type_class_defn class_defns)
   >>= fun typed_class_defns -> Ok typed_class_defns

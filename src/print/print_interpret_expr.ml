@@ -53,6 +53,16 @@ let rec expr_to_string = function
   | MethodCall (_, _, _, id, args) ->
       Printf.sprintf "MethodCall(%s, [%s])" id
         (String.concat ~sep:"; " (List.map ~f:expr_to_string args))
+  | Raise (_, exception_name, var_name, type_expr) ->
+      Printf.sprintf "Raise(%s, %s %s)"
+        (exception_type_to_string exception_name)
+        var_name
+        (type_expr_to_string type_expr)
+  | TryCatchFinally (_, e1, exception_name, var_name, e2, e3, _) ->
+      Printf.sprintf "TryCatchFinally(%s, %s, %s, %s, %s)"
+        (expr_to_string e1)
+        (exception_type_to_string exception_name)
+        var_name (expr_to_string e2) (expr_to_string e3)
 
 let rec function_environment_to_string env =
   match env with
@@ -76,7 +86,8 @@ let rec class_defns_to_string (class_defns : class_defn list) =
       Printf.sprintf "Class %s: %s; %s; %s; %s" class_name
         (String.concat ~sep:", " (List.map ~f:field_to_string fields))
         (constructor_to_string constructor)
-        (String.concat ~sep:"; " (List.map ~f:method_to_string methods))
+        (String.concat ~sep:"; "
+           (List.map ~f:function_defn_to_string methods) )
         (class_defns_to_string t)
   | [] -> ""
 
@@ -95,31 +106,16 @@ and constructor_to_string constructor =
         (String.concat ~sep:", " (List.map ~f:arg_to_string args))
         (expr_to_string expr)
 
-(* and method_to_string (sec_level, (name, args, body)) = Printf.sprintf
-   "%s(%s) -> %s, %s" name (String.concat ~sep:", " (List.map
-   ~f:arg_to_string args)) (expr_to_string body) (sec_level_to_string
-   sec_level) *)
-
-and method_to_string method_defn =
-  match method_defn with
-  | MethodDefn (sec_level, fn_defn) ->
-      Printf.sprintf "%s, %s"
-        (sec_level_to_string sec_level)
-        (function_defn_to_string fn_defn)
-
 and function_defn_to_string fn_defn =
   match fn_defn with
   | FunctionDefn (name, args, _, body) ->
       Printf.sprintf "%s(%s) -> %s" name
         (String.concat ~sep:", " (List.map ~f:arg_to_string args))
         (expr_to_string body)
-(* and arg_to_string (name, (type_expr, sec_level)) = Printf.sprintf "%s: %s,
-   %s" name (type_expr_to_string (type_expr, sec_level)) (sec_level_to_string
-   sec_level) *)
 
 let print_interpret_expr expr value_env function_env class_defns =
   match interpret_expr expr value_env function_env class_defns with
-  | Ok (value, new_value_env) ->
+  | Ok (IValue (value, new_value_env)) ->
       Printf.printf "Result: %s\n" (value_to_string value) ;
       Printf.printf "Value Environment: %s\n"
         (value_environment_to_string new_value_env) ;
@@ -127,9 +123,6 @@ let print_interpret_expr expr value_env function_env class_defns =
         (function_environment_to_string function_env) ;
       Printf.printf "Class Environment: %s\n"
         (class_defns_to_string class_defns)
-  | Error e -> Printf.printf "Error: %s\n" (Error.to_string_hum e)
-(* | Ok (value, new_env) -> Printf.sprintf "Function Environment: %s\nResult:
-   %s\nValue Environment: [%s]\n" (function_environment_to_string
-   function_env) (value_to_string value) (value_environment_to_string
-   new_env) |> print_endline | Error err -> Printf.sprintf "Error: %s\n"
-   (Error.to_string_hum err) |> print_endline *)
+  | Ok (IException (err, _)) ->
+      Printf.printf "Error: %s\n" (exception_type_to_string err)
+  | Error err -> Printf.printf "Error: %s\n" (Error.to_string_hum err)
