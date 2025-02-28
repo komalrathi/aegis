@@ -1,0 +1,58 @@
+class Calculator {
+    a: (int, Low);
+    b: (int, Low);
+    
+    constructor (x: (int, Low), y: (int, Low)) {
+        a := 5 + x;
+        b := 6 + y
+    }
+    fn add(): (int, Low) {
+        a + b
+    }
+    fn subtract(): (int, Low) {
+        a - b
+    }
+    fn multiply(): (int, Low) {
+        a * b
+    }
+}
+
+fn divide(a: (int, Low), b: (int, Low)) : (int, Low) {
+    try {
+        if (b == 0) then {
+            raise (DivisionByZero b)
+        } 
+        else {
+            a / b
+        }
+    } 
+    catch (DivisionByZero b) {
+        print(404);
+        a := 404
+    } 
+    finally {
+        print(505);
+        b := 505
+    }
+}
+
+let calc:(Calculator, Low) = new Low Calculator(50, 10) in {
+    let sum_result:(int, Low) = calc.add() in {
+        print(sum_result)
+    };    
+    let diff_result:(int, Low) = calc.subtract() in {
+        print(diff_result)
+    };
+    let prod_result: (int, Low) = calc.multiply() in {
+        print(prod_result)
+    };    
+    for (let i:(int, Low) = 1; i <= 10; i := i + 1) {
+        print(i)
+    };   
+    let countdown: (int, Low) = 10 in {
+        while (countdown > 0) {
+            print(countdown);
+            countdown := countdown - 1
+        }
+    }
+}
