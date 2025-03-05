@@ -77,9 +77,15 @@ rule read_token = parse
     | "finally" {FINALLY}
     | "DivisionByZero" {DIVISION_BY_ZERO}
     | "IntegerOverflow" {INTEGER_OVERFLOW}
+    | "//" { comment lexbuf }
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
     | int_regex { INT (int_of_string (lexeme lexbuf)) }
     | id_regex {IDENTIFIER (lexeme lexbuf)}
     | eof { EOF }
     | _ { raise (SyntaxError ("Invalid character " ^ Lexing.lexeme lexbuf)) }
+
+and comment = parse
+    | newline { next_line lexbuf; read_token lexbuf }
+    | _ { comment lexbuf }
+    | eof { EOF }
