@@ -11,6 +11,8 @@
 %token MINUS
 %token MULTIPLY
 %token DIVIDE
+%token EXPONETIATION
+%token MODULUS
 
 %token CLASSIFY
 %token DECLASSIFY
@@ -80,6 +82,7 @@
 %left EQUALITY LTE LT GTE GT
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
+%left EXPONETIATION MODULUS
 %right NOT
 
 
@@ -109,7 +112,9 @@
 | PLUS { BinOpPlus }
 | MINUS { BinOpMinus }
 | MULTIPLY { BinOpMultiply }
-| DIVIDE { BinOpDivide } 
+| DIVIDE { BinOpDivide }
+| EXPONETIATION {BinOpExponentiation}
+| MODULUS {BinOpModulus}
 
 %inline comp_op:
 | LT { CompOpLessThan }

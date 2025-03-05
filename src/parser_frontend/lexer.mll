@@ -34,6 +34,8 @@ rule read_token = parse
     | "-" { MINUS }
     | "*" { MULTIPLY }
     | "/" { DIVIDE }
+    | "^" { EXPONETIATION }
+    | "%" { MODULUS }
     | "True" { TRUE }
     | "False" { FALSE }
     | "<" { LT }

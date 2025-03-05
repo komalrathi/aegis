@@ -2,7 +2,13 @@ open Language_types
 
 type loc = Lexing.position
 
-type bin_op = BinOpPlus | BinOpMinus | BinOpMultiply | BinOpDivide
+type bin_op =
+  | BinOpPlus
+  | BinOpMinus
+  | BinOpMultiply
+  | BinOpDivide
+  | BinOpExponentiation
+  | BinOpModulus
 
 type comp_op =
   | CompOpLessThan

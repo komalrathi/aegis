@@ -33,6 +33,8 @@ and bin_op_to_string = function
   | BinOpMinus -> "Minus"
   | BinOpMultiply -> "Multiply"
   | BinOpDivide -> "Divide"
+  | BinOpExponentiation -> "Exponentiation"
+  | BinOpModulus -> "Modulus"
 
 and comp_op_to_string = function
   | CompOpLessThan -> "LessThan"

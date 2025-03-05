@@ -9,6 +9,11 @@ let apply_int_bin_op bin_op i1 i2 =
   | BinOpDivide ->
       if i2 = 0 then Error (Core.Error.of_string "Division by zero")
       else Ok (VInt (i1 / i2))
+  | BinOpExponentiation ->
+      Ok (VInt (int_of_float (float_of_int i1 ** float_of_int i2)))
+  | BinOpModulus ->
+      if i2 = 0 then Error (Core.Error.of_string "Division by zero")
+      else Ok (VInt (i1 mod i2))
 
 let apply_comp_op comp_op i1 i2 =
   match comp_op with
