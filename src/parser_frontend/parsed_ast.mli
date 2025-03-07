@@ -23,6 +23,7 @@ type expr =
   | Object of loc * security_level_type * identifier * expr list
   | MethodCall of loc * identifier * identifier * expr list
   | Raise of loc * exception_type * identifier
+  | ResumableRaise of loc * exception_type * identifier
   | TryCatchFinally of loc * expr * exception_type * identifier * expr * expr
 
 (* A function definition is a function name, a list of arguments, the return

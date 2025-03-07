@@ -68,6 +68,7 @@
 %token INTEGER_OVERFLOW
 
 %token RAISE
+%token RESUMABLE_RAISE
 %token TRY
 %token CATCH
 %token FINALLY
@@ -202,6 +203,7 @@ expr:
 | SECUREPRINT LEFT_PAREN args=separated_list(COMMA, expr) RIGHT_PAREN {SecurePrint($startpos, args)} 
 // exception handling
 | RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{Raise($startpos, exception_name, var)}
+| RESUMABLE_RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{ResumableRaise($startpos, exception_name, var)}
 | TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, e2, e3)}
 
 

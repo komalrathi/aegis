@@ -72,6 +72,7 @@ rule read_token = parse
     | "new" {NEW}
     | "." {DOT}
     | "raise" {RAISE}
+    | "raise!" {RESUMABLE_RAISE}
     | "try" {TRY}
     | "catch" {CATCH}
     | "finally" {FINALLY}
