@@ -1,0 +1,24 @@
+fn diffie_hellman(private_key: (int, High), public_base: (int, Low), public_mod: (int, Low)) : (int, High) {
+    (public_base ^ private_key) % public_mod
+}
+
+let alice_private: (int, High) = 15 in {
+    let bob_private: (int, High) = 13 in {
+        let g: (int, Low) = 5 in {  // Public base
+            let p: (int, Low) = 23 in { // Public prime modulus
+                let alice_public: (int, High) = diffie_hellman(alice_private, g, p) in {
+                    let bob_public: (int, High) = diffie_hellman(bob_private, g, p) in {
+                        securePrint(alice_public);
+                        securePrint(bob_public);
+                        let alice_shared: (int, High) = diffie_hellman(alice_private, bob_public, p) in {
+                            let bob_shared: (int, High) = diffie_hellman(bob_private, alice_public, p) in {
+                                securePrint(alice_shared);
+                                securePrint(bob_shared)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
