@@ -2,7 +2,7 @@ open Core
 open Compiler_types.Language_types
 open Compiler_types.Ast_types
 
-type row = (exception_type * security_level_type) list
+type row = (exception_type * security_level_type * bool) list
 
 type type_binding = identifier * type_expr
 
