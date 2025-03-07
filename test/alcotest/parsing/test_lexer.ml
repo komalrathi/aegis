@@ -14,6 +14,8 @@ let pp_print_token fmt token =
     | MINUS -> "MINUS"
     | MULTIPLY -> "MULTIPLY"
     | DIVIDE -> "DIVIDE"
+    | EXPONETIATION -> "EXPONETIATION"
+    | MODULUS -> "MODULUS"
     | TRUE -> "TRUE"
     | FALSE -> "FALSE"
     | LT -> "LT"
@@ -81,6 +83,8 @@ let lex_token_test_cases =
   ; ("-", MINUS)
   ; ("*", MULTIPLY)
   ; ("/", DIVIDE)
+  ; ("^", EXPONETIATION)
+  ; ("%", MODULUS)
   ; ("True", TRUE)
   ; ("False", FALSE)
   ; ("<", LT)

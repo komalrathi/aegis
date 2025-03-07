@@ -3,8 +3,8 @@ open Compiler_types.Ast_types
 open Interpreter.Interpret_ops
 open Interpreter.Interpret_expr
 
-let test_apply_int_plus_bin_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_int_plus_bin_op"
+let test_int_plus_bin_op () =
+  QCheck.Test.make ~count:1000 ~name:"Addition of two integers"
     QCheck.(
       triple
         (QCheck.make (Gen.return BinOpPlus))
@@ -14,8 +14,8 @@ let test_apply_int_plus_bin_op () =
       | Ok (VInt i) -> i = i1 + i2
       | _ -> false )
 
-let test_apply_int_minus_bin_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_int_minus_bin_op"
+let test_int_minus_bin_op () =
+  QCheck.Test.make ~count:1000 ~name:"Subtraction of two integers"
     QCheck.(
       triple
         (QCheck.make (Gen.return BinOpMinus))
@@ -25,8 +25,8 @@ let test_apply_int_minus_bin_op () =
       | Ok (VInt i) -> i = i1 - i2
       | _ -> false )
 
-let test_apply_int_multiply_bin_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_int_multiply_bin_op"
+let test_int_multiply_bin_op () =
+  QCheck.Test.make ~count:1000 ~name:"Multiplication of two integers"
     QCheck.(
       triple
         (QCheck.make (Gen.return BinOpMultiply))
@@ -36,8 +36,8 @@ let test_apply_int_multiply_bin_op () =
       | Ok (VInt i) -> i = i1 * i2
       | _ -> false )
 
-let test_apply_int_divide_bin_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_int_divide_bin_op"
+let test_int_divide_bin_op () =
+  QCheck.Test.make ~count:1000 ~name:"Division of two integers"
     QCheck.(
       triple (QCheck.make (Gen.return BinOpDivide)) small_signed_int pos_int )
     (fun (op, i1, i2) ->
@@ -45,8 +45,8 @@ let test_apply_int_divide_bin_op () =
       | Ok (VInt i) -> i = i1 / i2
       | _ -> false )
 
-let test_apply_lt_comp_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_lt_comp_op"
+let test_lt_comp_op () =
+  QCheck.Test.make ~count:1000 ~name:"Less Than comparison of two integers"
     QCheck.(
       triple
         (QCheck.make (Gen.return CompOpLessThan))
@@ -56,8 +56,9 @@ let test_apply_lt_comp_op () =
       | Ok (VBool b) -> b = (i1 < i2)
       | _ -> false )
 
-let test_apply_gt_comp_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_gt_comp_op"
+let test_gt_comp_op () =
+  QCheck.Test.make ~count:1000
+    ~name:"Greater Than comparison of two integers"
     QCheck.(
       triple
         (QCheck.make (Gen.return CompOpGreaterThan))
@@ -67,8 +68,9 @@ let test_apply_gt_comp_op () =
       | Ok (VBool b) -> b = (i1 > i2)
       | _ -> false )
 
-let test_apply_lte_comp_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_lte_comp_op"
+let test_lte_comp_op () =
+  QCheck.Test.make ~count:1000
+    ~name:"Less Than Equal comparison of two integers"
     QCheck.(
       triple
         (QCheck.make (Gen.return CompOpLessThanEqual))
@@ -78,8 +80,9 @@ let test_apply_lte_comp_op () =
       | Ok (VBool b) -> b = (i1 <= i2)
       | _ -> false )
 
-let test_apply_gte_comp_op () =
-  QCheck.Test.make ~count:1000 ~name:"apply_gte_comp_op"
+let test_gte_comp_op () =
+  QCheck.Test.make ~count:1000
+    ~name:"Greater Than Equal comparison of two integers"
     QCheck.(
       triple
         (QCheck.make (Gen.return CompOpGreaterThanEqual))
@@ -112,7 +115,7 @@ let test_binop_interpret_expr () =
       | _ -> false )
 
 let test_comp_op_interpret_expr () =
-  QCheck.Test.make ~count:1000 ~name:"compop_intepret_expr"
+  QCheck.Test.make ~count:1000 ~name:"Integer compop_intepret_expr"
     QCheck.(
       quad
         (QCheck.make (Gen.return CompOpLessThan))
@@ -133,7 +136,7 @@ let test_comp_op_interpret_expr () =
       | _ -> false )
 
 let test_boolean_compop_interpret_expr () =
-  QCheck.Test.make ~count:1000 ~name:"compop_intepret_expr"
+  QCheck.Test.make ~count:1000 ~name:"Boolean compop_intepret_expr"
     QCheck.(
       quad
         (QCheck.make (Gen.return BoolOpAnd))
@@ -154,7 +157,7 @@ let test_boolean_compop_interpret_expr () =
       | _ -> false )
 
 let test_unary_op_interpret_expr () =
-  QCheck.Test.make ~count:1000 ~name:"unaryop_intepret_expr"
+  QCheck.Test.make ~count:1000 ~name:"Unary op interpret_expr"
     QCheck.(
       triple
         (QCheck.make (Gen.return UnaryOpNot))
@@ -173,20 +176,42 @@ let test_unary_op_interpret_expr () =
       | Ok (IValue (VBool result, _)) -> result = not b
       | _ -> false )
 
+let test_exponentiation_bin_op () =
+  QCheck.Test.make ~count:1000 ~name:"Integer exponentiation"
+    QCheck.(
+      triple
+        (QCheck.make (Gen.return BinOpExponentiation))
+        small_signed_int pos_int )
+    (fun (op, i1, i2) ->
+      match apply_int_bin_op op i1 i2 with
+      | Ok (VInt i) -> i = int_of_float (float i1 ** float i2)
+      | _ -> false )
+
+let test_modulus_bin_op () =
+  QCheck.Test.make ~count:1000 ~name:"Integer modulus"
+    QCheck.(
+      triple (QCheck.make (Gen.return BinOpModulus)) small_signed_int pos_int )
+    (fun (op, i1, i2) ->
+      match apply_int_bin_op op i1 i2 with
+      | Ok (VInt i) -> i = i1 mod i2
+      | _ -> false )
+
 let () =
   let qcheck_tests =
     List.map QCheck_alcotest.to_alcotest
-      [ test_apply_int_plus_bin_op ()
-      ; test_apply_int_minus_bin_op ()
-      ; test_apply_int_multiply_bin_op ()
-      ; test_apply_int_divide_bin_op ()
-      ; test_apply_lt_comp_op ()
-      ; test_apply_gt_comp_op ()
-      ; test_apply_lte_comp_op ()
-      ; test_apply_gte_comp_op ()
+      [ test_int_plus_bin_op ()
+      ; test_int_minus_bin_op ()
+      ; test_int_multiply_bin_op ()
+      ; test_int_divide_bin_op ()
+      ; test_lt_comp_op ()
+      ; test_gt_comp_op ()
+      ; test_lte_comp_op ()
+      ; test_gte_comp_op ()
       ; test_binop_interpret_expr ()
       ; test_comp_op_interpret_expr ()
       ; test_boolean_compop_interpret_expr ()
-      ; test_unary_op_interpret_expr () ]
+      ; test_unary_op_interpret_expr ()
+      ; test_exponentiation_bin_op ()
+      ; test_modulus_bin_op () ]
   in
   Alcotest.run "interpreter_tests.ml\n Tests" [("qcheck", qcheck_tests)]

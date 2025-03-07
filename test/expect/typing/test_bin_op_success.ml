@@ -13,6 +13,7 @@ let%expect_test "Binary Operation" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
+      [%expect.unreachable] ;
       [%expect.unreachable];
   [%expect {|
     Program([
@@ -34,6 +35,7 @@ let%expect_test "Binary Operation with Parentheses" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
+      [%expect.unreachable] ;
       [%expect.unreachable];
   [%expect {|
     Program([
@@ -41,4 +43,38 @@ let%expect_test "Binary Operation with Parentheses" =
     ],[
 
     ], BinOp(Minus, (Int, Low), BinOp(Divide, (Int, Low), BinOp(Multiply, (Int, Low), Integer(5), Integer(6)), BinOp(Plus, (Int, Low), Integer(2), Integer(7))), Integer(1)))
+    |}]
+
+let%expect_test "Binary Operation with Exponentiation" =
+  match
+    Parser_frontend.Parse_program.parse_program
+      (Lexing.from_string "5 ^ 6 / 8")
+  with
+  | Ok program -> print_typed_ast program
+  | Error _ ->
+      [%expect.unreachable] ;
+      [%expect.unreachable];
+  [%expect {|
+    Program([
+
+    ],[
+
+    ], BinOp(Divide, (Int, Low), BinOp(Exponentiation, (Int, Low), Integer(5), Integer(6)), Integer(8)))
+    |}]
+
+let%expect_test "Binary Operation with Modulus" =
+  match
+    Parser_frontend.Parse_program.parse_program
+      (Lexing.from_string "(525 % 6) / 2")
+  with
+  | Ok program -> print_typed_ast program
+  | Error _ ->
+      [%expect.unreachable] ;
+      [%expect.unreachable];
+  [%expect {|
+    Program([
+
+    ],[
+
+    ], BinOp(Divide, (Int, Low), BinOp(Modulus, (Int, Low), Integer(525), Integer(6)), Integer(2)))
     |}]
