@@ -6,33 +6,61 @@ open Type_environment
 open Subtyping_security_levels_check
 open Get_class
 
-type row = (exception_type * security_level_type) list
+(* The bool is used to indicate if the exception is resumable or not. True if
+   resumable, false otherwise *)
+type row = (exception_type * security_level_type * bool) list
 
+(* check if two rows are the same - used to check if the catch or finally
+   block have raised new exceptions that were not raised in the try block *)
 let is_constant_row (row_1 : row) (row_2 : row) : bool =
   let rec is_constant_row_helper (try_row : row) (catch_row : row) : bool =
     match (try_row, catch_row) with
     | [], [] -> true
-    | ( (try_exception, try_sec_level) :: try_row_tl
-      , (catch_exception, catch_sec_level) :: catch_row_tl ) ->
-        if try_exception = catch_exception && try_sec_level = catch_sec_level
+    | ( (try_exception, try_sec_level, try_is_resumable) :: try_row_tl
+      , (catch_exception, catch_sec_level, catch_is_resumable)
+        :: catch_row_tl ) ->
+        if
+          try_exception = catch_exception
+          && try_sec_level = catch_sec_level
+          && try_is_resumable = catch_is_resumable
         then is_constant_row_helper try_row_tl catch_row_tl
         else false
     | _ -> false
   in
   is_constant_row_helper row_1 row_2
 
-let rec remove_first_exception exception_name exception_security_level row =
+(* exceptions are added to the row in the order they are raised, so we only
+   need to remove the first exception that matches the exception name and
+   security level *)
+let rec remove_first_exception exception_name exception_security_level
+    exception_is_resumable row =
   match row with
   | [] -> []
-  | (exception_name', exception_security_level') :: tail ->
+  | (exception_name', exception_security_level', exception_is_resumable')
+    :: tail ->
       if
         exception_name = exception_name'
         && exception_security_level = exception_security_level'
+        && exception_is_resumable = exception_is_resumable'
       then tail
       else
-        (exception_name', exception_security_level')
+        (exception_name', exception_security_level', exception_is_resumable')
         :: remove_first_exception exception_name exception_security_level
-             tail
+             exception_is_resumable tail
+
+let rec is_exception_resumable exception_name exception_security_level row =
+  match row with
+  | [] -> false
+  | (exception_name', exception_security_level', exception_is_resumable)
+    :: tail ->
+      if
+        exception_name = exception_name'
+        && exception_security_level = exception_security_level'
+      then exception_is_resumable
+      else
+        is_exception_resumable exception_name exception_security_level tail
+
+(* check if the exception is in the row *)
 
 let check_var_not_shadowed type_environment var_name =
   let ast_var_type = lookup_var_type type_environment var_name in
@@ -658,10 +686,28 @@ let rec type_expr expr type_environment class_defns pc row =
           Ok (var_core_type, var_sec_level) )
       >>= fun (_, var_sec_level) ->
       let updated_pc = join pc var_sec_level in
-      let updated_row = (exception_name, var_sec_level) :: row in
+      let updated_row = (exception_name, var_sec_level, false) :: row in
       Ok
         ( (TException exception_name, var_sec_level)
         , Typed_ast.Raise
+            ( loc
+            , exception_name
+            , var_name
+            , (TException exception_name, var_sec_level) )
+        , updated_pc
+        , updated_row )
+  | Parsed_ast.ResumableRaise (loc, exception_name, var_name) ->
+      lookup_var_type type_environment var_name
+      |> (function
+      | None -> Error (Core.Error.of_string "Variable does not exist")
+      | Some (var_core_type, var_sec_level) ->
+          Ok (var_core_type, var_sec_level) )
+      >>= fun (_, var_sec_level) ->
+      let updated_pc = join pc var_sec_level in
+      let updated_row = (exception_name, var_sec_level, true) :: row in
+      Ok
+        ( (TException exception_name, var_sec_level)
+        , Typed_ast.ResumableRaise
             ( loc
             , exception_name
             , var_name
@@ -690,6 +736,66 @@ let rec type_expr expr type_environment class_defns pc row =
           (Core.Error.of_string
              "The catch block has raised new exceptions that were not \
               raised in the try block. This is not permitted." )
+      else if is_exception_resumable exception_name e1_sec_level row then
+        (* if exception is resumable, check it will not be resumed in a lower
+           security level *)
+        if less_than e1_sec_level e2_sec_level then
+          Error
+            (Core.Error.of_string
+               "Try block security level is not high enough to catch this \
+                resumable exception" )
+        else
+          let var_sec_level =
+            match lookup_var_type type_environment var_name with
+            | Some (_, sec_level) -> sec_level
+            | None -> TSLow
+          in
+          (* exception is resumable so is_resumable is true *)
+          let updated_row_after_catch =
+            remove_first_exception exception_name var_sec_level true
+              row_after_catch_block
+          in
+          type_expr e3 type_environment class_defns pc_after_catch_block
+            updated_row_after_catch
+          >>= fun ( (e3_core_type, e3_sec_level)
+                  , typed_e3
+                  , pc_after_finally_block
+                  , row_after_finally_block )
+              ->
+          (* check that finally block does not introduce any new
+             exceptions *)
+          if
+            not
+              (is_constant_row updated_row_after_catch
+                 row_after_finally_block )
+          then
+            Error
+              (Core.Error.of_string
+                 "The finally block has raised new exceptions that were not \
+                  raised in the try block. This is not permitted." )
+          else if subtyping_check pc e1_sec_level e3_sec_level then
+            (* return type is the finally block *)
+            Ok
+              ( (e3_core_type, e3_sec_level)
+              , Typed_ast.TryCatchFinally
+                  ( loc
+                  , typed_e1
+                  , exception_name
+                  , var_name
+                  , typed_e2
+                  , typed_e3
+                  , ( e2_core_type
+                    , max_security_level e1_sec_level e2_sec_level ) )
+              , pc_after_finally_block
+              , row_after_finally_block )
+          else
+            Error
+              (Core.Error.of_string
+                 (Printf.sprintf
+                    "Try block type (%s) does not match the catch block \
+                     type (%s)"
+                    (core_type_to_string e1_core_type)
+                    (core_type_to_string e2_core_type) ) )
       else
         (* TODO: should I return an Error if var_name cannot be found in
            type_environment? *)
@@ -698,8 +804,9 @@ let rec type_expr expr type_environment class_defns pc row =
           | Some (_, sec_level) -> sec_level
           | None -> TSLow
         in
+        (* exception is not resumable so is_resumable is false *)
         let updated_row_after_catch =
-          remove_first_exception exception_name var_sec_level
+          remove_first_exception exception_name var_sec_level false
             row_after_catch_block
         in
         type_expr e3 type_environment class_defns pc_after_catch_block
