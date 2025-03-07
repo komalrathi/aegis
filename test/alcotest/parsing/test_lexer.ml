@@ -55,6 +55,7 @@ let pp_print_token fmt token =
     | DIVISION_BY_ZERO -> "DIVISION_BY_ZERO"
     | INTEGER_OVERFLOW -> "INTEGER_OVERFLOW"
     | RAISE -> "RAISE"
+    | RESUMABLE_RAISE -> "RESUMABLE_RAISE"
     | TRY -> "TRY"
     | CATCH -> "CATCH"
     | FINALLY -> "FINALLY"
@@ -121,6 +122,7 @@ let lex_token_test_cases =
   ; ("DivisionByZero", DIVISION_BY_ZERO)
   ; ("IntegerOverflow", INTEGER_OVERFLOW)
   ; ("raise", RAISE)
+  ; ("raise!", RESUMABLE_RAISE)
   ; ("try", TRY)
   ; ("catch", CATCH)
   ; ("finally", FINALLY) ]
