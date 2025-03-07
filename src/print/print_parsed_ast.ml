@@ -56,6 +56,10 @@ let rec expr_to_string = function
       Printf.sprintf "Raise(%s, %s)"
         (exception_type_to_string exception_name)
         var_name
+  | ResumableRaise (_, exception_name, var_name) ->
+      Printf.sprintf "ResumableRaise(%s, %s)"
+        (exception_type_to_string exception_name)
+        var_name
   | TryCatchFinally (_, e1, exception_name, var_name, e2, e3) ->
       Printf.sprintf "Try {%s} Catch (%s %s) {%s} Finally {%s}"
         (expr_to_string e1)
