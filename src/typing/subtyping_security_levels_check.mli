@@ -6,3 +6,5 @@ val subtyping_check :
 val join : security_level_type -> security_level_type -> security_level_type
 
 val less_than_or_equal : security_level_type -> security_level_type -> bool
+
+val less_than : security_level_type -> security_level_type -> bool

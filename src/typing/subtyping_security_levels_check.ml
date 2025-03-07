@@ -1,5 +1,8 @@
 open Compiler_types.Language_types
 
+let less_than l1 l2 =
+  match (l1, l2) with TSLow, TSHigh -> true | _ -> false
+
 (* ordering relation for security levels *)
 let less_than_or_equal l1 l2 =
   match (l1, l2) with
