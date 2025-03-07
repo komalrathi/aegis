@@ -24,6 +24,7 @@ type expr =
   | Object of loc * security_level_type * identifier * expr list * type_expr
   | MethodCall of loc * type_expr * identifier * identifier * expr list
   | Raise of loc * exception_type * identifier * type_expr
+  | ResumableRaise of loc * exception_type * identifier * type_expr
   | TryCatchFinally of
       loc * expr * exception_type * identifier * expr * expr * type_expr
 
