@@ -165,6 +165,10 @@ constructor:
 class_defn:
 | CLASS c=IDENTIFIER LEFT_BRACE fields=list(field_defn) constructor=constructor methods=list(function_defn) RIGHT_BRACE {ClassDefn(c, fields, constructor, methods)}
 
+opt_continuation:
+| k=IDENTIFIER {Some k}
+| {None}
+
 block_expr:
 | e1=expr SEMICOLON e2=block_expr {Seq($startpos, e1, e2)}
 | e=expr {e}
@@ -204,8 +208,7 @@ expr:
 // exception handling
 | RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{Raise($startpos, exception_name, var)}
 | RESUMABLE_RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{ResumableRaise($startpos, exception_name, var)}
-| TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, e2, e3)}
-
+| TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=exception_type var=IDENTIFIER k=opt_continuation RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, k, e2, e3)}
 
 program:
 c=class_defn* f=function_defn* e=block_expr; EOF {Prog(c, f, e)}

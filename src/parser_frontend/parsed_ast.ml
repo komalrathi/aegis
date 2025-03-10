@@ -24,7 +24,14 @@ type expr =
   | MethodCall of loc * identifier * identifier * expr list
   | Raise of loc * exception_type * identifier
   | ResumableRaise of loc * exception_type * identifier
-  | TryCatchFinally of loc * expr * exception_type * identifier * expr * expr
+  | TryCatchFinally of
+      loc
+      * expr
+      * exception_type
+      * identifier
+      * identifier option
+      * expr
+      * expr
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr

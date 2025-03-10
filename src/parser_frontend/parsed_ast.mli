@@ -24,7 +24,14 @@ type expr =
   | MethodCall of loc * identifier * identifier * expr list
   | Raise of loc * exception_type * identifier
   | ResumableRaise of loc * exception_type * identifier
-  | TryCatchFinally of loc * expr * exception_type * identifier * expr * expr
+  | TryCatchFinally of
+      loc
+      * expr
+      * exception_type
+      * identifier
+      * identifier option (* this represents the continuation variable *)
+      * expr
+      * expr
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the
