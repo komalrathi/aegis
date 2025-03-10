@@ -12,7 +12,7 @@ let interpret_program (Prog (typed_class_defns, typed_fn_defns, typed_expr))
     interpret_expr typed_expr [] function_environment typed_class_defns
   with
   | Ok (IValue (output_val, _)) -> Ok output_val
-  | Ok (IException (exception_type, _)) -> (
+  | Ok (IException (exception_type, _, _)) -> (
     match exception_type with
     | DivisionByZero ->
         Error

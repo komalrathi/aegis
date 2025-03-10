@@ -58,6 +58,11 @@ let rec expr_to_string = function
         (exception_type_to_string exception_name)
         var_name
         (type_expr_to_string type_expr)
+  | ResumableRaise (_, exception_name, var_name, type_expr) ->
+      Printf.sprintf "ResumableRaise(%s, %s %s)"
+        (exception_type_to_string exception_name)
+        var_name
+        (type_expr_to_string type_expr)
   | TryCatchFinally (_, e1, exception_name, var_name, e2, e3, _) ->
       Printf.sprintf "TryCatchFinally(%s, %s, %s, %s, %s)"
         (expr_to_string e1)
@@ -123,6 +128,6 @@ let print_interpret_expr expr value_env function_env class_defns =
         (function_environment_to_string function_env) ;
       Printf.printf "Class Environment: %s\n"
         (class_defns_to_string class_defns)
-  | Ok (IException (err, _)) ->
+  | Ok (IException (err, _, _)) ->
       Printf.printf "Error: %s\n" (exception_type_to_string err)
   | Error err -> Printf.printf "Error: %s\n" (Error.to_string_hum err)
