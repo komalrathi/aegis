@@ -1,0 +1,22 @@
+fn sign_message(msg: (int, Low), private_key: (int, High)) : (int, High) {
+    (msg ^ private_key) % 997
+}
+
+fn verify_signature(msg: (int, Low), signature: (int, High), public_key: (int, Low)) : (bool, Low) {
+    let reconstructed: (int, Low) = declassify(signature % public_key) in {
+        reconstructed == msg
+    }
+}
+
+let msg: (int, Low) = 123 in {
+    let private_key: (int, High) = 937 in {
+        let public_key: (int, Low) = 7 in {
+            let signature: (int, High) = sign_message(msg, private_key) in {
+                securePrint(signature) // prevents unauthorised access to signature.
+            };
+            let is_valid: (bool, Low) = verify_signature(msg, signature, public_key) in {
+                print(is_valid)
+            }
+        }
+    }
+}
