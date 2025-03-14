@@ -62,6 +62,7 @@ and value_to_string = function
              args )
       in
       Printf.sprintf "VObject(%s, {%s})" obj args_str
+  | VContinuation _ -> "VContinuation"
 
 and exception_type_to_string = function
   | DivisionByZero -> "DivisionByZero"

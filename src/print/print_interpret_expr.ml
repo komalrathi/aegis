@@ -63,11 +63,22 @@ let rec expr_to_string = function
         (exception_type_to_string exception_name)
         var_name
         (type_expr_to_string type_expr)
-  | TryCatchFinally (_, e1, exception_name, var_name, e2, e3, _) ->
-      Printf.sprintf "TryCatchFinally(%s, %s, %s, %s, %s)"
-        (expr_to_string e1)
-        (exception_type_to_string exception_name)
-        var_name (expr_to_string e2) (expr_to_string e3)
+  | TryCatchFinally (_, e1, exception_name, var_name, continuation, e2, e3, _)
+    -> (
+    match continuation with
+    | None ->
+        Printf.sprintf "TryCatchFinally(%s, %s, %s, %s, %s)"
+          (expr_to_string e1)
+          (exception_type_to_string exception_name)
+          var_name (expr_to_string e2) (expr_to_string e3)
+    | Some continuation ->
+        Printf.sprintf "TryCatchFinally(%s, %s, %s, %s, %s)"
+          (expr_to_string e1)
+          (exception_type_to_string exception_name)
+          var_name continuation (expr_to_string e2) )
+  | Continue (_, k, e, type_expr) ->
+      Printf.sprintf "Continue %s %s %s" k (expr_to_string e)
+        (type_expr_to_string type_expr)
 
 let rec function_environment_to_string env =
   match env with

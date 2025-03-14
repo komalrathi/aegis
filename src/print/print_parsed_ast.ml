@@ -60,11 +60,21 @@ let rec expr_to_string = function
       Printf.sprintf "ResumableRaise(%s, %s)"
         (exception_type_to_string exception_name)
         var_name
-  | TryCatchFinally (_, e1, exception_name, var_name, e2, e3) ->
-      Printf.sprintf "Try {%s} Catch (%s %s) {%s} Finally {%s}"
-        (expr_to_string e1)
-        (exception_type_to_string exception_name)
-        var_name (expr_to_string e2) (expr_to_string e3)
+  | TryCatchFinally (_, e1, exception_name, var_name, continuation, e2, e3)
+    -> (
+    match continuation with
+    | None ->
+        Printf.sprintf "Try {%s} Catch (%s %s) {%s} Finally {%s}"
+          (expr_to_string e1)
+          (exception_type_to_string exception_name)
+          var_name (expr_to_string e2) (expr_to_string e3)
+    | Some continuation ->
+        Printf.sprintf "Try {%s} Catch (%s %s %s) {%s} Finally {%s} "
+          (expr_to_string e1)
+          (exception_type_to_string exception_name)
+          var_name continuation (expr_to_string e2) (expr_to_string e3) )
+  | Continue (_, k, e) ->
+      Printf.sprintf "Continue (%s, %s)" k (expr_to_string e)
 
 let function_defn_to_string (FunctionDefn (name, args, return_type, body)) =
   Printf.sprintf "FunctionDefn(%s, [%s], %s, %s)" name
