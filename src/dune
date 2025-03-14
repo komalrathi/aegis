@@ -1,7 +1,7 @@
 (executable
  (name main)
  (modules main)
- (libraries run_interpreter core core_unix.command_unix))
+ (libraries run_interpreter core))
 
 (library
  (name run_interpreter)

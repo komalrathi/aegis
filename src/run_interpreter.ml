@@ -16,6 +16,7 @@ let rec string_of_val = function
              args )
       in
       Printf.sprintf "VObject(%s, {%s})" obj args_str
+  | VContinuation _ -> "continuation"
 
 let print_result = function
   | Ok v -> printf "Success: %s" (string_of_val v)
