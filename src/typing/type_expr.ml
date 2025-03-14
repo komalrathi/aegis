@@ -55,12 +55,11 @@ let rec is_exception_resumable exception_name exception_security_level row =
     :: tail ->
       if
         exception_name = exception_name'
-        && exception_security_level = exception_security_level'
+        && equal_security_level_type exception_security_level
+             exception_security_level'
       then exception_is_resumable
       else
         is_exception_resumable exception_name exception_security_level tail
-
-(* check if the exception is in the row *)
 
 let check_var_not_shadowed type_environment var_name =
   let ast_var_type = lookup_var_type type_environment var_name in
@@ -84,6 +83,9 @@ let exception_type_to_string exception_type =
   | DivisionByZero -> "DivisionByZero"
   | IntegerOverflow -> "IntegerOverflow"
 
+(* let security_level_type_to_string sec_level = match sec_level with TSLow
+   -> "Low" | TSHigh -> "High" *)
+
 let core_type_to_string core_type =
   match core_type with
   | TEInt -> "Int"
@@ -94,10 +96,10 @@ let core_type_to_string core_type =
   | TException e ->
       Printf.sprintf "Exception %s" (exception_type_to_string e)
 
-(* let print_row row = Core.List.iter row ~f:(fun (exception_type, sec_level)
-   -> Printf.printf "Exception: %s, Security Level: %s\n"
-   (exception_type_to_string exception_type) (security_level_type_to_string
-   sec_level) ) *)
+(* let print_row row = Core.List.iter row ~f:(fun (exception_type, sec_level,
+   is_resumable) -> Printf.printf "Exception: %s, Security Level: %s,
+   Resumable: %b\n" (exception_type_to_string exception_type)
+   (security_level_type_to_string sec_level) is_resumable ) *)
 
 let rec type_expr expr type_environment class_defns pc row =
   let ( >>= ) = Core.Result.( >>= ) in
@@ -714,7 +716,9 @@ let rec type_expr expr type_environment class_defns pc row =
             , (TException exception_name, var_sec_level) )
         , updated_pc
         , updated_row )
-  | Parsed_ast.TryCatchFinally (loc, e1, exception_name, var_name, e2, e3) ->
+  | Parsed_ast.TryCatchFinally
+      (loc, e1, exception_name, var_name, continuation, e2, e3) -> (
+      (* Type-check the try block first *)
       type_expr e1 type_environment class_defns pc row
       >>= fun ( (e1_core_type, e1_sec_level)
               , typed_e1
@@ -722,129 +726,210 @@ let rec type_expr expr type_environment class_defns pc row =
               , row_after_try_block )
           ->
       let pc_after_try_block = join pc e1_sec_level in
-      type_expr e2
-        ( (var_name, (TException exception_name, pc_after_try_block))
-        :: type_environment )
-        class_defns pc_after_try_block row_after_try_block
-      >>= fun ( (e2_core_type, e2_sec_level)
-              , typed_e2
-              , pc_after_catch_block
-              , row_after_catch_block )
-          ->
-      if not (is_constant_row row_after_try_block row_after_catch_block) then
-        Error
-          (Core.Error.of_string
-             "The catch block has raised new exceptions that were not \
-              raised in the try block. This is not permitted." )
-      else if is_exception_resumable exception_name e1_sec_level row then
-        (* if exception is resumable, check it will not be resumed in a lower
-           security level *)
-        if less_than e1_sec_level e2_sec_level then
-          Error
-            (Core.Error.of_string
-               "Try block security level is not high enough to catch this \
-                resumable exception" )
-        else
-          let var_sec_level =
-            match lookup_var_type type_environment var_name with
-            | Some (_, sec_level) -> sec_level
-            | None -> TSLow
-          in
-          (* exception is resumable so is_resumable is true *)
-          let updated_row_after_catch =
-            remove_first_exception exception_name var_sec_level true
-              row_after_catch_block
-          in
-          type_expr e3 type_environment class_defns pc_after_catch_block
-            updated_row_after_catch
-          >>= fun ( (e3_core_type, e3_sec_level)
-                  , typed_e3
-                  , pc_after_finally_block
-                  , row_after_finally_block )
+      match continuation with
+      | None ->
+          (* No continuation provided *)
+          type_expr e2
+            ( (var_name, (TException exception_name, pc_after_try_block))
+            :: type_environment )
+            class_defns pc_after_try_block row_after_try_block
+          >>= fun ( (e2_core_type, e2_sec_level)
+                  , typed_e2
+                  , pc_after_catch_block
+                  , row_after_catch_block )
               ->
-          (* check that finally block does not introduce any new
-             exceptions *)
-          if
-            not
-              (is_constant_row updated_row_after_catch
-                 row_after_finally_block )
+          if not (is_constant_row row_after_try_block row_after_catch_block)
           then
             Error
               (Core.Error.of_string
-                 "The finally block has raised new exceptions that were not \
-                  raised in the try block. This is not permitted." )
-          else if subtyping_check pc e1_sec_level e3_sec_level then
-            (* return type is the finally block *)
-            Ok
-              ( (e3_core_type, e3_sec_level)
-              , Typed_ast.TryCatchFinally
-                  ( loc
-                  , typed_e1
-                  , exception_name
-                  , var_name
-                  , typed_e2
-                  , typed_e3
-                  , ( e2_core_type
-                    , max_security_level e1_sec_level e2_sec_level ) )
-              , pc_after_finally_block
-              , row_after_finally_block )
-          else
+                 "The catch block has raised new exceptions that were not \
+                  raised in the try block." )
+          else if is_exception_resumable exception_name e1_sec_level row then
+            (* If the exception is resumable, a continuation must be
+               provided. *)
             Error
               (Core.Error.of_string
-                 (Printf.sprintf
-                    "Try block type (%s) does not match the catch block \
-                     type (%s)"
-                    (core_type_to_string e1_core_type)
-                    (core_type_to_string e2_core_type) ) )
-      else
-        (* TODO: should I return an Error if var_name cannot be found in
-           type_environment? *)
-        let var_sec_level =
-          match lookup_var_type type_environment var_name with
-          | Some (_, sec_level) -> sec_level
-          | None -> TSLow
-        in
-        (* exception is not resumable so is_resumable is false *)
-        let updated_row_after_catch =
-          remove_first_exception exception_name var_sec_level false
-            row_after_catch_block
-        in
-        type_expr e3 type_environment class_defns pc_after_catch_block
-          updated_row_after_catch
-        >>= fun ( (e3_core_type, e3_sec_level)
-                , typed_e3
+                 "A resumable exception was raised but no continuation \
+                  provided." )
+          else
+            let var_sec_level =
+              match lookup_var_type type_environment var_name with
+              | Some (_, sec_level) -> sec_level
+              | None -> TSLow
+            in
+            let updated_row_after_catch =
+              remove_first_exception exception_name var_sec_level false
+                row_after_catch_block
+            in
+            type_expr e3 type_environment class_defns pc_after_catch_block
+              updated_row_after_catch
+            >>= fun ( (e3_core_type, e3_sec_level)
+                    , typed_e3
+                    , pc_after_finally_block
+                    , row_after_finally_block )
+                ->
+            if
+              not
+                (is_constant_row row_after_catch_block
+                   row_after_finally_block )
+            then
+              Error
+                (Core.Error.of_string
+                   "The finally block has raised new exceptions that were \
+                    not raised in the try block." )
+            else if subtyping_check pc e1_sec_level e3_sec_level then
+              Ok
+                ( (e3_core_type, e3_sec_level)
+                , Typed_ast.TryCatchFinally
+                    ( loc
+                    , typed_e1
+                    , exception_name
+                    , var_name
+                    , None
+                    , typed_e2
+                    , typed_e3
+                    , ( e2_core_type
+                      , max_security_level e1_sec_level e2_sec_level ) )
                 , pc_after_finally_block
                 , row_after_finally_block )
-            ->
-        (* check that finally block does not introduce any new exceptions *)
+            else
+              Error
+                (Core.Error.of_string
+                   (Printf.sprintf
+                      "Try block type (%s) does not match the catch block \
+                       type (%s)"
+                      (core_type_to_string e1_core_type)
+                      (core_type_to_string e2_core_type) ) )
+      | Some k ->
+          (* extend the catch environment with two bindings: exception
+             variable with type (TException exception_name,
+             pc_after_try_block) + continuation variable, k, with type:
+             TFunction ([ (TException exception_name, pc_after_try_block) ],
+             expected_type) and security level pc_after_try_block. *)
+          if
+            not
+              (is_exception_resumable exception_name e1_sec_level
+                 row_after_try_block )
+          then
+            Error
+              (Core.Error.of_string
+                 "A non-resumable exception was raised but a continuation \
+                  was provided." )
+          else
+            let env_catch =
+              (var_name, (TException exception_name, pc_after_try_block))
+              :: ( k
+                 , ( TFunction ([TException exception_name], TEUnit)
+                   , pc_after_try_block ) )
+              :: type_environment
+            in
+            type_expr e2 env_catch class_defns pc_after_try_block
+              row_after_try_block
+            >>= fun ( (e2_core_type, e2_sec_level)
+                    , typed_e2
+                    , pc_after_catch_block
+                    , row_after_catch_block )
+                ->
+            if
+              not (is_constant_row row_after_try_block row_after_catch_block)
+            then
+              Error
+                (Core.Error.of_string
+                   "The catch block has raised new exceptions that were not \
+                    raised in the try block." )
+            else if less_than e1_sec_level e2_sec_level then
+              Error
+                (Core.Error.of_string
+                   "The security level of the exception does not match the \
+                    security level of the try block." )
+            else
+              let var_sec_level =
+                match lookup_var_type type_environment var_name with
+                | Some (_, sec_level) -> sec_level
+                | None -> TSLow
+              in
+              let updated_row_after_catch =
+                remove_first_exception exception_name var_sec_level true
+                  row_after_catch_block
+              in
+              type_expr e3 type_environment class_defns pc_after_catch_block
+                updated_row_after_catch
+              >>= fun ( (e3_core_type, e3_sec_level)
+                      , typed_e3
+                      , pc_after_finally_block
+                      , row_after_finally_block )
+                  ->
+              if
+                not
+                  (is_constant_row updated_row_after_catch
+                     row_after_finally_block )
+              then
+                Error
+                  (Core.Error.of_string
+                     "The finally block has raised new exceptions that were \
+                      not raised in the try block." )
+              else if subtyping_check pc e1_sec_level e3_sec_level then
+                Ok
+                  ( (e3_core_type, e3_sec_level)
+                  , Typed_ast.TryCatchFinally
+                      ( loc
+                      , typed_e1
+                      , exception_name
+                      , var_name
+                      , Some k
+                      , typed_e2
+                      , typed_e3
+                      , ( e2_core_type
+                        , max_security_level e1_sec_level e2_sec_level ) )
+                  , pc_after_finally_block
+                  , row_after_finally_block )
+              else
+                Error
+                  (Core.Error.of_string
+                     (Printf.sprintf
+                        "Try block type (%s) does not match the catch block \
+                         type (%s)"
+                        (core_type_to_string e1_core_type)
+                        (core_type_to_string e2_core_type) ) ) )
+  | Parsed_ast.Continue (loc, k, value) -> (
+    match get_function_types type_environment k with
+    | Error _ ->
+        Error
+          (Core.Error.of_string
+             (Printf.sprintf "Continuation function %s does not exist" k) )
+    | Ok (TFunction (arg_types, return_type), fn_sec_level) ->
+        (* check the continuation is a function that takes in an exception
+           and returns unit *)
         if
-          not
-            (is_constant_row updated_row_after_catch row_after_finally_block)
+          ( match arg_types with
+          | [expected_type] ->
+              equal_core_type expected_type (TException DivisionByZero)
+              || equal_core_type expected_type (TException IntegerOverflow)
+          | _ -> false )
+          && equal_core_type return_type TEUnit
+        then
+          type_expr value type_environment class_defns pc row
+          >>= fun ((_, _), typed_value, _, _) ->
+          Ok
+            ( (TEUnit, fn_sec_level)
+            , Typed_ast.Continue (loc, k, typed_value, (TEUnit, fn_sec_level))
+            , pc
+            , row )
+        else if
+          match arg_types with
+          | [expected_type] ->
+              equal_core_type expected_type (TException DivisionByZero)
+              || equal_core_type expected_type (TException IntegerOverflow)
+          | _ -> false
         then
           Error
             (Core.Error.of_string
-               "The finally block has raised new exceptions that were not \
-                raised in the try block. This is not permitted." )
-        else if subtyping_check pc e1_sec_level e3_sec_level then
-          (* return type is the finally block *)
-          Ok
-            ( (e3_core_type, e3_sec_level)
-            , Typed_ast.TryCatchFinally
-                ( loc
-                , typed_e1
-                , exception_name
-                , var_name
-                , typed_e2
-                , typed_e3
-                , (e2_core_type, max_security_level e1_sec_level e2_sec_level)
-                )
-            , pc_after_finally_block
-            , row_after_finally_block )
+               "Continuation function must have a unit return type." )
         else
           Error
             (Core.Error.of_string
-               (Printf.sprintf
-                  "Try block type (%s) does not match the catch block type \
-                   (%s)"
-                  (core_type_to_string e1_core_type)
-                  (core_type_to_string e2_core_type) ) )
+               "Continuation function must take an exception as an argument." )
+    | Ok _ ->
+        Error
+          (Core.Error.of_string
+             "Continuation function type is not a function type" ) )
