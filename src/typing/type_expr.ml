@@ -770,7 +770,7 @@ let rec type_expr expr type_environment class_defns pc row =
                 ->
             if
               not
-                (is_constant_row row_after_catch_block
+                (is_constant_row updated_row_after_catch
                    row_after_finally_block )
             then
               Error
