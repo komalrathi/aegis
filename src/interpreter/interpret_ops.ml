@@ -38,6 +38,10 @@ let interpret_bin_op bin_op i1 i2 =
       Error
         (Core.Error.of_string
            "Type error: cannot apply binary operation to object values" )
+  | VContinuation _, _ | _, VContinuation _ ->
+      Error
+        (Core.Error.of_string
+           "Type error: cannot apply binary operation to continuation values" )
 
 let interpret_comp_op comp_op i1 i2 =
   match (i1, i2) with
@@ -54,6 +58,11 @@ let interpret_comp_op comp_op i1 i2 =
       Error
         (Core.Error.of_string
            "Type error: cannot apply comparison operation to object values" )
+  | VContinuation _, _ | _, VContinuation _ ->
+      Error
+        (Core.Error.of_string
+           "Type error: cannot apply comparison operation to continuation \
+            values" )
 
 let interpret_bool_comp_op bool_comp_op b1 b2 =
   match (b1, b2) with
