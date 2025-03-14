@@ -22,11 +22,21 @@ type security_level_type = TSLow | TSHigh
 (* The type is now a tuple, following the language specification *)
 type type_expr = core_type * security_level_type
 
-(* Aegis has 4 kind of values that the program is evaluated to: int, bool,
-   unit, and object *)
-type interpreter_val =
+type interpret_expr_result =
+  | IValue of interpreter_val * value_environment
+    (* bool is_resumable indicates whether the exception is resumable - True
+       if resumable, False if not *)
+  | IException of exception_type * interpreter_val * bool
+
+(* Aegis has 5 kind of values that the program is evaluated to: int, bool,
+   unit, object, and continuation. Continuation is used to implement
+   resumable exception handling *)
+and interpreter_val =
   | VInt of int
   | VBool of bool
-  (* class_name, field_value) list *)
   | VObject of string * interpreter_val list
   | VUnit of unit
+  | VContinuation of
+      (interpret_expr_result, interpret_expr_result) Effect.Deep.continuation
+
+and value_environment = (string * interpreter_val) list
