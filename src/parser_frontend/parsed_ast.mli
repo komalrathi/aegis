@@ -32,6 +32,7 @@ type expr =
       * identifier option (* this represents the continuation variable *)
       * expr
       * expr
+  | Continue of loc * identifier * expr
 
 (* A function definition is a function name, a list of arguments, the return
    type of the function, and the expression that is the body of the

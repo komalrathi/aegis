@@ -32,6 +32,7 @@ type expr =
       * identifier option
       * expr
       * expr
+  | Continue of loc * identifier * expr
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
