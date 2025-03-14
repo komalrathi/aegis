@@ -1,19 +1,13 @@
-(* open Core *)
 open Interpret_ops
 open Typing.Typed_ast
 open Compiler_types.Ast_types
 open Compiler_types.Language_types
 open Value_environment
 open Effect
+open Effect.Deep
 
-type _ Effect.t +=
-  | Raise :
-      exception_type * interpreter_val * security_level_type
-      -> 'a Effect.t
-
-type interpret_expr_result =
-  | IValue of interpreter_val * value_environment
-  | IException of exception_type * interpreter_val * bool
+type _ t +=
+  | Raise : exception_type * interpreter_val * security_level_type -> 'a t
 
 let get_class class_name class_defns =
   Core.List.find
@@ -25,6 +19,7 @@ let value_to_string = function
   | VBool b -> Printf.sprintf "%b" b
   | VUnit _ -> "unit"
   | VObject (obj_name, _) -> obj_name
+  | VContinuation _ -> "continuation"
 
 let rec remove_var_from_env var_name env =
   match env with
@@ -157,7 +152,11 @@ let rec interpret_expr expr value_environment function_environment
             Error
               (Core.Error.of_string
                  "Type error: Cannot have object type in the if condition" )
-        )
+        | VContinuation _ ->
+            Error
+              (Core.Error.of_string
+                 "Type error: Cannot have continuation type in the if \
+                  condition" ) )
       | IException (exception_type, var_name, is_resumable) ->
           Ok (IException (exception_type, var_name, is_resumable)) )
   | Classify (_, e1, _) ->
@@ -364,103 +363,89 @@ let rec interpret_expr expr value_environment function_environment
             (IValue
                ( perform (Raise (exception_type, value, security_level))
                , value_environment ) ) )
-  | TryCatchFinally
-      (_, try_expr, exn_name, exception_variable, catch_expr, finally_expr, _)
-    -> (
-    match
-      interpret_expr try_expr value_environment function_environment
-        class_defns
-    with
-    (* try block executed successfully. now we evaluate finally block *)
-    | Ok (IValue (_, env_after_try)) -> (
-      match
-        interpret_expr finally_expr env_after_try function_environment
-          class_defns
-      with
-      | Ok (IValue (v_after_final, env_after_final)) ->
-          Ok (IValue (v_after_final, env_after_final))
-      | Ok (IException (_, _, _)) ->
+  | Continue (_, k, resume_expr, _) -> (
+    match lookup_var_value value_environment k with
+    | None ->
+        Error
+          (Core.Error.of_string
+             (Printf.sprintf "Continuation %s not found" k) )
+    | Some v -> (
+      match v with
+      | VContinuation cont -> (
+        (* Evaluate the resume expression to get the resume value. *)
+        match
+          interpret_expr resume_expr value_environment function_environment
+            class_defns
+        with
+        | Ok result -> Ok (continue cont result)
+        | Error err -> Error err )
+      | _ ->
           Error
             (Core.Error.of_string
-               "An exception was raised in the finally block. Finally block \
-                must evaluate to a value." )
-      | Error _ -> Error (Core.Error.of_string "Error in try block") )
-    (* Exception raised in try block - now we check the catch block *)
-    | Ok (IException (exn_raised, var_value, is_resumable)) -> (
-        if
-          (* check if exception raised is the same as the exception name for
-             catch block *)
-          exn_name = exn_raised
-        then
-          (* evaluate catch block *)
-          if is_resumable then
-            (* resumable exception handling *)
-            Error
-              (Core.Error.of_string
-                 "Resumable exceptions are not supported in this version" )
-          else
-            (* normal exception handling *)
-            let new_value_environment =
-              (exception_variable, var_value) :: value_environment
-            in
+               (Printf.sprintf "Identifier %s is not a continuation" k) ) ) )
+  | TryCatchFinally
+      ( _
+      , try_expr
+      , exn_type
+      , exn_var
+      , catch_cont_opt
+      , catch_expr
+      , finally_expr
+      , _result_type ) ->
+      let run_finally result =
+        match
+          interpret_expr finally_expr value_environment function_environment
+            class_defns
+        with
+        | Ok (IValue (_, env_final)) -> (
+          match result with
+          | IValue (v, _) -> IValue (v, env_final)
+          | IException (exn, payload, is_resumable) ->
+              IException (exn, payload, is_resumable) )
+        | Ok _ -> failwith "Finally block must evaluate to a value"
+        | Error err -> failwith (Core.Error.to_string_hum err)
+      in
+      let result =
+        match_with
+          (fun () ->
             match
-              interpret_expr catch_expr new_value_environment
-                function_environment class_defns
+              interpret_expr try_expr value_environment function_environment
+                class_defns
             with
-            | Error err ->
-                Error
-                  (Core.Error.of_string
-                     (Printf.sprintf "Error in catch block: %s"
-                        (Core.Error.to_string_hum err) ) )
-            (* Catch block expression evaluated successfully - now evaluate
-               finally block *)
-            | Ok (IValue (v_catch, env_catch)) -> (
-              match
-                interpret_expr finally_expr env_catch function_environment
-                  class_defns
-              with
-              | Ok (IValue (_, env_after_final)) ->
-                  Ok (IValue (v_catch, env_after_final))
-              | Ok (IException (_, _, _)) ->
-                  Error
-                    (Core.Error.of_string
-                       "An exception was raised in the finally block. \
-                        Finally block must evaluate to a value." )
-              | Error _ ->
-                  Error (Core.Error.of_string "Error in finally block") )
-            (* exception raised in catch block *)
-            | Ok (IException (_, _, _)) -> (
-              (* evaluate finally block *)
-              match
-                interpret_expr finally_expr value_environment
-                  function_environment class_defns
-              with
-              | Ok (IValue (val_after_final, env_after_final)) ->
-                  Ok (IValue (val_after_final, env_after_final))
-              | Ok (IException (_, _, _)) ->
-                  Error
-                    (Core.Error.of_string
-                       "An exception was raised in the finally block. \
-                        Finally block must evaluate to a value." )
-              | Error _ ->
-                  Error (Core.Error.of_string "Error in finally block") )
-        else
-          (* exception raised does not match exc_name. evaluate finally
-             block *)
-          match
-            interpret_expr finally_expr value_environment
-              function_environment class_defns
-          with
-          | Ok (IValue (_, env_after_final)) ->
-              Printf.printf
-                "Exception raised does not match the catch block exception \
-                 name." ;
-              Ok (IValue (VUnit (), env_after_final))
-          | Ok (IException (_, _, _)) ->
-              Error
-                (Core.Error.of_string
-                   "An exception was raised in the finally block. Finally \
-                    block must evaluate to a value." )
-          | Error _ -> Error (Core.Error.of_string "Error in finally block")
-        )
-    | Error _ -> Error (Core.Error.of_string "Error in try block") )
+            | Ok res -> res
+            | Error err -> failwith (Core.Error.to_string_hum err) )
+          ()
+          { retc= run_finally
+          ; exnc= (fun e -> raise e)
+          ; effc=
+              (fun (type a) (eff : a Effect.t) ->
+                match eff with
+                | Raise (caught_exn, payload, _sec)
+                  when caught_exn = exn_type ->
+                    Some
+                      (fun k ->
+                        let env_catch =
+                          (exn_var, payload) :: value_environment
+                        in
+                        let result =
+                          match catch_cont_opt with
+                          | Some cont_id ->
+                              let env_catch_with_cont =
+                                (cont_id, VContinuation (Obj.magic k))
+                                :: env_catch
+                              in
+                              interpret_expr catch_expr env_catch_with_cont
+                                function_environment class_defns
+                          | None ->
+                              interpret_expr catch_expr env_catch
+                                function_environment class_defns
+                        in
+                        match result with
+                        | Ok res -> run_finally res
+                        | Error err ->
+                            failwith (Core.Error.to_string_hum err) )
+                | Raise (caught_exn, payload, _sec) ->
+                    Some (fun _ -> IException (caught_exn, payload, false))
+                | _ -> None ) }
+      in
+      Ok result
