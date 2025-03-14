@@ -15,6 +15,8 @@ let rec equal_core_type a b =
       && equal_core_type ret_a ret_b
   | TEUnit, TEUnit -> true
   | TEObject name1, TEObject name2 -> String.equal name1 name2
+  | TException DivisionByZero, TException DivisionByZero -> true
+  | TException IntegerOverflow, TException IntegerOverflow -> true
   | _, _ -> false
 
 let equal_security_level_type a b =
