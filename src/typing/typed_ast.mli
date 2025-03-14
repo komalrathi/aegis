@@ -26,7 +26,15 @@ type expr =
   | Raise of loc * exception_type * identifier * type_expr
   | ResumableRaise of loc * exception_type * identifier * type_expr
   | TryCatchFinally of
-      loc * expr * exception_type * identifier * expr * expr * type_expr
+      loc
+      * expr
+      * exception_type
+      * identifier
+      * identifier option
+      * expr
+      * expr
+      * type_expr
+  | Continue of loc * identifier * expr * type_expr
 
 type function_defn =
   | FunctionDefn of identifier * argument list * type_expr * expr
