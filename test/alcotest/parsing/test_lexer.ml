@@ -59,6 +59,7 @@ let pp_print_token fmt token =
     | TRY -> "TRY"
     | CATCH -> "CATCH"
     | FINALLY -> "FINALLY"
+    | CONTINUE -> "CONTINUE"
     | EOF -> "EOF" )
 
 let parser_token_testable = Alcotest.testable pp_print_token Stdlib.( = )
@@ -125,7 +126,8 @@ let lex_token_test_cases =
   ; ("raise!", RESUMABLE_RAISE)
   ; ("try", TRY)
   ; ("catch", CATCH)
-  ; ("finally", FINALLY) ]
+  ; ("finally", FINALLY)
+  ; ("continue", CONTINUE) ]
 
 let test_lex_int =
   QCheck.Test.make ~count:100 ~name:"Lex integers" QCheck.int (fun i ->
