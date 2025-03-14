@@ -6,8 +6,12 @@ open Value_environment
 open Effect
 open Effect.Deep
 
+(* type _ t += | Raise : exception_type * interpreter_val *
+   security_level_type -> 'a t *)
 type _ t +=
-  | Raise : exception_type * interpreter_val * security_level_type -> 'a t
+  | Raise :
+      exception_type * interpreter_val * security_level_type
+      -> interpret_expr_result t
 
 let get_class class_name class_defns =
   Core.List.find
@@ -359,10 +363,7 @@ let rec interpret_expr expr value_environment function_environment
             (Core.Error.of_string
                (Printf.sprintf "Variable %s does not have a value" var_name) )
       | Some value ->
-          Ok
-            (IValue
-               ( perform (Raise (exception_type, value, security_level))
-               , value_environment ) ) )
+          Ok (perform (Raise (exception_type, value, security_level))) )
   | Continue (_, k, resume_expr, _) -> (
     match lookup_var_value value_environment k with
     | None ->
@@ -423,29 +424,35 @@ let rec interpret_expr expr value_environment function_environment
                 | Raise (caught_exn, payload, _sec)
                   when caught_exn = exn_type ->
                     Some
-                      (fun k ->
+                      (fun (k : (a, interpret_expr_result) continuation) ->
                         let env_catch =
                           (exn_var, payload) :: value_environment
                         in
-                        let result =
-                          match catch_cont_opt with
-                          | Some cont_id ->
-                              let env_catch_with_cont =
-                                (cont_id, VContinuation (Obj.magic k))
-                                :: env_catch
-                              in
+                        match catch_cont_opt with
+                        | Some cont_id -> (
+                            let env_catch_with_cont =
+                              (cont_id, VContinuation (Obj.magic k))
+                              :: env_catch
+                            in
+                            match
                               interpret_expr catch_expr env_catch_with_cont
                                 function_environment class_defns
-                          | None ->
-                              interpret_expr catch_expr env_catch
-                                function_environment class_defns
-                        in
-                        match result with
-                        | Ok res -> run_finally res
-                        | Error err ->
-                            failwith (Core.Error.to_string_hum err) )
+                            with
+                            | Ok res -> run_finally res
+                            | Error err ->
+                                failwith (Core.Error.to_string_hum err) )
+                        | None -> (
+                          match
+                            interpret_expr catch_expr env_catch
+                              function_environment class_defns
+                          with
+                          | Ok res -> run_finally res
+                          | Error err ->
+                              failwith (Core.Error.to_string_hum err) ) )
                 | Raise (caught_exn, payload, _sec) ->
-                    Some (fun _ -> IException (caught_exn, payload, false))
+                    Some
+                      (fun (_ : (a, interpret_expr_result) continuation) ->
+                        IException (caught_exn, payload, false) )
                 | _ -> None ) }
       in
       Ok result
