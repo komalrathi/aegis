@@ -72,6 +72,7 @@
 %token TRY
 %token CATCH
 %token FINALLY
+%token CONTINUE
 
 %token EOF
 
@@ -209,6 +210,8 @@ expr:
 | RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{Raise($startpos, exception_name, var)}
 | RESUMABLE_RAISE LEFT_PAREN exception_name=exception_type var=IDENTIFIER RIGHT_PAREN{ResumableRaise($startpos, exception_name, var)}
 | TRY LEFT_BRACE e1=block_expr RIGHT_BRACE CATCH LEFT_PAREN exception_name=exception_type var=IDENTIFIER k=opt_continuation RIGHT_PAREN LEFT_BRACE e2=block_expr RIGHT_BRACE FINALLY LEFT_BRACE e3=block_expr RIGHT_BRACE {TryCatchFinally($startpos, e1, exception_name, var, k, e2, e3)}
+// continue for resumable exceptions
+| CONTINUE LEFT_PAREN k=IDENTIFIER COMMA v=expr RIGHT_PAREN {Continue($startpos, k, v)}
 
 program:
 c=class_defn* f=function_defn* e=block_expr; EOF {Prog(c, f, e)}

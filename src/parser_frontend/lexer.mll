@@ -78,6 +78,7 @@ rule read_token = parse
     | "finally" {FINALLY}
     | "DivisionByZero" {DIVISION_BY_ZERO}
     | "IntegerOverflow" {INTEGER_OVERFLOW}
+    | "continue" {CONTINUE}
     | "//" { comment lexbuf }
     | whitespace { read_token lexbuf }
     | newline { next_line lexbuf; read_token lexbuf }
