@@ -8,9 +8,9 @@ let numerator : (int, Low) = 10 in {
             numerator / denominator
         }
     } 
-    catch (DivisionByZero ex k) {
+    catch (DivisionByZero denominator k) {
         print(numerator);
-        continue (k, 5)
+        continue (k, 7)
     }
     finally {
         numerator := 49;
