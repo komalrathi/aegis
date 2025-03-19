@@ -106,10 +106,10 @@ let rec interpret_expr expr value_environment function_environment
         | (TEBool, _), VBool b -> Ok (IValue (VBool b, value_environment))
         | (TEObject _, _), VObject (obj_name, _) ->
             Ok (IValue (VObject (obj_name, []), value_environment))
-        | (TException DivisionByZero, _), _ ->
+        | (TException (DivisionByZero, _), _), _ ->
             (* TODO: check what value is_resumable should have here *)
             Ok (IException (DivisionByZero, var_value, false))
-        | (TException IntegerOverflow, _), _ ->
+        | (TException (IntegerOverflow, _), _), _ ->
             Ok (IException (IntegerOverflow, var_value, false))
         | _ ->
             Error
