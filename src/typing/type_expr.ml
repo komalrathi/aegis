@@ -838,7 +838,7 @@ let rec type_expr expr type_environment class_defns pc row =
             Error
               (Core.Error.of_string
                  "The catch block has raised new exceptions that were not \
-                  raised in the try block." )
+                  raised in the try block. This is not permitted." )
           else if is_exception_resumable exception_name e1_sec_level row then
             (* If the exception is resumable, a continuation must be
                provided. *)
@@ -871,7 +871,7 @@ let rec type_expr expr type_environment class_defns pc row =
               Error
                 (Core.Error.of_string
                    "The finally block has raised new exceptions that were \
-                    not raised in the try block." )
+                    not raised in the try block. This is not permitted." )
             else if subtyping_check pc e1_sec_level e3_sec_level then
               Ok
                 ( (e3_core_type, e3_sec_level)
