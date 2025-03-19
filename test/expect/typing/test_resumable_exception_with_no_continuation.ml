@@ -15,7 +15,7 @@ let%expect_test "Resumable Exception with no continuation" =
          \                numerator / denominator\n\
          \            }\n\
          \        } \n\
-         \        catch (DivisionByZero ex) {\n\
+         \        catch (DivisionByZero denominator) {\n\
          \            print(numerator);\n\
          \            continue (k, 5)\n\
          \        }\n\
@@ -29,6 +29,7 @@ let%expect_test "Resumable Exception with no continuation" =
   | Ok program -> print_typed_ast program
   | Error _ ->
       print_endline "Error: could not parse program" ;
+      [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
   [%expect {| Continuation function k does not exist |}]

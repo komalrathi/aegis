@@ -32,4 +32,5 @@ let%expect_test "Normal Exception with Continuation" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {| A non-resumable exception was raised but a continuation was provided. |}]

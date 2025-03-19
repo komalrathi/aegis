@@ -11,4 +11,5 @@ let%expect_test "Normal Print Statement with High Security Level Variable" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {| Cannot print high security level data using normal print |}]

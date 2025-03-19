@@ -39,6 +39,7 @@ let%expect_test "Example Class" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
     ClassDefn(Example, FieldDefn(test_var, (Int, High))

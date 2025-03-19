@@ -42,11 +42,11 @@ let%expect_test "2 TryCatchFinally Blocks" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect
-        {|
+      [%expect.unreachable];
+  [%expect {|
     Program([
 
     ],[
 
-    ], Let(x, (Int, Low), Integer(7), Let(y, (Int, Low), Integer(8), Seq(Assign((Int, Low), y, Integer(0)), Try {If(CompOp(Equality, (Bool, Low), Identifier(y, (Int, Low)), Integer(0)), Raise(DivisionByZero, y) (Exception DivisionByZero, Low), Assign((Int, Low), y, BinOp(Divide, (Int, Low), Identifier(x, (Int, Low)), Identifier(y, (Int, Low)))), (Exception DivisionByZero, Low))} Catch (DivisionByZero y) {Let(z, (Int, Low), Integer(7), Try {Assign((Int, Low), z, Integer(10))} Catch (IntegerOverflow z) {Print([Identifier(z, (Exception IntegerOverflow, Low))])} Finally {Seq(Assign((Int, Low), x, Integer(105)), Print([Identifier(x, (Int, Low))]), (Unit, Low))} (Unit, Low), (Unit, Low))} Finally {Seq(Assign((Int, Low), y, Integer(101)), Print([Identifier(y, (Int, Low))]), (Unit, Low))} (Unit, Low), (Unit, Low)), (Unit, Low)), (Unit, Low)))
+    ], Let(x, (Int, Low), Integer(7), Let(y, (Int, Low), Integer(8), Seq(Assign((Int, Low), y, Integer(0)), Try {If(CompOp(Equality, (Bool, Low), Identifier(y, (Int, Low)), Integer(0)), Raise(DivisionByZero, y) (Exception DivisionByZero, (Int, Low), Low), Assign((Int, Low), y, BinOp(Divide, (Int, Low), Identifier(x, (Int, Low)), Identifier(y, (Int, Low)))), (Exception DivisionByZero, (Int, Low), Low))} Catch (DivisionByZero y) {Let(z, (Int, Low), Integer(7), Try {Assign((Int, Low), z, Integer(10))} Catch (IntegerOverflow z) {Print([Identifier(z, (Exception IntegerOverflow, (Int, Low), Low))])} Finally {Seq(Assign((Int, Low), x, Integer(105)), Print([Identifier(x, (Int, Low))]), (Unit, Low))} (Unit, Low), (Unit, Low))} Finally {Seq(Assign((Int, Low), y, Integer(101)), Print([Identifier(y, (Int, Low))]), (Unit, Low))} (Unit, Low), (Unit, Low)), (Unit, Low)), (Unit, Low)))
     |}]

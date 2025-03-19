@@ -17,7 +17,7 @@ let%expect_test "Resumable Exception with DivisionByZero" =
          \                numerator / denominator\n\
          \            }\n\
          \        } \n\
-         \        catch (DivisionByZero ex k) {\n\
+         \        catch (DivisionByZero denominator k) {\n\
          \            print(numerator);\n\
          \            continue (k, 5)\n\
          \        }\n\
@@ -33,11 +33,12 @@ let%expect_test "Resumable Exception with DivisionByZero" =
       ( match type_program program with
       | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
-      [%expect {|
+      [%expect
+        {|
         10
         49
         49
-        Result: VInt(2193961060)
+        Result: VInt(5)
         Value Environment:
         Function Environment:
         Class Environment:

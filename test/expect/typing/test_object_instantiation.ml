@@ -35,6 +35,7 @@ let%expect_test "Object Instantiation" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
     ClassDefn(Example, FieldDefn(test_var, (Int, High))

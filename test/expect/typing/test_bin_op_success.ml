@@ -15,6 +15,7 @@ let%expect_test "Binary Operation" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -37,6 +38,7 @@ let%expect_test "Binary Operation with Parentheses" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -54,6 +56,7 @@ let%expect_test "Binary Operation with Exponentiation" =
   | Error _ ->
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -71,6 +74,7 @@ let%expect_test "Binary Operation with Modulus" =
   | Error _ ->
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 

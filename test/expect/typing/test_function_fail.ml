@@ -14,6 +14,7 @@ let%expect_test "Bad Low Function Parsing" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {| The function security level return type does not match the function body security level type |}]
 
 let%expect_test "Bad High Function Parsing" =
@@ -29,4 +30,5 @@ let%expect_test "Bad High Function Parsing" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {| Function argument type (Bool) does not match the function type (Int) |}]

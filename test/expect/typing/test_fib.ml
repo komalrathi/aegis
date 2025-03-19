@@ -20,6 +20,7 @@ let%expect_test "fib" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 

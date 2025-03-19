@@ -38,5 +38,5 @@ let%expect_test "Uncaught exception in catch block" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
-      [%expect
-        {| The catch block has raised new exceptions that were not raised in the try block. This is not permitted. |}]
+      [%expect.unreachable];
+  [%expect {| The catch block has raised new exceptions that were not raised in the try block. This is not permitted. |}]

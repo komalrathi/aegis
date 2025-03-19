@@ -40,5 +40,5 @@ let%expect_test "Uncaught exception in finally block" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable] ;
-      [%expect
-        {| The finally block has raised new exceptions that were not raised in the try block. This is not permitted. |}]
+      [%expect.unreachable];
+  [%expect {| The finally block has raised new exceptions that were not raised in the try block. This is not permitted. |}]

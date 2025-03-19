@@ -12,4 +12,5 @@ let%expect_test "Variable Shadowing" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {| Variable has already been assigned and has another type |}]

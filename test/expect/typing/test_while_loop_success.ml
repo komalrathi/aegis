@@ -12,6 +12,7 @@ let%expect_test "while loop with let statement" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 

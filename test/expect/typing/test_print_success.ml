@@ -14,6 +14,7 @@ let%expect_test "Normal Print Statement" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -35,6 +36,7 @@ let%expect_test "Secure Print Statement" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -60,6 +62,7 @@ let%expect_test "Normal Print with Sequence" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -86,6 +89,7 @@ let%expect_test "Secure Print in While Loop" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 

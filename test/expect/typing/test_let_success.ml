@@ -13,6 +13,7 @@ let%expect_test "Low Security Level Variable Creation using Let" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -35,6 +36,7 @@ let%expect_test "2 Low Security Level Variables Creation using Let" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -55,6 +57,7 @@ let%expect_test "High Security Level Variable Creation using Let" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -77,6 +80,7 @@ let%expect_test "1 High 1 Low Security Level Variables Creation using Let" =
       [%expect.unreachable] ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 

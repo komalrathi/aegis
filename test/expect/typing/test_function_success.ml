@@ -13,6 +13,7 @@ let%expect_test "Successful Low Function Parsing" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 
@@ -33,6 +34,7 @@ let%expect_test "Successful High Function Parsing" =
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
       [%expect.unreachable];
+  [%expect.unreachable];
   [%expect {|
     Program([
 

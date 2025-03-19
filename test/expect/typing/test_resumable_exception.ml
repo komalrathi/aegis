@@ -15,7 +15,7 @@ let%expect_test "Resumable Exception with DivisionByZero" =
          \                numerator / denominator\n\
          \            }\n\
          \        } \n\
-         \        catch (DivisionByZero ex k) {\n\
+         \        catch (DivisionByZero denominator k) {\n\
          \            print(numerator);\n\
          \            continue (k, 5)\n\
          \        }\n\
@@ -30,11 +30,12 @@ let%expect_test "Resumable Exception with DivisionByZero" =
   | Error _ ->
       print_endline "Error: could not parse program" ;
       [%expect.unreachable] ;
+      [%expect.unreachable] ;
       [%expect.unreachable];
   [%expect {|
     Program([
 
     ],[
 
-    ], Let(numerator, (Int, Low), Integer(10), Let(denominator, (Int, Low), Integer(0), Try {If(CompOp(Equality, (Bool, Low), Identifier(denominator, (Int, Low)), Integer(0)), ResumableRaise(DivisionByZero, denominator) (Exception DivisionByZero, Low), BinOp(Divide, (Int, Low), Identifier(numerator, (Int, Low)), Identifier(denominator, (Int, Low))), (Exception DivisionByZero, Low))} Catch (DivisionByZero ex k) {Seq(Print([Identifier(numerator, (Int, Low))]), Continue (k, Integer(5), (Unit, Low)), (Unit, Low))} Finally {Seq(Assign((Int, Low), numerator, Integer(49)), Print([Identifier(numerator, (Int, Low))]), (Unit, Low))} (Unit, Low), (Unit, Low)), (Unit, Low)))
+    ], Let(numerator, (Int, Low), Integer(10), Let(denominator, (Int, Low), Integer(0), Try {If(CompOp(Equality, (Bool, Low), Identifier(denominator, (Int, Low)), Integer(0)), ResumableRaise(DivisionByZero, denominator) (Exception DivisionByZero, (Int, Low), Low), BinOp(Divide, (Int, Low), Identifier(numerator, (Int, Low)), Identifier(denominator, (Int, Low))), (Exception DivisionByZero, (Int, Low), Low))} Catch (DivisionByZero denominator k) {Seq(Print([Identifier(numerator, (Int, Low))]), Continue (k, Integer(5), (Unit, Low)), (Unit, Low))} Finally {Seq(Assign((Int, Low), numerator, Integer(49)), Print([Identifier(numerator, (Int, Low))]), (Unit, Low))} (Unit, Low), (Unit, Low)), (Unit, Low)))
     |}]

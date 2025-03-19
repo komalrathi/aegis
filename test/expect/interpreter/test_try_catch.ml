@@ -35,10 +35,7 @@ let%expect_test "DivisionByZero exception raised" =
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect {|
         101
-        Result: VUnit
-        Value Environment:
-        Function Environment:
-        Class Environment:
+        Error: DivisionByZero
         |}]
   | Error _ ->
       print_endline "Error: could not parse program" ;

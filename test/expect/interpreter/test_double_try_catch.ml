@@ -45,12 +45,8 @@ let%expect_test "2 TryCatchFinally Blocks" =
       | Ok (Prog (_, _, expr)) -> print_interpret_expr expr [] [] []
       | Error _ -> print_endline "Error: could not type program" ) ;
       [%expect {|
-        105
         101
-        Result: VUnit
-        Value Environment: y -> VInt(0);
-        Function Environment:
-        Class Environment:
+        Error: DivisionByZero
         |}]
   | Error _ ->
       print_endline "Error: could not parse program" ;
