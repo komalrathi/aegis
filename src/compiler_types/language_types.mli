@@ -14,7 +14,7 @@ type core_type =
   (* class_name *)
   | TEObject of string
   | TEUnit
-  | TException of exception_type
+  | TException of exception_type * core_type
 
 (* For now, Aegis only supports 2 security levels *)
 type security_level_type = TSLow | TSHigh

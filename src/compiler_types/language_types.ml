@@ -6,7 +6,7 @@ type core_type =
   | TFunction of core_type list * core_type
   | TEObject of string
   | TEUnit
-  | TException of exception_type
+  | TException of exception_type * core_type
 
 type security_level_type = TSLow | TSHigh
 
