@@ -86,15 +86,17 @@ let exception_type_to_string exception_type =
 (* let security_level_type_to_string sec_level = match sec_level with TSLow
    -> "Low" | TSHigh -> "High" *)
 
-let core_type_to_string core_type =
+let rec core_type_to_string core_type =
   match core_type with
   | TEInt -> "Int"
   | TEBool -> "Bool"
   | TEUnit -> "Unit"
   | TFunction _ -> "Function"
   | TEObject obj -> Printf.sprintf "Object %s" obj
-  | TException e ->
-      Printf.sprintf "Exception %s" (exception_type_to_string e)
+  | TException (e, core_type) ->
+      Printf.sprintf "Exception %s %s"
+        (exception_type_to_string e)
+        (core_type_to_string core_type)
 
 (* let print_row row = Core.List.iter row ~f:(fun (exception_type, sec_level,
    is_resumable) -> Printf.printf "Exception: %s, Security Level: %s,
@@ -245,7 +247,47 @@ let rec type_expr expr type_environment class_defns pc row =
       >>= fun () ->
       type_expr e1 type_environment class_defns pc row
       >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc, row) ->
-      if
+      if equal_to_exception_type e1_core_type then
+        match e1_core_type with
+        | TException (_, exception_core_type) ->
+            if
+              equal_core_type exception_core_type exception_core_type
+              && subtyping_check pc e1_sec_level var_sec_level
+            then
+              type_expr e2
+                ( (var_name, (exception_core_type, var_sec_level))
+                :: type_environment )
+                class_defns pc row
+              >>= fun ((e2_core_type, e2_sec_level), typed_e2, pc, row) ->
+              Ok
+                ( (e2_core_type, e2_sec_level)
+                , Typed_ast.Let
+                    ( loc
+                    , var_name
+                    , (exception_core_type, var_sec_level)
+                    , typed_e1
+                    , typed_e2
+                    , (e2_core_type, e2_sec_level) )
+                , pc
+                , row )
+            else if equal_core_type exception_core_type exception_core_type
+            then
+              Error
+                (Core.Error.of_string
+                   "Exception security level type does not match the \
+                    assigned security level type" )
+            else
+              Error
+                (Core.Error.of_string
+                   (Printf.sprintf
+                      "Exception core type (%s) does not match the assigned \
+                       core type (%s)"
+                      (core_type_to_string exception_core_type)
+                      (core_type_to_string e1_core_type) ) )
+        | _ ->
+            Error
+              (Core.Error.of_string "Exception type is not an exception type")
+      else if
         subtyping_check pc e1_sec_level var_sec_level
         && equal_core_type var_core_type e1_core_type
       then
@@ -287,7 +329,41 @@ let rec type_expr expr type_environment class_defns pc row =
       | Some (var_core_type, var_sec_level) ->
           type_expr e1 type_environment class_defns pc row
           >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc, row) ->
-          if
+          (* add check here to see if e_1 core type is of Exception, and then
+             check Int *)
+          if equal_to_exception_type e1_core_type then
+            match e1_core_type with
+            | TException (_, exception_core_type) ->
+                if
+                  equal_core_type exception_core_type exception_core_type
+                  && subtyping_check pc e1_sec_level var_sec_level
+                then
+                  Ok
+                    ( (exception_core_type, var_sec_level)
+                    , Typed_ast.Assign
+                        (loc, (TEInt, TSLow), var_name, typed_e1)
+                    , pc
+                    , row )
+                else if
+                  equal_core_type exception_core_type exception_core_type
+                then
+                  Error
+                    (Core.Error.of_string
+                       "Exception security level type does not match the \
+                        assigned security level type" )
+                else
+                  Error
+                    (Core.Error.of_string
+                       (Printf.sprintf
+                          "Exception core type (%s) does not match the \
+                           assigned core type (%s)"
+                          (core_type_to_string exception_core_type)
+                          (core_type_to_string e1_core_type) ) )
+            | _ ->
+                Error
+                  (Core.Error.of_string
+                     "Exception type is not an exception type" )
+          else if
             subtyping_check pc e1_sec_level var_sec_level
             && equal_core_type var_core_type e1_core_type
           then
@@ -361,16 +437,17 @@ let rec type_expr expr type_environment class_defns pc row =
           , row )
   | Parsed_ast.Declassify (loc, e1) ->
       type_expr e1 type_environment class_defns pc row
-      >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc, row) ->
+      >>= fun ((e1_core_type, e1_sec_level), typed_e1, _, row) ->
       if equal_security_level_type e1_sec_level TSLow then
         Error
           (Core.Error.of_string
              "Cannot declassify a low security level expression" )
       else
+        let new_pc = TSLow in
         Ok
           ( (e1_core_type, TSLow)
           , Typed_ast.Declassify (loc, typed_e1, (e1_core_type, TSLow))
-          , pc
+          , new_pc
           , row )
   | Parsed_ast.FunctionApp (loc, fn_name, args) -> (
       get_function_types type_environment fn_name
@@ -408,6 +485,7 @@ let rec type_expr expr type_environment class_defns pc row =
                       ( (arg_expr_core_type, arg_expr_sec_level)
                       , typed_arg_expr )
                   else if equal_core_type arg_type arg_expr_core_type then
+                    (* TODO - digital signature program is failing here! *)
                     Error
                       (Core.Error.of_string
                          "Function argument security level does not match \
@@ -683,37 +761,43 @@ let rec type_expr expr type_environment class_defns pc row =
   | Parsed_ast.Raise (loc, exception_name, var_name) ->
       lookup_var_type type_environment var_name
       |> (function
-      | None -> Error (Core.Error.of_string "Variable does not exist")
+      | None ->
+          Error
+            (Core.Error.of_string
+               (Printf.sprintf "Variable %s does not exist" var_name) )
       | Some (var_core_type, var_sec_level) ->
           Ok (var_core_type, var_sec_level) )
-      >>= fun (_, var_sec_level) ->
+      >>= fun (var_core_type, var_sec_level) ->
       let updated_pc = join pc var_sec_level in
       let updated_row = (exception_name, var_sec_level, false) :: row in
       Ok
-        ( (TException exception_name, var_sec_level)
+        ( (TException (exception_name, var_core_type), var_sec_level)
         , Typed_ast.Raise
             ( loc
             , exception_name
             , var_name
-            , (TException exception_name, var_sec_level) )
+            , (TException (exception_name, var_core_type), var_sec_level) )
         , updated_pc
         , updated_row )
   | Parsed_ast.ResumableRaise (loc, exception_name, var_name) ->
       lookup_var_type type_environment var_name
       |> (function
-      | None -> Error (Core.Error.of_string "Variable does not exist")
+      | None ->
+          Error
+            (Core.Error.of_string
+               (Printf.sprintf "Variable %s does not exist" var_name) )
       | Some (var_core_type, var_sec_level) ->
           Ok (var_core_type, var_sec_level) )
-      >>= fun (_, var_sec_level) ->
+      >>= fun (var_core_type, var_sec_level) ->
       let updated_pc = join pc var_sec_level in
       let updated_row = (exception_name, var_sec_level, true) :: row in
       Ok
-        ( (TException exception_name, var_sec_level)
+        ( (TException (exception_name, var_core_type), var_sec_level)
         , Typed_ast.ResumableRaise
             ( loc
             , exception_name
             , var_name
-            , (TException exception_name, var_sec_level) )
+            , (TException (exception_name, var_core_type), var_sec_level) )
         , updated_pc
         , updated_row )
   | Parsed_ast.TryCatchFinally
@@ -729,8 +813,19 @@ let rec type_expr expr type_environment class_defns pc row =
       match continuation with
       | None ->
           (* No continuation provided *)
+          lookup_var_type type_environment var_name
+          |> (function
+          | None ->
+              Error
+                (Core.Error.of_string
+                   (Printf.sprintf "Variable %s does not exist" var_name) )
+          | Some (var_core_type, var_sec_level) ->
+              Ok (var_core_type, var_sec_level) )
+          >>= fun (var_core_type, _) ->
           type_expr e2
-            ( (var_name, (TException exception_name, pc_after_try_block))
+            ( ( var_name
+              , ( TException (exception_name, var_core_type)
+                , pc_after_try_block ) )
             :: type_environment )
             class_defns pc_after_try_block row_after_try_block
           >>= fun ( (e2_core_type, e2_sec_level)
@@ -816,10 +911,22 @@ let rec type_expr expr type_environment class_defns pc row =
                  "A non-resumable exception was raised but a continuation \
                   was provided." )
           else
+            lookup_var_type type_environment var_name
+            |> (function
+            | None ->
+                Error
+                  (Core.Error.of_string
+                     (Printf.sprintf "Variable %s does not exist" var_name) )
+            | Some (var_core_type, var_sec_level) ->
+                Ok (var_core_type, var_sec_level) )
+            >>= fun (var_core_type, _) ->
             let env_catch =
-              (var_name, (TException exception_name, pc_after_try_block))
+              ( var_name
+              , ( TException (exception_name, var_core_type)
+                , pc_after_try_block ) )
               :: ( k
-                 , ( TFunction ([TException exception_name], TEUnit)
+                 , ( TFunction
+                       ([TException (exception_name, var_core_type)], TEUnit)
                    , pc_after_try_block ) )
               :: type_environment
             in
@@ -887,8 +994,8 @@ let rec type_expr expr type_environment class_defns pc row =
                 Error
                   (Core.Error.of_string
                      (Printf.sprintf
-                        "Try block type (%s) does not match the catch block \
-                         type (%s)"
+                        "Try block type (%s) does not match the finally \
+                         block type (%s)"
                         (core_type_to_string e1_core_type)
                         (core_type_to_string e2_core_type) ) ) )
   | Parsed_ast.Continue (loc, k, value) -> (
@@ -903,8 +1010,10 @@ let rec type_expr expr type_environment class_defns pc row =
         if
           ( match arg_types with
           | [expected_type] ->
-              equal_core_type expected_type (TException DivisionByZero)
-              || equal_core_type expected_type (TException IntegerOverflow)
+              equal_core_type expected_type
+                (TException (DivisionByZero, TEInt))
+              || equal_core_type expected_type
+                   (TException (IntegerOverflow, TEInt))
           | _ -> false )
           && equal_core_type return_type TEUnit
         then
@@ -918,8 +1027,10 @@ let rec type_expr expr type_environment class_defns pc row =
         else if
           match arg_types with
           | [expected_type] ->
-              equal_core_type expected_type (TException DivisionByZero)
-              || equal_core_type expected_type (TException IntegerOverflow)
+              equal_core_type expected_type
+                (TException (DivisionByZero, TEInt))
+              || equal_core_type expected_type
+                   (TException (IntegerOverflow, TEInt))
           | _ -> false
         then
           Error
