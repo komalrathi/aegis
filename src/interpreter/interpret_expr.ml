@@ -406,6 +406,13 @@ let rec interpret_expr expr value_environment function_environment
         | Ok _ -> failwith "Finally block must evaluate to a value"
         | Error err -> failwith (Core.Error.to_string_hum err)
       in
+      let finally_run = ref false in
+      let run_finally_once result =
+        if !finally_run then result
+        else (
+          finally_run := true ;
+          run_finally result )
+      in
       let result =
         match_with
           (fun () ->
@@ -416,7 +423,7 @@ let rec interpret_expr expr value_environment function_environment
             | Ok res -> res
             | Error err -> failwith (Core.Error.to_string_hum err) )
           ()
-          { retc= run_finally
+          { retc= run_finally_once
           ; exnc= (fun e -> raise e)
           ; effc=
               (fun (type a) (eff : a Effect.t) ->
@@ -438,7 +445,7 @@ let rec interpret_expr expr value_environment function_environment
                               interpret_expr catch_expr env_catch_with_cont
                                 function_environment class_defns
                             with
-                            | Ok res -> run_finally res
+                            | Ok res -> run_finally_once res
                             | Error err ->
                                 failwith (Core.Error.to_string_hum err) )
                         | None -> (
@@ -446,7 +453,7 @@ let rec interpret_expr expr value_environment function_environment
                             interpret_expr catch_expr env_catch
                               function_environment class_defns
                           with
-                          | Ok res -> run_finally res
+                          | Ok res -> run_finally_once res
                           | Error err ->
                               failwith (Core.Error.to_string_hum err) ) )
                 | Raise (caught_exn, payload, _sec) ->
