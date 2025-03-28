@@ -424,16 +424,17 @@ let rec type_expr expr type_environment class_defns pc row =
                 (core_type_to_string e1_core_type) ) )
   | Parsed_ast.Classify (loc, e1) ->
       type_expr e1 type_environment class_defns pc row
-      >>= fun ((e1_core_type, e1_sec_level), typed_e1, pc, row) ->
+      >>= fun ((e1_core_type, e1_sec_level), typed_e1, _, row) ->
       if equal_security_level_type e1_sec_level TSHigh then
         Error
           (Core.Error.of_string
              "Cannot classify a high security level expression" )
       else
+        let new_pc = TSHigh in
         Ok
           ( (e1_core_type, TSHigh)
           , Typed_ast.Classify (loc, typed_e1, (e1_core_type, TSHigh))
-          , pc
+          , new_pc
           , row )
   | Parsed_ast.Declassify (loc, e1) ->
       type_expr e1 type_environment class_defns pc row
