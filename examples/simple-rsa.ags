@@ -1,0 +1,22 @@
+fn rsa_encrypt(msg: (int, Low), n: (int, Low), e: (int, Low)) : (int, Low) {
+    (msg ^ e) % n
+}
+
+fn rsa_decrypt(cipher: (int, Low), n: (int, Low), d: (int, High)) : (int, High) {
+    (cipher ^ d) % n
+}
+
+let public_n: (int, Low) = 3233 in {
+    let public_e: (int, Low) = 17 in {
+        let private_d: (int, High) = 2753 in {
+            let message: (int, Low) = 123 in {
+                let ciphertext: (int, Low) = rsa_encrypt(message, public_n, public_e) in {
+                    print(ciphertext);
+                    let decrypted: (int, High) = rsa_decrypt(ciphertext, public_n, private_d) in {
+                        securePrint(decrypted)
+                    }
+                }
+            }
+        }
+    }
+}

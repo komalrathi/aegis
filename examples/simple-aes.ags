@@ -1,0 +1,18 @@
+fn aes_encrypt(plaintext: (int, Low), key: (int, High)) : (int, High) {
+    (plaintext * key) % 256
+}
+
+fn aes_decrypt(ciphertext: (int, Low), key: (int, High)) : (int, High) {
+    (ciphertext * key) % 256
+}
+
+let secret_key: (int, High) = 29 in {
+    let message: (int, Low) = 100 in {
+        let encrypted: (int, High) = aes_encrypt(message, secret_key) in {
+            securePrint(encrypted);
+            let decrypted: (int, High) = aes_decrypt(encrypted, secret_key) in {
+                securePrint(decrypted)
+            }
+        }
+    }
+}
