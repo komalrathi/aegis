@@ -1,0 +1,6 @@
+(executable
+ (name benchmark_runner)
+ (public_name benchmark_runner)
+ (libraries core core_bench run_interpreter)
+ (preprocess
+  (pps ppx_inline_test)))
