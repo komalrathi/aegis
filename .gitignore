@@ -30,3 +30,5 @@ _build/
 *.install 
 
 *.conflicts
+
+log.csv
