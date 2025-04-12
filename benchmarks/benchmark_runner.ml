@@ -38,9 +38,59 @@ let simple_dh_code =
   } 
   |}
 
+let aegis_no_exception_raised_code =
+  {|
+fn division (x :(int, Low), y:(int, Low)):(int, Low) { 
+    try {
+        if (y == 0) then {
+            raise (DivisionByZero y)
+        }
+        else {
+            x := x/y
+        }
+    }   
+    catch (DivisionByZero y) {
+        x := 1003
+    }
+    finally {
+        y := 508;
+        y := 60
+    }
+}
+division(7, 4)
+|}
+
+let aegis_exception_raised_code =
+  {|
+fn division (x :(int, Low), y:(int, Low)):(int, Low) { 
+    try {
+        if (y == 0) then {
+            raise (DivisionByZero y)
+        }
+        else {
+            x := x/y
+        }
+    }   
+    catch (DivisionByZero y) {
+        x := 1003
+    }
+    finally {
+        y := 508;
+        y := 60
+    }
+}
+division(8, 0)
+|}
+
 let run_aegis_aes () = run_interpreter (Lexing.from_string simple_aes_code)
 
 let run_aegis_dh () = run_interpreter (Lexing.from_string simple_dh_code)
+
+let run_aegis_no_exception_raised () =
+  run_interpreter (Lexing.from_string aegis_no_exception_raised_code)
+
+let run_aegis_exception_raised () =
+  run_interpreter (Lexing.from_string aegis_exception_raised_code)
 
 (* OCaml implementations of AES and Diffie-Hellman for benchmarking *)
 let simple_aes_encrypt plaintext key = plaintext * key mod 5
@@ -80,13 +130,35 @@ let run_ocaml_diffie_hellman () =
   (* For the sake of the benchmark, we ignore the results *)
   ignore alice_public_key ; ignore bob_public_key
 
+let ocaml_no_exception_raised () =
+  let safe_div x y = if y = 0 then raise Division_by_zero else x / y in
+  try
+    let _ = safe_div 7 4 in
+    ()
+  with Division_by_zero -> ()
+
+let ocaml_exception_raised () =
+  let safe_div x y = if y = 0 then raise Division_by_zero else x / y in
+  try
+    let _ = safe_div 8 0 in
+    ()
+  with Division_by_zero -> ()
+
 let () =
   let tests =
     [ Bench.Test.create ~name:"Aegis AES" (fun () -> run_aegis_aes ())
     ; Bench.Test.create ~name:"Aegis Diffie-Hellman" (fun () ->
           run_aegis_dh () )
+    ; Bench.Test.create ~name:"Aegis No Exception Raised" (fun () ->
+          run_aegis_no_exception_raised () )
+    ; Bench.Test.create ~name:"Aegis Exception Raised" (fun () ->
+          run_aegis_exception_raised () )
     ; Bench.Test.create ~name:"OCaml AES" (fun () -> run_ocaml_aes ())
     ; Bench.Test.create ~name:"OCaml Diffie-Hellman" (fun () ->
-          run_ocaml_diffie_hellman () ) ]
+          run_ocaml_diffie_hellman () )
+    ; Bench.Test.create ~name:"OCaml Exception Raised" (fun () ->
+          ocaml_exception_raised () )
+    ; Bench.Test.create ~name:"OCaml No Exception Raised" (fun () ->
+          ocaml_no_exception_raised () ) ]
   in
   Command_unix.run (Bench.make_command tests)
