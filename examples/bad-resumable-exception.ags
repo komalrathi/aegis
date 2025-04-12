@@ -1,5 +1,5 @@
 let numerator : (int, Low) = 10 in {
-    let denominator : (int, Low) = 0 in {
+    let denominator : (int, High) = 0 in {
       try {
           if (denominator == 0) then {
               numerator := raise!(DivisionByZero denominator);
