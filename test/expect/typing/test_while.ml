@@ -11,12 +11,6 @@ let%expect_test "Boolean operations in While Loop" =
   | Ok program -> print_typed_ast program
   | Error _ ->
       [%expect.unreachable] ;
-      [%expect.unreachable] ;
-      [%expect.unreachable] ;
-      [%expect.unreachable] ;
-      [%expect.unreachable] ;
-      [%expect.unreachable] ;
-      [%expect.unreachable] ;
       [%expect
         {|
     Program([
