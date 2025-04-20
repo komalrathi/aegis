@@ -11,13 +11,14 @@ let%expect_test "Method call on object" =
       constructor(x: (int, Low), y: (bool, High)) { x }
       fn getX(): (int, Low) { x }
     }
-obj.getX(1, 2)
+let obj:(Example, Low) = new Low Example(1, True) in {obj.getX()}
   |} ) ;
-  [%expect {|
+  [%expect
+    {|
     Program([
     ClassDefn(Example, FieldDefn(x, (Int, Low))
     FieldDefn(y, (Bool, High)), Constructor([x: (Int, Low); y: (Bool, High)], Identifier(x)), FunctionDefn(getX, [], (Int, Low), Identifier(x)))
     ],[
 
-    ], MethodCall(getX, [Integer(1); Integer(2)], obj))
+    ], Let(obj, (Object Example, Low), Object(Low, Example, [Integer(1); Boolean(true)]), MethodCall(getX, [], obj)))
     |}]
