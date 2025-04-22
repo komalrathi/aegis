@@ -97,8 +97,9 @@ dune exec benchmarks/benchmark_runner.exe
 
 This will execute the benchmark suite and display the results.
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+## License
+
+Aegis is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ## Troubleshooting
 
