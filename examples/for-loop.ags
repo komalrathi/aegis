@@ -1,10 +1,10 @@
 for (let i:(int, Low) = 0; (i < 10); (i := i + 1)) {
-    let y:(int, Low) = 5 in (
-        if (y > 3) then{
+    let y:(int, Low) = 5 in {
+        if (y > 3) then {
             print(i)
         }
         else {
             print(567)
         }
-    )
+    }
 }

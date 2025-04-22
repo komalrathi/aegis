@@ -1,4 +1,7 @@
-let x:(int, Low) = 42 in
-    let y:(int, High) = classify(x) in
-    let z:(int, Low) = declassify(y) in
-        print(z)
+let x:(int, Low) = 42 in {
+    let y:(int, High) = classify(x) in {
+        let z:(int, Low) = declassify(y) in {
+            print(z)
+        }
+    }
+}

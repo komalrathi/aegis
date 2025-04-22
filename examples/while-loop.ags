@@ -1,6 +1,6 @@
-let test_var:(int,Low) = 3 in (
+let test_var:(int,Low) = 3 in {
     while (test_var < 6) {
         test_var := test_var + 1
     };
     print(test_var)
-)
+}

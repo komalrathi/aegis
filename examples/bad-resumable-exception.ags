@@ -1,5 +1,5 @@
 let numerator : (int, Low) = 10 in {
-    let denominator : (int, High) = 0 in {
+    let denominator : (int, Low) = 0 in {
       try {
           if (denominator == 0) then {
               numerator := raise!(DivisionByZero denominator);
@@ -10,7 +10,7 @@ let numerator : (int, Low) = 10 in {
           }
       } 
       catch (DivisionByZero denominator k) {
-          let result:(bool, Low) = True in {
+          let result:(bool, High) = True in {
               if (result) then {
                   numerator := 57;
                   continue (k, 8)

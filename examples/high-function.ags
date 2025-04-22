@@ -1,1 +1,4 @@
-fn example (x :(bool, High), y:(bool, High)):(bool, High) { (x && y) }; example(True, False)
+fn example (x :(bool, High), y:(bool, High)):(bool, High) { 
+    (x && y) 
+}
+example(True, False)
