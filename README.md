@@ -72,14 +72,6 @@ dune exec src/main.exe [path to your Aegis file]
 
 Explore the `examples/` directory for sample programs and benchmarks comparing Aegis’s security enforcement overhead against OCaml.
 
-### 6. Contributing
-
-We welcome contributions, issues, and discussion on the GitHub issue tracker as we continue to evolve Aegis’s performance, expressiveness, and proof‑carrying security guarantees.
-
-### 7. License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 ## Running Tests and Benchmarks
 
 To run the tests and benchmarks, you can use the following command:
@@ -104,6 +96,9 @@ dune exec benchmarks/benchmark_runner.exe
 ```
 
 This will execute the benchmark suite and display the results.
+
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Troubleshooting
 
