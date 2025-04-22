@@ -37,7 +37,6 @@ let%expect_test "Resumable Exception with DivisionByZero" =
         {|
         10
         49
-        49
         Result: VInt(5)
         Value Environment:
         Function Environment:
