@@ -1,0 +1,13 @@
+let low_var:(int, Low) = 1 in {
+    let high_var:(int, High) = 2 in {
+        if (True) then{
+            // this branch is safe
+            print(low_var)
+        } else {
+            low_var := high_var
+        }
+    }
+}
+// else branch is dead code so the program should run. 
+// but it fails with error "Variable low_var security level type does not match the assigned security level type"                                                                                                "
+// This is because only static analysis does not check for dead code.
