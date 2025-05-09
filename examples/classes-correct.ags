@@ -1,0 +1,33 @@
+class Calculator {
+    a: (int, Low);
+    b: (int, Low);
+    c: (int, High);
+    constructor(x: (int, Low), y: (int, Low)) { 
+        a := 5 + x; 
+        b := 6 + y;
+        c := 50
+    }
+    fn add(): (int, Low) {
+        a + b
+    }
+    fn subtract(): (int, Low) {
+        a - b
+    }
+    fn multiply(): (int, Low) {
+        a * b
+    }
+    fn leak(): (int, High) { 
+        b + c + 100
+    }
+}
+let calc: (Calculator, Low) = new Low Calculator(10, 20) in {
+    let s: (int, Low) = calc.add() in { 
+        print(s) 
+    };
+    let d: (int, Low) = calc.subtract() in { 
+        print(d) 
+    };
+    let m: (int, Low) = calc.multiply() in { 
+        print(m) 
+    }
+}

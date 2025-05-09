@@ -1,0 +1,21 @@
+let secret: (int, High) = 780 in {
+    let flag: (bool, Low) = False in {
+        let result: (int, Low) = 0 in {
+            try {
+                if (flag) then { 
+                    raise(IntegerOverflow secret) 
+                } 
+                else {
+                    result := result
+                } 
+            } 
+            catch (IntegerOverflow secret) { 
+                print(1) 
+            } 
+            finally { 
+                print(2) 
+            } 
+        }    
+    } 
+}
+  

@@ -1,0 +1,19 @@
+let numerator: (int, Low) = 10 in {
+    let denominator: (int, Low) = 0 in {
+        try {
+            if (denominator == 0) then {
+                numerator := raise!(DivisionByZero denominator)
+            } 
+            else { 
+                numerator / denominator
+            }
+        } 
+        catch (DivisionByZero denominator k) {
+            numerator := 1;
+            continue (k, numerator)
+        } 
+        finally { 
+            numerator := 5
+        } 
+    } 
+}

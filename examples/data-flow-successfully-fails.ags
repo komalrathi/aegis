@@ -1,0 +1,8 @@
+let secret: (int, High) = 999 in {
+    let public_sum: (int, Low) = 0 in {
+        for (let i:(int, Low) = 1; i <= 5; i := i + 1) { 
+            public_sum := public_sum + secret 
+        };
+        print(public_sum) 
+    } 
+}

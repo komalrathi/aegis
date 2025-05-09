@@ -1,0 +1,22 @@
+let numerator: (int, Low) = 10 in {
+    let denominator: (int, Low) = 0 in {
+        let secret: (int, High) = 99 in {
+            try {
+                if (denominator == 0) then {
+                    numerator := raise!(DivisionByZero denominator) 
+                } 
+                else { 
+                    numerator / denominator 
+                }
+            } 
+            catch (DivisionByZero denominator k) {
+                numerator := secret;
+                continue (k, numerator)
+            } 
+            finally { 
+                numerator := 5 
+            } 
+        } 
+    } 
+}
+  

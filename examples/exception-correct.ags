@@ -1,0 +1,18 @@
+fn safe_add(x: (int, Low), y: (int, Low)): (int, Low) {
+    let sum: (int, Low) = x + y in {
+        try {
+            if (x >= 0 && y >= 0 && sum < x) then {
+                raise(IntegerOverflow sum)
+            } 
+            else { x + y } 
+        }
+        catch (IntegerOverflow sum) { 
+            x := 0;
+            y := 0 
+        }
+        finally { 
+            x + y
+        } 
+    } 
+}
+let result: (int, Low) = safe_add(21, 20) in { result := result + 10 }

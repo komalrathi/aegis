@@ -1,0 +1,8 @@
+let secret: (int, High) = 123 in {
+    let public: (int, Low) = 0 in {
+        for (let i:(int, Low) = 0; i < 0; i := i + 1) { 
+            public := secret + i + 5 
+        };
+        print(public) 
+    }
+}

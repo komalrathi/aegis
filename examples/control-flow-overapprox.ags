@@ -1,0 +1,11 @@
+let secret: (int, High) = 0 in {
+    let public: (int, Low) = 0 in {
+        if (secret == 1) then {
+            public := secret + 1
+        }
+        else { 
+            public := public
+        };
+        print(public) 
+    } 
+}
