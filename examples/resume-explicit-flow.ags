@@ -1,0 +1,18 @@
+fn highToLow():(int, Low) {
+    let secret: (int, High) = 123 in {
+        try {
+            raise!(DivisionByZero secret)
+            }
+        catch (DivisionByZero secret k) {
+            let lowval: (int, Low) = 42 in {
+            continue(k, lowval)
+            }
+        } finally {
+            print(0)
+        }
+    }
+}
+
+let leaked: (int, Low) = highToLow() in {
+    print(leaked)
+}
