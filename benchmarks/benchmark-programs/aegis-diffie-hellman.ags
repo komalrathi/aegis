@@ -1,0 +1,17 @@
+fn diffie_hellman(private_key: (int, High), public_base: (int, Low), public_mod: (int, Low)) : (int, High) {
+    (public_base ^ private_key) % public_mod 
+} 
+let alice_private: (int, High) = 3 in { 
+    let bob_private: (int, High) = 4 in {
+        let g: (int, Low) = 5 in {
+            let p: (int, Low) = 7 in { 
+                let alice_public: (int, High) = diffie_hellman(alice_private, g, p) in { 
+                    let bob_public: (int, High) = diffie_hellman(bob_private, g, p) in { 
+                        alice_public := alice_public + 1;
+                        bob_public := bob_public + 1 
+                    } 
+                } 
+            } 
+        } 
+    } 
+} 

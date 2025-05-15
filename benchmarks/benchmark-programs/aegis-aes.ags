@@ -1,0 +1,11 @@
+fn aes_encrypt(plaintext: (int, Low), key: (int, High)) : (int, High) {
+    (plaintext * key) % 5 
+    } 
+let secret_key: (int, High) = 4 in { 
+    let message:(int, Low) = 7 in { 
+        let encrypted: (int, High) = aes_encrypt(message,secret_key) in { 
+            encrypted := encrypted + 1 
+        } 
+    } 
+}
+ 
